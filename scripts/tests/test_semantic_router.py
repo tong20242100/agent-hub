@@ -38,6 +38,12 @@ def test_rule_matching():
 
 def test_semantic_matching():
     """测试语义匹配"""
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ImportError:
+        print("⚠️ 跳过语义匹配测试 (缺少 sentence-transformers)")
+        return
+    
     from bin.semantic_router import SemanticRouter
     router = SemanticRouter()
     
