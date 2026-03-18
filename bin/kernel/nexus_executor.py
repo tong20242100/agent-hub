@@ -134,14 +134,17 @@ def run_tool(skill_name, tool_name, args_json):
     
     formatted_cmd = build_command(cmd_template, args)
 
-    # 3. Execute
+    # 3. Execute (使用 shell=False 避免命令注入风险)
     try:
+        # 将命令字符串转换为列表，避免 shell=True
+        cmd_list = shlex.split(formatted_cmd)
         result = subprocess.run(
-            formatted_cmd,
-            shell=True,
+            cmd_list,
+            shell=False,
             cwd=skill_dir,
             capture_output=True,
-            text=True
+            text=True,
+            timeout=120  # 添加超时保护
         )
         
         stdout_trimmed = result.stdout.strip()
@@ -157,10 +160,33 @@ def run_tool(skill_name, tool_name, args_json):
             "exit_code": result.returncode,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "is_empty": is_empty_json or is_too_short
+            "is_empty": is_empty_json or is_too_short,
+            "context": {
+                "command": formatted_cmd[:200],  # 截断防止过长
+                "cwd": skill_dir,
+                "tool": tool_name
+            }
+        }
+    except subprocess.TimeoutExpired:
+        return {
+            "status": "error",
+            "message": "Timeout (120s)",
+            "context": {
+                "command": formatted_cmd[:200],
+                "cwd": skill_dir,
+                "tool": tool_name
+            }
         }
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {
+            "status": "error",
+            "message": str(e),
+            "context": {
+                "command": formatted_cmd[:200] if 'formatted_cmd' in dir() else "unknown",
+                "cwd": skill_dir,
+                "tool": tool_name
+            }
+        }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Nexus Protocol Executor")

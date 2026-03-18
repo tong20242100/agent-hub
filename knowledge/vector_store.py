@@ -23,10 +23,22 @@ def _get_embedding_fn():
     """延迟加载嵌入模型"""
     global _embedding_fn
     if _embedding_fn is None:
-        from chromadb.utils import embedding_functions
-        _embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="all-MiniLM-L6-v2"  # 384维，快速，适合本地
-        )
+        try:
+            from chromadb.utils import embedding_functions
+            _embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name="all-MiniLM-L6-v2"  # 384维，快速，适合本地
+            )
+        except Exception as e:
+            # 检查是否是网络问题（HuggingFace 下载失败）
+            error_msg = str(e).lower()
+            if "connection" in error_msg or "timeout" in error_msg or "download" in error_msg:
+                raise RuntimeError(
+                    f"模型下载失败，可能是网络问题。\n"
+                    f"解决方案：设置 HuggingFace 镜像环境变量：\n"
+                    f"  export HF_ENDPOINT=https://hf-mirror.com\n"
+                    f"然后重试。原始错误: {e}"
+                )
+            raise
     return _embedding_fn
 
 

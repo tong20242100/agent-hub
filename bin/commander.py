@@ -182,7 +182,6 @@ class PersonaCommander:
     def _execute_local_bin(self, tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
         """直接执行本地 bin/ 目录下的脚本"""
         import subprocess
-        import shlex
         
         WORKSPACE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         bin_path = os.path.join(WORKSPACE_ROOT, "bin", tool_name)
@@ -190,36 +189,35 @@ class PersonaCommander:
         if not os.path.exists(bin_path):
             return {"status": "error", "message": f"Tool not found: {bin_path}"}
         
-        # 构建命令
-        cmd_parts = [bin_path]
+        # 构建命令列表 (不使用 shell=True)
+        cmd_list = [bin_path]
         
         # 添加参数
         if tool_name == "search":
             if "query" in args:
-                cmd_parts.append(shlex.quote(args["query"]))
+                cmd_list.append(args["query"])
             if "max" in args:
-                cmd_parts.extend(["--max", str(args["max"])])
+                cmd_list.extend(["--max", str(args["max"])])
             if args.get("json"):
-                cmd_parts.append("--json")
+                cmd_list.append("--json")
         elif tool_name == "scrape":
             if "url" in args:
-                cmd_parts.append(shlex.quote(args["url"]))
+                cmd_list.append(args["url"])
             if args.get("recursive"):
-                cmd_parts.append("--recursive")
+                cmd_list.append("--recursive")
         elif tool_name == "gh":
             # gh 命令直接传递
-            cmd_parts.extend([shlex.quote(str(v)) for v in args.values()])
+            for v in args.values():
+                cmd_list.append(str(v))
         else:
             # 通用参数传递
-            for key, value in args.items():
-                cmd_parts.append(shlex.quote(str(value)))
-        
-        cmd = " ".join(cmd_parts)
+            for value in args.values():
+                cmd_list.append(str(value))
         
         try:
             result = subprocess.run(
-                cmd,
-                shell=True,
+                cmd_list,
+                shell=False,
                 capture_output=True,
                 text=True,
                 timeout=60
@@ -228,12 +226,30 @@ class PersonaCommander:
                 "status": "success" if result.returncode == 0 else "failure",
                 "exit_code": result.returncode,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
+                "context": {
+                    "command": " ".join(cmd_list[:5]) + ("..." if len(cmd_list) > 5 else ""),
+                    "tool": tool_name
+                }
             }
         except subprocess.TimeoutExpired:
-            return {"status": "error", "message": "Timeout (60s)"}
+            return {
+                "status": "error",
+                "message": "Timeout (60s)",
+                "context": {
+                    "command": " ".join(cmd_list[:5]) + ("..." if len(cmd_list) > 5 else ""),
+                    "tool": tool_name
+                }
+            }
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            return {
+                "status": "error",
+                "message": str(e),
+                "context": {
+                    "command": " ".join(cmd_list[:5]) + ("..." if len(cmd_list) > 5 else ""),
+                    "tool": tool_name
+                }
+            }
     
     def execute_plan(self, plan: ExecutionPlan) -> Dict[str, Any]:
         """执行计划，收集所有工具输出"""
