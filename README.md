@@ -273,7 +273,6 @@ Unlock advanced skills with these optional tools:
 | Variable | Get from | Enables |
 |----------|----------|---------|
 | `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | Web search (`web_search`) |
-| `NVIDIA_API_KEY` | [NVIDIA](https://build.nvidia.com) | GPU optimization tools |
 
 ### Quick Install (macOS)
 

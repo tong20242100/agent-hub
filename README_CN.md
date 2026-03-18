@@ -273,7 +273,6 @@ knowledge/
 | 变量 | 获取地址 | 解锁功能 |
 |------|----------|----------|
 | `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | 网页搜索 (`web_search`) |
-| `NVIDIA_API_KEY` | [NVIDIA](https://build.nvidia.com) | GPU 优化工具 |
 
 ### macOS 快速安装
 
