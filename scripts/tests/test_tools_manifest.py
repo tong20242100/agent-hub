@@ -1,18 +1,32 @@
 #!/usr/bin/env python3
 """
 测试 tools_manifest.json 生成
+
+注意：manifest 是生成的文件，被 gitignore 排除。
+测试前会自动生成（如果不存在）。
 """
 import sys
 import os
+import subprocess
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from pathlib import Path
 import json
 
+MANIFEST_PATH = Path("knowledge/tools_manifest.json")
+
+def _ensure_manifest_exists():
+    """确保 manifest 文件存在（CI 环境需要生成）"""
+    if not MANIFEST_PATH.exists():
+        # 调用生成脚本
+        script_path = Path(__file__).parent.parent / "generate_tools_manifest.py"
+        if script_path.exists():
+            subprocess.run([sys.executable, str(script_path)], check=True)
+    return MANIFEST_PATH.exists()
+
 def test_manifest_exists():
     """测试 manifest 文件存在"""
-    manifest_path = Path("knowledge/tools_manifest.json")
-    assert manifest_path.exists(), "tools_manifest.json 应该存在"
+    assert _ensure_manifest_exists(), "无法生成 tools_manifest.json"
     print(f"✅ manifest 文件存在")
 
 def test_manifest_structure():
