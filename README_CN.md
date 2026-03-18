@@ -20,10 +20,10 @@
 
 | 问题 | 现象 | Agent-Hub 解决方案 |
 |------|------|-------------------|
-| **工具发现地狱** | 100 个脚本，AI 不知道该用哪个 | 语义路由：自然语言 → 正确工具 <10ms |
+| **工具发现地狱** | 100 个 skills/工具，AI 不知道该用哪个 | 规则路由 + 语义向量兜底：<10ms |
 | **多客户端割裂** | Cursor 插件 ≠ Gemini 技能 ≠ Claude 工具 | 一个技能仓库，所有客户端共享 |
 | **跨端失忆症** | 昨天在 Gemini 的研究，Claude 今天就忘了 | 统一记忆底座（knowledge/vector_store.py） |
-| **生命周期混乱** | GitHub/npm/pip/brew 各有各的更新流程 | 统一包管理器（AI 技能界的 apt/brew） |
+| **生命周期混乱** | 本地 skills/binaries 分散，无版本追踪 | 统一注册表：技能状态、版本、更新检测 |
 
 **隐藏能力：** `skill_update_check` 自动检测 GitHub Releases、npm、pip、Homebrew 的版本变化 —— 就像 `apt` 或 `brew`，但为 AI 技能而生。
 

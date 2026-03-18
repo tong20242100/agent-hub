@@ -20,10 +20,10 @@ Turn any CLI tool into an AI skill with one JSON file. No Python wrappers, no gl
 
 | Problem | What happens | Agent-Hub solution |
 |---------|--------------|-------------------|
-| **Tool discovery hell** | 100 scripts, AI doesn't know which one to use | Semantic router: natural language → right tool in <10ms |
+| **Tool discovery hell** | 100 skills/tools, AI doesn't know which one to use | Rule-based routing + semantic vector fallback: <10ms |
 | **Client fragmentation** | Cursor plugin ≠ Gemini skill ≠ Claude tool | One skill repo, all clients share |
 | **Cross-client amnesia** | Yesterday's research in Gemini? Claude doesn't know | Unified memory layer (knowledge/vector_store.py) |
-| **Lifecycle chaos** | GitHub/npm/pip/brew — different update flows | Unified package manager (apt/brew for AI skills) |
+| **Lifecycle chaos** | Local skills/binaries scattered, no version tracking | Centralized registry: skill status, versions, updates |
 
 **The hidden power:** `skill_update_check` auto-detects version changes across GitHub Releases, npm, pip, and Homebrew — like `apt` or `brew`, but for AI skills.
 
