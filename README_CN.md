@@ -1,12 +1,18 @@
+<div align="center">
+
 # Agent-Hub
 
-> **写 JSON，不写胶水代码。**
+**写 JSON，不写胶水代码。**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
-**[English](README.md)**
+**[English](README.md)** • **[中文](README_CN.md)**
+
+</div>
+
+---
 
 用一个 JSON 文件把任何 CLI 工具变成 AI 技能。无需 Python 封装，无需胶水代码。
 
@@ -26,17 +32,23 @@
 ## 快速开始
 
 ```bash
+# 安装
 git clone https://github.com/tong20242100/agent-hub.git
 cd agent-hub
-./setup.sh
-source .venv/bin/activate
+pip install -e .
+
+# 或安装 ML 功能（语义搜索、记忆）
+pip install -e ".[ml]"
 
 # 试试看
-python3 bin/semantic_router.py "搜索 AI Agent 新闻"
+ah "搜索 AI Agent 新闻"
 # → 路由到: web_search | 参数: {"query": "AI Agent 新闻", "limit": 10}
 
-python3 bin/semantic_router.py "抓取 https://example.com"
+ah "抓取 https://example.com"
 # → 路由到: scrape_url | 参数: {"url": "https://example.com"}
+
+ah --stats
+# → 📊 路由器统计: 工具数: 90, 人格数: 9
 ```
 
 ---
@@ -134,9 +146,10 @@ python3 bin/skill_update_install --all
 
 ### CLI（Gemini CLI、Claude Code、iFlow CLI）
 
-无需配置：
+安装后全局可用：
 ```bash
-python3 bin/semantic_router.py "搜索 AI Agent 新闻"
+ah "搜索 AI Agent 新闻"
+nexus "抓取 https://example.com"
 ```
 
 ### Claude Desktop / Cursor（通过 MCP）
@@ -155,8 +168,6 @@ python3 bin/semantic_router.py "搜索 AI Agent 新闻"
 ```
 
 > 将 `/绝对路径/` 替换为你真实的安装路径。
-
-> 将 `/绝对路径` 替换为你的实际安装路径。
 
 ### Python 模块
 
@@ -243,6 +254,57 @@ knowledge/
 
 ---
 
+## 可选依赖
+
+安装以下工具解锁高级技能：
+
+### CLI 工具
+
+| 工具 | 安装方式 | 解锁功能 |
+|------|----------|----------|
+| **GitHub CLI** | `brew install gh` | `gh_view`、`analyze_repo`、`verify` |
+| **yt-dlp** | `brew install yt-dlp` | YouTube、B站等视频/音频提取 |
+| **Node.js** | `brew install node` | 浏览器自动化（Chrome DevTools、BB Browser） |
+| **scrapling** | `pip install scrapling` | 隐身爬虫（绕过反爬检测） |
+| **OpenCLI** | `pip install opencli` | 通用 CLI 接口 |
+
+### 环境变量
+
+| 变量 | 获取地址 | 解锁功能 |
+|------|----------|----------|
+| `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | 网页搜索 (`web_search`) |
+| `NVIDIA_API_KEY` | [NVIDIA](https://build.nvidia.com) | GPU 优化工具 |
+
+### macOS 快速安装
+
+```bash
+# 核心工具
+brew install gh node yt-dlp
+
+# Python 隐身爬虫包
+pip install scrapling patchright playwright-stealth
+
+# 环境变量（添加到 ~/.zshrc）
+export TAVILY_API_KEY="your-key-here"
+```
+
+### Linux 快速安装
+
+```bash
+# 核心工具
+sudo apt install gh nodejs yt-dlp
+
+# 或使用 GitHub 官方源
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+
+# Python 包
+pip install scrapling patchright playwright-stealth
+```
+
+> **注意：** Windows 用户可使用 `winget` 或 `scoop` 安装 CLI 工具。
+
+---
+
 ## 贡献
 
 欢迎 PR。设计哲学和完整语法见 [CONTRIBUTING.md](CONTRIBUTING.md)。
@@ -254,12 +316,6 @@ knowledge/
 ## 更新日志
 
 查看 [CHANGELOG.md](CHANGELOG.md) 了解版本历史。
-
----
-
-## 更新内容
-
-详见 [CHANGELOG.md](CHANGELOG.md) 了解版本历史。
 
 ---
 

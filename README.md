@@ -1,12 +1,18 @@
+<div align="center">
+
 # Agent-Hub
 
-> **Write JSON, not glue code.**
+**Write JSON, not glue code.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
 
-**[中文](README_CN.md)**
+**[English](README.md)** • **[中文](README_CN.md)**
+
+</div>
+
+---
 
 Turn any CLI tool into an AI skill with one JSON file. No Python wrappers, no glue code.
 
@@ -26,17 +32,23 @@ Turn any CLI tool into an AI skill with one JSON file. No Python wrappers, no gl
 ## Quick Start
 
 ```bash
+# Install
 git clone https://github.com/tong20242100/agent-hub.git
 cd agent-hub
-./setup.sh
-source .venv/bin/activate
+pip install -e .
+
+# Or with ML features (semantic search, memory)
+pip install -e ".[ml]"
 
 # Try it
-python3 bin/semantic_router.py "search AI Agent news"
+ah "search AI Agent news"
 # → Routes to: web_search | Args: {"query": "AI Agent news", "limit": 10}
 
-python3 bin/semantic_router.py "scrape https://example.com"
+ah "scrape https://example.com"
 # → Routes to: scrape_url | Args: {"url": "https://example.com"}
+
+ah --stats
+# → 📊 路由器统计: 工具数: 90, 人格数: 9
 ```
 
 ---
@@ -134,9 +146,10 @@ python3 bin/skill_update_install --all
 
 ### CLI (Gemini CLI, Claude Code, iFlow CLI)
 
-No setup required:
+After `pip install -e .`, use globally:
 ```bash
-python3 bin/semantic_router.py "search for AI Agent news"
+ah "search for AI Agent news"
+nexus "scrape https://example.com"
 ```
 
 ### Claude Desktop / Cursor (via MCP)
@@ -238,6 +251,56 @@ knowledge/
 | `agency-bin-scrape` | Tool | Web scraping via Jina Reader |
 | `agency-architecture-atlas` | Cognitive | AI Agent architecture knowledge base |
 | `agency-skill-armorer` | Cognitive | Skill creation and schema generator |
+
+---
+
+## Optional Dependencies
+
+Unlock advanced skills with these optional tools:
+
+### CLI Tools
+
+| Tool | Install | Enables |
+|------|---------|---------|
+| **GitHub CLI** | `brew install gh` | `gh_view`, `analyze_repo`, `verify` |
+| **yt-dlp** | `brew install yt-dlp` | Video/audio extraction from YouTube, Bilibili, etc. |
+| **Node.js** | `brew install node` | Browser automation (Chrome DevTools, BB Browser) |
+| **scrapling** | `pip install scrapling` | Stealth web scraping (anti-bot bypass) |
+| **OpenCLI** | `pip install opencli` | Generic CLI interface |
+
+### Environment Variables
+
+| Variable | Get from | Enables |
+|----------|----------|---------|
+| `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | Web search (`web_search`) |
+| `NVIDIA_API_KEY` | [NVIDIA](https://build.nvidia.com) | GPU optimization tools |
+
+### Quick Install (macOS)
+
+```bash
+# Core tools
+brew install gh node yt-dlp
+
+# Python packages for stealth scraping
+pip install scrapling patchright playwright-stealth
+
+# Environment variables (add to ~/.zshrc or ~/.bashrc)
+export TAVILY_API_KEY="your-key-here"
+```
+
+### Quick Install (Linux)
+
+```bash
+# Core tools
+sudo apt install gh nodejs yt-dlp
+# or
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+
+# Python packages
+pip install scrapling patchright playwright-stealth
+```
+
+> **Note:** Windows users can use `winget` or `scoop` for CLI tools. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 

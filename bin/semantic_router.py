@@ -768,19 +768,31 @@ def _execute_mcp_tool(cmd_template: str, tool_name: str, args: Dict) -> Dict:
 def main():
     import sys
     
-    if len(sys.argv) < 2:
-        print("用法: python3 bin/semantic_router.py <查询>")
+    # 帮助信息函数
+    def show_help():
+        print("Agent-Hub - Write JSON, not glue code")
+        print()
+        print("用法:")
+        print("  ah <查询>")
+        print("  nexus <查询>")
         print()
         print("示例:")
-        print('  python3 bin/semantic_router.py "搜索 X 关于 AI Agent"')
-        print('  python3 bin/semantic_router.py "抓取 https://example.com"')
-        print('  python3 bin/semantic_router.py "深度研究 OpenAI 架构"')
+        print('  ah "搜索 X 关于 AI Agent"')
+        print('  ah "抓取 https://example.com"')
+        print('  ah "深度研究 OpenAI 架构"')
         print()
         print("选项:")
-        print("  --top5     显示前 5 个匹配")
-        print("  --stats    显示路由器统计")
-        print("  --persona  仅显示人格匹配")
-        sys.exit(1)
+        print("  -h, --help    显示帮助信息")
+        print("  --top5        显示前 5 个匹配")
+        print("  --stats       显示路由器统计")
+        print("  --persona     仅显示人格匹配")
+        print()
+        print("更多信息: https://github.com/tong20242100/agent-hub")
+        sys.exit(0)
+    
+    # 处理帮助参数
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+        show_help()
     
     query = " ".join(sys.argv[1:])
     

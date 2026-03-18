@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MCP protocol support for Chrome DevTools
 
 ### Infrastructure
+- `pyproject.toml` for pip install support
+- Global CLI commands: `ah` and `nexus`
+- Optional ML dependencies: `pip install -e ".[ml]"`
 - MIT License
 - Bilingual README (English/Chinese)
 - Setup script (`setup.sh`)
