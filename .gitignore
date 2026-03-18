@@ -2,6 +2,8 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+*.backup
+*.bak
 
 # Runtime State
 .mission_state.json
