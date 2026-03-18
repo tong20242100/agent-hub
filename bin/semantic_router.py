@@ -16,7 +16,6 @@ Nexus Semantic Router - 轻量级语义路由器
     match = router.route("搜索 X 关于 AI Agent")
 """
 import json
-import numpy as np
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
@@ -24,11 +23,21 @@ from dataclasses import dataclass
 # 延迟导入，避免启动时加载模型
 _model = None
 _encoder = None
+_np = None
 
 WORKSPACE_ROOT = Path(__file__).parent.parent
 SKILLS_DIR = WORKSPACE_ROOT / "skills"
 CACHE_DIR = WORKSPACE_ROOT / "knowledge" / ".router_cache"
 MANIFEST_PATH = WORKSPACE_ROOT / "knowledge" / "tools_manifest.json"  # Level 1
+
+
+def _get_numpy():
+    """延迟加载 numpy"""
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
 
 
 def _get_encoder():
@@ -41,8 +50,9 @@ def _get_encoder():
     return _encoder
 
 
-def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+def _cosine_similarity(a, b) -> float:
     """计算余弦相似度"""
+    np = _get_numpy()
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
@@ -75,7 +85,7 @@ class SemanticRouter:
         """
         self.cache_enabled = cache_enabled
         self.tools: Dict[str, Dict] = {}
-        self.embeddings: Dict[str, np.ndarray] = {}
+        self.embeddings: Dict[str, Any] = {}  # numpy arrays, lazy loaded
         self.tool_texts: Dict[str, str] = {}
         self.personas: Dict[str, Dict] = {}  # 认知型人格
         
@@ -243,6 +253,7 @@ class SemanticRouter:
                     json.dump(cached, f)
         
         # 转换为 numpy 数组
+        np = _get_numpy()
         for tool_name, emb_list in cached.items():
             if tool_name in self.tools:
                 self.embeddings[tool_name] = np.array(emb_list)
