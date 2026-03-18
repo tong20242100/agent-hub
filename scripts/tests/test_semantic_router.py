@@ -20,21 +20,28 @@ def test_semantic_router_loads():
     print(f"✅ 加载成功: {len(router.tools)} 个工具 (延迟加载模式)")
 
 def test_rule_matching():
-    """测试规则匹配"""
+    """测试规则匹配
+    
+    注意：测试只验证已 git 跟踪的 skills（agency-bin-search, agency-bin-scrape）。
+    其他 skills（如 agency-bin-scrapling-stealth）可能被 gitignore，不应在此测试。
+    """
     from bin.semantic_router import SemanticRouter
     router = SemanticRouter()
     
-    # 测试隐身抓取
-    match = router.route("隐身抓取小红书页面")
-    assert match is not None, "应该匹配到 stealth_get"
-    assert match.tool_name == "stealth_get", f"期望 stealth_get，实际 {match.tool_name}"
-    print(f"✅ 隐身抓取匹配: {match.tool_name}")
+    # 验证至少有基础工具
+    assert "scrape_url" in router.tools, "scrape_url 工具应存在"
     
-    # 测试 GitHub
-    match = router.route("查看 GitHub 仓库 torvalds/linux")
-    assert match is not None, "应该匹配到 gh_view"
-    assert match.tool_name == "gh_view", f"期望 gh_view，实际 {match.tool_name}"
-    print(f"✅ GitHub 匹配: {match.tool_name}")
+    # 测试普通抓取（agency-bin-scrape 已被 git 跟踪）
+    match = router.route("抓取网页 https://example.com")
+    assert match is not None, "应该匹配到 scrape_url"
+    assert match.tool_name == "scrape_url", f"期望 scrape_url，实际 {match.tool_name}"
+    print(f"✅ 普通抓取匹配: {match.tool_name}")
+    
+    # 测试搜索（agency-bin-search 已被 git 跟踪）
+    match = router.route("搜索 AI Agent 相关内容")
+    assert match is not None, "应该匹配到 web_search"
+    assert match.tool_name == "web_search", f"期望 web_search，实际 {match.tool_name}"
+    print(f"✅ 搜索匹配: {match.tool_name}")
 
 def test_semantic_matching():
     """测试语义匹配"""
