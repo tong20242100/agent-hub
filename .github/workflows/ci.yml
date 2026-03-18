@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
     - uses: actions/checkout@v4
@@ -67,8 +67,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Verify tools manifest is up to date
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
       run: |
-        # Check if tools_manifest.json exists and is valid JSON
+        python -m pip install --upgrade pip
+        pip install jsonschema requests
+    - name: Generate and verify tools manifest
+      run: |
+        # Generate tools_manifest.json from SCHEMA.json files
+        python scripts/generate_tools_manifest.py
+        # Verify it's valid JSON
         python -c "import json; json.load(open('knowledge/tools_manifest.json'))"
-        echo "✅ Tools manifest is valid JSON"
+        echo "✅ Tools manifest generated and validated"
