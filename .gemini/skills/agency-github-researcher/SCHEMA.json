@@ -1,0 +1,26 @@
+{
+  "name": "agency-github-researcher",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "tools": {
+    "analyze_repo": {
+      "description": "对 GitHub 仓库进行 L1 级实证研究：分析 README、目录树、关键配置文件及核心代码逻辑。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "repo_url": {
+            "type": "string",
+            "description": "GitHub 仓库地址"
+          },
+          "depth": {
+            "type": "string",
+            "enum": ["summary", "deep"],
+            "default": "deep",
+            "description": "分析深度：summary (README + 结构), deep (核心代码逻辑 + 架构图)"
+          }
+        },
+        "required": ["repo_url"]
+      }
+    }
+  }
+}

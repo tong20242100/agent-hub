@@ -1,0 +1,24 @@
+{
+  "name": "agency-web-oracle",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "tools": {
+    "ask_web": {
+      "description": "与任何网页进行深度对话。输入 URL 和具体问题，获得基于 L1 事实的精准回答。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标网页 URL"
+          },
+          "query": {
+            "type": "string",
+            "description": "你想向这个网站提问的具体内容"
+          }
+        },
+        "required": ["url", "query"]
+      }
+    }
+  }
+}

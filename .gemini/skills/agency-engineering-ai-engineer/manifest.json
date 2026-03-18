@@ -1,0 +1,41 @@
+{
+  "name": "agency-engineering-ai-engineer",
+  "version": "2.0.0",
+  "description": "- **Repo-Map 优先**: 在对任何新项目动手前，禁止盲目读取深度文件。必须先调用 `list_directory` 和 `grep_search` 构建「仓库地图」（类、函数签名、核心接口）。",
+  "commands": [
+    {
+      "name": "runner",
+      "usage": "./bin/runner <script_path>",
+      "description": "Executable command for agency-engineering-ai-engineer."
+    },
+    {
+      "name": "list_directory",
+      "usage": "list_directory [arguments]",
+      "description": "Executable command for agency-engineering-ai-engineer."
+    },
+    {
+      "name": "search_file_content",
+      "usage": "search_file_content [arguments]",
+      "description": "Executable command for agency-engineering-ai-engineer."
+    },
+    {
+      "name": "replace",
+      "usage": "replace [arguments]",
+      "description": "Executable command for agency-engineering-ai-engineer."
+    }
+  ],
+  "tags": [
+    "代码",
+    "编程",
+    "AI",
+    "工程师",
+    "重构",
+    "Bug",
+    "修复",
+    "SWE"
+  ],
+  "capability": "生产级代码编写、Repo 地图构建、Edit-Verify 闭环、反思调试",
+  "author": "Nexus Team (AI Enhanced)",
+  "protocol": "nexus-cognitive-2.0",
+  "schema": "SCHEMA.json"
+}

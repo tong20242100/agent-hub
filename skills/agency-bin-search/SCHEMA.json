@@ -1,0 +1,54 @@
+{
+  "name": "agency-bin-search",
+  "version": "3.0.0",
+  "protocol": "nexus-2.0",
+  "description": "全网搜索工具 - Tavily API 驱动，支持人类可读和 JSON 输出",
+  "tools": {
+    "web_search": {
+      "description": "全网搜索。返回 AI 摘要和相关来源。",
+      "command": "bin/search {query} --max {max_results} {json_output?--json}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "搜索关键词"
+          },
+          "max_results": {
+            "type": "integer",
+            "default": 5,
+            "description": "结果数量"
+          },
+          "json_output": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否输出 JSON 格式"
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  },
+  "ai_hints": {
+    "triggers": ["搜索", "search", "查找", "查找", "检索", "query", "找"],
+    "intent": "全网搜索获取信息",
+    "conditions": {
+      "use_this": ["需要搜索网页信息", "需要查找资料", "需要检索内容"],
+      "use_alternative": {
+        "scrape_url": "已知具体 URL，需要抓取内容",
+        "memory_query": "搜索本地知识库"
+      }
+    },
+    "examples": [
+      {"query": "AI Agent 最新进展"},
+      {"query": "Python 异步编程最佳实践", "max_results": 10},
+      {"query": "Claude Code 使用教程", "json_output": true}
+    ]
+  },
+  "requires": {
+    "bins": ["python3"],
+    "env": ["TAVILY_API_KEY"]
+  },
+  "type": "bin-wrapper",
+  "bin_path": "bin/search"
+}

@@ -1,0 +1,120 @@
+# OS Specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Runtime State
+.mission_state.json
+ARMORY.json
+proxy_test_results.json
+QCLAW_OPEN_SIGNAL.txt
+runs/
+__pycache__/
+*.log
+*.pyc
+*.pyo
+
+# Sensitive
+.env
+.env.local
+.env.*.local
+.openclaw-vault/
+
+# Personal Data (user-specific)
+knowledge/user_profile.json
+knowledge/.chroma_db/
+knowledge/.sync_hash_cache.json
+knowledge/.update_cache.json
+knowledge/.router_cache/
+knowledge/watchlist_state.json
+
+# Generated indices (personal)
+knowledge/KNOWLEDGE_INDEX.json
+knowledge/KNOWLEDGE_MAP.md
+
+# Research outputs (may contain personal data)
+knowledge/research/*.md
+!knowledge/research/.gitkeep
+
+# Distribution outputs (personal)
+knowledge/distribution/*
+!knowledge/distribution/.gitkeep
+
+# Build/Dist
+dist/
+build/
+node_modules/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Third-party binaries (not part of this project)
+bin/lightpanda
+bin/xhs-login
+bin/xhs-mcp
+bin/nvidia
+bin/knowledge_sync
+bin/media-extract
+bin/notebook-ops
+bin/notify
+bin/runner
+bin/mcp-server
+bin/memory
+bin/scrape
+bin/scrapling-stealth
+bin/cross-verify
+bin/gh
+bin/viral-engine
+bin/nexus_http_server.py
+
+# Skills bin directories (third-party/personal scripts)
+skills/agency-bin-*/bin/
+
+# Third-party skills (not part of core architecture)
+skills/agency-bin-*/
+!skills/agency-bin-search/
+!skills/agency-bin-scrape/
+
+# External/Personal skills (not for open source)
+skills/agency-engineering-ai-engineer/
+skills/agency-github-researcher/
+skills/agency-magicqm-growth-hacker/
+skills/agency-social-xhs-manager/
+skills/agency-viral-writer/
+skills/agency-notebook-grounding/
+skills/agency-testing-reality-checker/
+
+# Proprietary cognitive skills (not for open source)
+skills/agency-deep-researcher/
+skills/agency-technical-cofounder/
+
+# Personal skill state files
+skills/.skills_store_lock.json
+skills/manifest.json
+
+*.tar.gz
+*.zip
+*.dmg
+bin/*.exe
+bin/*.dll
+bin/*.so
+bin/*.dylib
+knowledge/research/*.json
+config/model_router.json
+
+# Private agent state directories (contain personal skills/cache)
+.gemini/
+.antigravity/
+
+scripts/viral_engine/processor_v3.py
+scripts/diagnostic/
+
+# Generated manifests (personal environment snapshot)
+TOOLS_MANIFEST.md
+project_evaluation.md.resolved
+knowledge/tools_manifest.json

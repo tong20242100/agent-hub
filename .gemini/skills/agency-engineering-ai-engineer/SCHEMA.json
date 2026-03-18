@@ -1,0 +1,41 @@
+{
+  "name": "agency-engineering-ai-engineer",
+  "version": "2.0.0",
+  "protocol": "nexus-cognitive-2.0",
+  "type": "cognitive",
+  "interface": {
+    "inputs": {
+      "type": "object",
+      "properties": {
+        "task_objective": {
+          "type": "string",
+          "description": "必须明确的任务目标或研究命题"
+        },
+        "context_data": {
+          "type": "string",
+          "description": "可选的上下文信息、前置研报路径或原始代码"
+        }
+      },
+      "required": [
+        "task_objective"
+      ]
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "最终生成的物理产物路径（如 .md, .py 文件路径）"
+        },
+        "executive_summary": {
+          "type": "string",
+          "description": "针对此次认知任务的高度浓缩总结"
+        }
+      }
+    }
+  },
+  "guidance": "SKILL.md"
+}

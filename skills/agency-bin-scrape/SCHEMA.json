@@ -1,0 +1,54 @@
+{
+  "name": "agency-bin-scrape",
+  "version": "3.0.0",
+  "protocol": "nexus-2.0",
+  "description": "网页抓取工具 - 静态抓取 + 递归追踪外部链接",
+  "tools": {
+    "scrape_url": {
+      "description": "提取网页内容为 Markdown。支持 --recursive 递归追踪外部链接",
+      "command": "bin/scrape {url} {recursive?--recursive} --depth {depth}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          },
+          "recursive": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否递归追踪外部链接"
+          },
+          "depth": {
+            "type": "integer",
+            "default": 2,
+            "description": "递归深度"
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  },
+  "ai_hints": {
+    "triggers": ["抓取", "scrape", "爬取", "网页", "page", "提取", "fetch", "url"],
+    "intent": "快速抓取静态网页",
+    "conditions": {
+      "use_this": ["静态页面", "无反爬保护", "无 JS 渲染需求"],
+      "use_alternative": {
+        "stealth_get": "有 Cloudflare/小红书/知乎保护",
+        "fetch": "需要 JS 渲染（lightpanda）",
+        "click": "需要点击/填写等交互（chrome-devtools）"
+      }
+    },
+    "examples": [
+      {"url": "https://example.com"},
+      {"url": "https://blog.example.com/article", "recursive": true}
+    ]
+  },
+  "requires": {
+    "bins": ["python3"],
+    "env": []
+  },
+  "type": "bin-wrapper",
+  "bin_path": "bin/scrape"
+}

@@ -1,0 +1,2010 @@
+{
+  "mcp_version": "1.2",
+  "generated_at": "2026-03-17T20:02:19.267609",
+  "tools_count": 114,
+  "tools": [
+    {
+      "name": "bb_site",
+      "skill": "agency-bin-bb-browser",
+      "description": "执行站点命令。例如: bb_site(command='twitter/search', args=['AI agent'])",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "站点命令，格式: platform/action（如 twitter/search, zhihu/hot）"
+          },
+          "args": {
+            "type": "array",
+            "description": "命令参数"
+          }
+        },
+        "required": [
+          "command"
+        ]
+      }
+    },
+    {
+      "name": "bb_list",
+      "skill": "agency-bin-bb-browser",
+      "description": "列出所有可用的站点适配器",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "bb_update",
+      "skill": "agency-bin-bb-browser",
+      "description": "更新社区适配器",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "bb_recommend",
+      "skill": "agency-bin-bb-browser",
+      "description": "查看与浏览习惯匹配的适配器",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "bb_open",
+      "skill": "agency-bin-bb-browser",
+      "description": "打开 URL。例如: bb_open(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "bb_snapshot",
+      "skill": "agency-bin-bb-browser",
+      "description": "获取页面可访问性树快照",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "bb_click",
+      "skill": "agency-bin-bb-browser",
+      "description": "点击元素。例如: bb_click(ref='@3')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "元素引用（如 @3）"
+          }
+        },
+        "required": [
+          "ref"
+        ]
+      }
+    },
+    {
+      "name": "bb_fill",
+      "skill": "agency-bin-bb-browser",
+      "description": "填充输入框。例如: bb_fill(ref='@5', value='hello')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "元素引用"
+          },
+          "value": {
+            "type": "string",
+            "description": "填充的值"
+          }
+        },
+        "required": [
+          "ref",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "bb_eval",
+      "skill": "agency-bin-bb-browser",
+      "description": "执行 JavaScript。例如: bb_eval(script='document.title')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "JavaScript 代码"
+          }
+        },
+        "required": [
+          "script"
+        ]
+      }
+    },
+    {
+      "name": "bb_fetch",
+      "skill": "agency-bin-bb-browser",
+      "description": "带登录态的 fetch。例如: bb_fetch(url='https://api.example.com/data')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "请求 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "bb_screenshot",
+      "skill": "agency-bin-bb-browser",
+      "description": "截取页面截图",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "bb_network",
+      "skill": "agency-bin-bb-browser",
+      "description": "捕获网络请求",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "bb_daemon",
+      "skill": "agency-bin-bb-browser",
+      "description": "启动 daemon 服务",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "绑定主机（默认 localhost:19824）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "click",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "点击页面元素。例如: click(selector='button#submit')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "CSS 选择器"
+          },
+          "element": {
+            "type": "string",
+            "description": "元素描述（供 AI 识别）"
+          }
+        },
+        "required": [
+          "selector"
+        ]
+      }
+    },
+    {
+      "name": "fill",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "填充输入框。例如: fill(selector='input[name=\"q\"]', value='hello')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "CSS 选择器"
+          },
+          "value": {
+            "type": "string",
+            "description": "要填充的值"
+          }
+        },
+        "required": [
+          "selector",
+          "value"
+        ]
+      }
+    },
+    {
+      "name": "type_text",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "输入文本。例如: type_text(text='hello world')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "要输入的文本"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "navigate_page",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "导航到 URL。例如: navigate_page(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "list_pages",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "列出所有打开的页面/标签页",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "select_page",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "选择/切换到指定页面。例如: select_page(pageId='abc123')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "页面 ID"
+          }
+        },
+        "required": [
+          "pageId"
+        ]
+      }
+    },
+    {
+      "name": "new_page",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "打开新页面。例如: new_page(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "初始 URL（可选）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "close_page",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "关闭页面。例如: close_page(pageId='abc123')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string",
+            "description": "页面 ID（可选，默认关闭当前页面）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "take_screenshot",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "截图当前页面。例如: take_screenshot()",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "截图特定元素（可选）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "take_snapshot",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "获取页面可访问性快照（语义化结构）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "evaluate_script",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "在页面中执行 JavaScript。例如: evaluate_script(script='document.title')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "JavaScript 代码"
+          }
+        },
+        "required": [
+          "script"
+        ]
+      }
+    },
+    {
+      "name": "hover",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "悬停在元素上。例如: hover(selector='button#menu')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "CSS 选择器"
+          }
+        },
+        "required": [
+          "selector"
+        ]
+      }
+    },
+    {
+      "name": "press_key",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "按键。例如: press_key(key='Enter')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "按键名称（如 Enter, Tab, Escape）"
+          }
+        },
+        "required": [
+          "key"
+        ]
+      }
+    },
+    {
+      "name": "wait_for",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "等待条件。例如: wait_for(selector='.loaded')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "等待元素出现"
+          },
+          "text": {
+            "type": "string",
+            "description": "等待文本出现"
+          },
+          "timeout": {
+            "type": "number",
+            "description": "超时时间（毫秒）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "performance_start_trace",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "开始性能追踪",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "performance_stop_trace",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "停止性能追踪",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "performance_analyze_insight",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "分析性能洞察",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "list_network_requests",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "列出网络请求",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_network_request",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "获取网络请求详情。例如: get_network_request(requestId='123')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "请求 ID"
+          }
+        },
+        "required": [
+          "requestId"
+        ]
+      }
+    },
+    {
+      "name": "list_console_messages",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "列出控制台消息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_console_message",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "获取控制台消息详情",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "消息 ID"
+          }
+        },
+        "required": [
+          "messageId"
+        ]
+      }
+    },
+    {
+      "name": "lighthouse_audit",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "运行 Lighthouse 审计。例如: lighthouse_audit(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "审计 URL"
+          },
+          "categories": {
+            "type": "array",
+            "description": "审计类别（performance, accessibility, seo 等）"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "emulate",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "模拟设备。例如: emulate(device='iPhone 13')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "device": {
+            "type": "string",
+            "description": "设备名称"
+          }
+        },
+        "required": [
+          "device"
+        ]
+      }
+    },
+    {
+      "name": "resize_page",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "调整页面大小。例如: resize_page(width=1280, height=720)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "type": "number",
+            "description": "宽度（像素）"
+          },
+          "height": {
+            "type": "number",
+            "description": "高度（像素）"
+          }
+        },
+        "required": [
+          "width",
+          "height"
+        ]
+      }
+    },
+    {
+      "name": "fill_form",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "填充表单。例如: fill_form(fields=[{'selector': 'input[name]', 'value': 'John'}])",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fields": {
+            "type": "array",
+            "description": "表单字段数组"
+          }
+        },
+        "required": [
+          "fields"
+        ]
+      }
+    },
+    {
+      "name": "handle_dialog",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "处理对话框（alert/confirm/prompt）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "accept": {
+            "type": "boolean",
+            "description": "是否接受对话框"
+          },
+          "text": {
+            "type": "string",
+            "description": "输入文本（prompt 时）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "drag",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "拖拽元素。例如: drag(fromSelector='#item', toSelector='#target')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "fromSelector": {
+            "type": "string",
+            "description": "源元素选择器"
+          },
+          "toSelector": {
+            "type": "string",
+            "description": "目标元素选择器"
+          }
+        },
+        "required": [
+          "fromSelector",
+          "toSelector"
+        ]
+      }
+    },
+    {
+      "name": "upload_file",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "上传文件。例如: upload_file(selector='input[type=file]', filePath='/path/to/file')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "selector": {
+            "type": "string",
+            "description": "文件输入框选择器"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "文件路径"
+          }
+        },
+        "required": [
+          "selector",
+          "filePath"
+        ]
+      }
+    },
+    {
+      "name": "take_memory_snapshot",
+      "skill": "agency-bin-chrome-devtools",
+      "description": "获取内存快照",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "verify",
+      "skill": "agency-bin-cross-verify",
+      "description": "强制扫库验证单边结论，杜绝幻觉。例如: verify(claim='AI 将取代程序员')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "description": "待验证的断言或结论"
+          }
+        },
+        "required": [
+          "claim"
+        ]
+      }
+    },
+    {
+      "name": "defuddle_parse",
+      "skill": "agency-bin-defuddle",
+      "description": "解析网页内容。例如: defuddle_parse(url='https://example.com', format='markdown')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL 或本地 HTML 文件路径"
+          },
+          "format": {
+            "type": "string",
+            "description": "输出格式: html, markdown, json"
+          },
+          "property": {
+            "type": "string",
+            "description": "提取特定属性: title, author, description, domain, published"
+          },
+          "output": {
+            "type": "string",
+            "description": "输出文件路径"
+          },
+          "debug": {
+            "type": "boolean",
+            "description": "启用调试模式"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "defuddle_extract_title",
+      "skill": "agency-bin-defuddle",
+      "description": "提取网页标题。例如: defuddle_extract_title(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "defuddle_extract_author",
+      "skill": "agency-bin-defuddle",
+      "description": "提取文章作者。例如: defuddle_extract_author(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "defuddle_extract_metadata",
+      "skill": "agency-bin-defuddle",
+      "description": "提取完整元数据（JSON 格式）。例如: defuddle_extract_metadata(url='https://example.com')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "defuddle_to_markdown",
+      "skill": "agency-bin-defuddle",
+      "description": "将网页转换为 Markdown。例如: defuddle_to_markdown(url='https://example.com', output='article.md')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          },
+          "output": {
+            "type": "string",
+            "description": "输出文件路径（可选）"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "gh_view",
+      "skill": "agency-bin-gh",
+      "description": "查看 GitHub 仓库信息。例如: gh_view(repo='owner/repo')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "GitHub 仓库路径 (owner/repo)"
+          }
+        },
+        "required": [
+          "repo"
+        ]
+      }
+    },
+    {
+      "name": "fetch",
+      "skill": "agency-bin-lightpanda",
+      "description": "抓取网页内容。支持 html/markdown/semantic_tree 输出。例如: fetch(url='https://example.com', dump='markdown')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          },
+          "dump": {
+            "type": "string",
+            "description": "输出格式: html, markdown, semantic_tree, semantic_tree_text"
+          },
+          "strip_mode": {
+            "type": "string",
+            "description": "移除内容: js, css, ui, full (逗号分隔)"
+          },
+          "obey_robots": {
+            "type": "boolean",
+            "description": "遵守 robots.txt"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "serve",
+      "skill": "agency-bin-lightpanda",
+      "description": "启动 CDP 服务器。供 Puppeteer/Playwright 连接。例如: serve(host='127.0.0.1', port=9222)",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "监听地址"
+          },
+          "port": {
+            "type": "integer",
+            "description": "监听端口"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "mcp",
+      "skill": "agency-bin-lightpanda",
+      "description": "启动 MCP 服务器 (stdio 模式)。供 AI Agent 直接调用。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "mcp_list_tools",
+      "skill": "agency-bin-mcp-server",
+      "description": "列出所有可用的 MCP 工具。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "mcp_call_tool",
+      "skill": "agency-bin-mcp-server",
+      "description": "调用指定的 MCP 工具。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "description": "工具名称"
+          },
+          "args": {
+            "type": "object",
+            "description": "工具参数"
+          }
+        },
+        "required": [
+          "tool_name"
+        ]
+      }
+    },
+    {
+      "name": "extract",
+      "skill": "agency-bin-media-extract",
+      "description": "提取 YouTube/B站 等媒体的字幕与元数据。例如: extract(url='https://youtube.com/...')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "视频 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "memory_query",
+      "skill": "agency-bin-memory",
+      "description": "语义搜索知识库。输入自然语言查询，返回最相关的知识片段。支持跨工具共享，一次记住到处可用。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "自然语言查询，如 '浏览器自动化工具' 或 '上次研究的 MCP 结论'"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "memory_save",
+      "skill": "agency-bin-memory",
+      "description": "保存记忆/洞察到知识库。支持 insight/preference/decision/snippet 四种类型，可被所有工具查询。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "memory_type": {
+            "type": "string",
+            "description": "记忆类型: insight(洞察), preference(偏好), decision(决策), snippet(代码片段)"
+          },
+          "content": {
+            "type": "string",
+            "description": "记忆内容"
+          },
+          "tags": {
+            "type": "string",
+            "description": "标签，逗号分隔，如 'research,browser'"
+          },
+          "source": {
+            "type": "string",
+            "description": "来源工具名称，如 'vscode', 'iflow', 'antigravity'"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    {
+      "name": "memory_profile",
+      "skill": "agency-bin-memory",
+      "description": "获取或更新用户偏好配置。跨工具共享用户偏好设置，包括语言风格、常用工具、关注领域等。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "get=获取偏好, update=更新偏好"
+          },
+          "updates": {
+            "type": "string",
+            "description": "更新内容(JSON格式)，如 '{\"preferences\":{\"tone\":\"detailed\"}}'"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    },
+    {
+      "name": "memory_index",
+      "skill": "agency-bin-memory",
+      "description": "重建知识库向量索引。当知识库内容更新后调用，确保语义搜索能找到最新内容。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "notebook_auth",
+      "skill": "agency-bin-notebook-ops",
+      "description": "启动 Google 登录认证流程，保存 NotebookLM 登录状态。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "notebook_query",
+      "skill": "agency-bin-notebook-ops",
+      "description": "查询 NotebookLM 笔记本内容。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "notebook_url": {
+            "type": "string",
+            "description": "NotebookLM 笔记本 URL"
+          },
+          "question": {
+            "type": "string",
+            "description": "问题内容"
+          }
+        },
+        "required": [
+          "notebook_url",
+          "question"
+        ]
+      }
+    },
+    {
+      "name": "notebook_clean",
+      "skill": "agency-bin-notebook-ops",
+      "description": "清除 NotebookLM 认证状态，重新登录时使用。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "send",
+      "skill": "agency-bin-notify",
+      "description": "推送通知至飞书/Bark 等通讯端。例如: send(message='任务完成')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "通知消息正文"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    },
+    {
+      "name": "nvidia_scout",
+      "skill": "agency-bin-nvidia",
+      "description": "搜索可用模型。latest=最新模型，stable=推荐模型",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "latest=最新上传，stable=推荐稳定"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "nvidia_probe",
+      "skill": "agency-bin-nvidia",
+      "description": "探测模型能力。--scan 执行科学评测套件",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "description": "模型 ID，如 meta/llama-3.3-70b-instruct"
+          },
+          "scan": {
+            "type": "boolean",
+            "description": "是否执行完整能力扫描"
+          }
+        },
+        "required": [
+          "model_id"
+        ]
+      }
+    },
+    {
+      "name": "nvidia_advise",
+      "skill": "agency-bin-nvidia",
+      "description": "根据需求推荐模型。query: code/reasoning/fast/all",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "需求类型: code/reasoning/fast/all"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "nvidia_rank",
+      "skill": "agency-bin-nvidia",
+      "description": "科学评测模型（GSM8K/HumanEval/MMLU）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "description": "模型 ID"
+          }
+        },
+        "required": [
+          "model_id"
+        ]
+      }
+    },
+    {
+      "name": "opencli_list",
+      "skill": "agency-bin-opencli",
+      "description": "列出所有可用的 OpenCLI 命令（支持 -f json/yaml/table）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "opencli_bilibili_hot",
+      "skill": "agency-bin-opencli",
+      "description": "获取 B站热门视频列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_bilibili_search",
+      "skill": "agency-bin-opencli",
+      "description": "搜索 B站视频或用户",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
+        },
+        "required": [
+          "keyword"
+        ]
+      }
+    },
+    {
+      "name": "opencli_bilibili_subtitle",
+      "skill": "agency-bin-opencli",
+      "description": "获取 B站视频字幕",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "bvid": {
+            "type": "string",
+            "description": "视频 BV 号（如 BV1xxx）"
+          }
+        },
+        "required": [
+          "bvid"
+        ]
+      }
+    },
+    {
+      "name": "opencli_zhihu_hot",
+      "skill": "agency-bin-opencli",
+      "description": "获取知乎热榜",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_zhihu_search",
+      "skill": "agency-bin-opencli",
+      "description": "搜索知乎内容",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
+        },
+        "required": [
+          "keyword"
+        ]
+      }
+    },
+    {
+      "name": "opencli_xiaohongshu_search",
+      "skill": "agency-bin-opencli",
+      "description": "搜索小红书笔记",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
+        },
+        "required": [
+          "keyword"
+        ]
+      }
+    },
+    {
+      "name": "opencli_xiaohongshu_feed",
+      "skill": "agency-bin-opencli",
+      "description": "获取小红书推荐 Feed",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_xiaohongshu_user",
+      "skill": "agency-bin-opencli",
+      "description": "获取小红书用户笔记列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "用户 ID"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      }
+    },
+    {
+      "name": "opencli_xiaohongshu_notifications",
+      "skill": "agency-bin-opencli",
+      "description": "获取小红书通知（点赞/评论/关注）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_twitter_trending",
+      "skill": "agency-bin-opencli",
+      "description": "获取 Twitter/X 热门话题",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_twitter_search",
+      "skill": "agency-bin-opencli",
+      "description": "搜索 Twitter/X 推文",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
+        },
+        "required": [
+          "keyword"
+        ]
+      }
+    },
+    {
+      "name": "opencli_reddit_hot",
+      "skill": "agency-bin-opencli",
+      "description": "获取 Reddit 热门帖子",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          },
+          "subreddit": {
+            "type": "string",
+            "description": "子版块名称（可选）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_v2ex_hot",
+      "skill": "agency-bin-opencli",
+      "description": "获取 V2EX 热门话题（公开 API，无需浏览器）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_hackernews_top",
+      "skill": "agency-bin-opencli",
+      "description": "获取 Hacker News 热门故事（公开 API，无需浏览器）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_xueqiu_hot",
+      "skill": "agency-bin-opencli",
+      "description": "获取雪球热榜",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_xueqiu_stock",
+      "skill": "agency-bin-opencli",
+      "description": "获取雪球股票实时行情",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "description": "股票代码（如 SH600519）"
+          }
+        },
+        "required": [
+          "symbol"
+        ]
+      }
+    },
+    {
+      "name": "opencli_weibo_hot",
+      "skill": "agency-bin-opencli",
+      "description": "获取微博热搜榜",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "description": "返回数量限制（默认 20）"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "name": "opencli_explore",
+      "skill": "agency-bin-opencli",
+      "description": "AI Agent 工作流：深度探索网站，发现 API 和认证策略",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "要探索的网站 URL"
+          },
+          "site": {
+            "type": "string",
+            "description": "站点标识符（用于保存探索结果）"
+          }
+        },
+        "required": [
+          "url",
+          "site"
+        ]
+      }
+    },
+    {
+      "name": "opencli_synthesize",
+      "skill": "agency-bin-opencli",
+      "description": "AI Agent 工作流：从探索结果生成 YAML 适配器",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "site": {
+            "type": "string",
+            "description": "站点标识符（对应 explore 的 site）"
+          }
+        },
+        "required": [
+          "site"
+        ]
+      }
+    },
+    {
+      "name": "opencli_generate",
+      "skill": "agency-bin-opencli",
+      "description": "AI Agent 工作流：一键 explore → synthesize → register",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标网站 URL"
+          },
+          "goal": {
+            "type": "string",
+            "description": "目标功能描述（如 'hot', 'search'）"
+          }
+        },
+        "required": [
+          "url",
+          "goal"
+        ]
+      }
+    },
+    {
+      "name": "opencli_cascade",
+      "skill": "agency-bin-opencli",
+      "description": "AI Agent 工作流：自动探测认证策略（PUBLIC → COOKIE → HEADER）",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "要探测的 API URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "opencli_doctor",
+      "skill": "agency-bin-opencli",
+      "description": "诊断 Playwright MCP Bridge 配置状态",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "opencli_setup",
+      "skill": "agency-bin-opencli",
+      "description": "交互式配置 Playwright MCP Bridge Token",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "run_code",
+      "skill": "agency-bin-runner",
+      "description": "物理执行 Python 脚本并捕获日志。例如: run_code(file='test.py')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "要运行的脚本文件路径"
+          }
+        },
+        "required": [
+          "file"
+        ]
+      }
+    },
+    {
+      "name": "scrape_url",
+      "skill": "agency-bin-scrape",
+      "description": "提取网页内容为 Markdown。支持 --recursive 递归追踪外部链接",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          },
+          "recursive": {
+            "type": "boolean",
+            "description": "是否递归追踪外部链接"
+          },
+          "depth": {
+            "type": "integer",
+            "description": "递归深度"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "stealth_get",
+      "skill": "agency-bin-scrapling-stealth",
+      "description": "绕过 Cloudflare 盾牌提取网页。支持主动交互（点击、滚动等）。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          },
+          "click_target": {
+            "type": "string",
+            "description": "可选：指定要点击的按钮文本或 CSS 选择器 (如 'CC,字幕')"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "name": "search",
+      "skill": "agency-bin-search",
+      "description": "全网搜索。返回 AI 摘要和相关来源。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "搜索关键词"
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "结果数量"
+          },
+          "json_output": {
+            "type": "boolean",
+            "description": "是否输出 JSON 格式"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "update_check",
+      "skill": "agency-bin-update",
+      "description": "检测所有技能和工具的更新状态，返回需要更新的列表。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "update_check_json",
+      "skill": "agency-bin-update",
+      "description": "检测更新状态，JSON 格式输出（适合程序解析）。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "update_install",
+      "skill": "agency-bin-update",
+      "description": "交互式安装更新，显示可更新列表并等待用户选择。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "update_install_skill",
+      "skill": "agency-bin-update",
+      "description": "安装指定技能的更新。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "skill": {
+            "type": "string",
+            "description": "技能名称"
+          }
+        },
+        "required": [
+          "skill"
+        ]
+      }
+    },
+    {
+      "name": "update_install_all",
+      "skill": "agency-bin-update",
+      "description": "更新所有可更新的技能。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "update_deps",
+      "skill": "agency-bin-update",
+      "description": "只更新本地脚本的依赖（brew/pip/npm）。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "transform",
+      "skill": "agency-bin-viral-engine",
+      "description": "将长篇研报转化为 X 爆款多推文 Thread。例如: transform(report='report.md')",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "description": "输入研报的文件路径"
+          }
+        },
+        "required": [
+          "report"
+        ]
+      }
+    },
+    {
+      "name": "login",
+      "skill": "agency-bin-xiaohongshu-mcp",
+      "description": "【安全禁令：扫码唯一性】启动物理浏览器扫码登录。禁止使用账号密码自动填充。登录后必须确保此账号在其他浏览器页签中已退出，严禁多端网页登录。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "工具参数"
+          }
+        }
+      }
+    },
+    {
+      "name": "search",
+      "skill": "agency-bin-xiaohongshu-mcp",
+      "description": "【频率限制】搜索小红书笔记。单次操作后需随机停顿 5-10 秒，严禁高频并发。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "publish_image",
+      "skill": "agency-bin-xiaohongshu-mcp",
+      "description": "【安全发布铁律】1.日发布量严禁超过 50 篇；2.图片必须经过 MD5 微调（裁剪或滤镜）；3.文案禁止包含敏感引流词；4.发布动作必须模拟人类作息（凌晨不发帖）。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "标题限制 20 字以内"
+          },
+          "content": {
+            "type": "string",
+            "description": "正文限制 1000 字以内"
+          },
+          "image_path": {
+            "type": "string",
+            "description": "本地图片绝对路径。确保图片已通过其它工具微调 MD5。"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "image_path"
+        ]
+      }
+    },
+    {
+      "name": "x_search",
+      "skill": "agency-bin-xreach",
+      "description": "搜索 X/Twitter 推文",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "搜索关键词"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "结果数量"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    {
+      "name": "x_user",
+      "skill": "agency-bin-xreach",
+      "description": "获取用户信息",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名（不带 @）"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      }
+    },
+    {
+      "name": "x_tweet",
+      "skill": "agency-bin-xreach",
+      "description": "获取单条推文",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url_or_id": {
+            "type": "string",
+            "description": "推文 URL 或 ID"
+          }
+        },
+        "required": [
+          "url_or_id"
+        ]
+      }
+    },
+    {
+      "name": "x_thread",
+      "skill": "agency-bin-xreach",
+      "description": "获取完整线程/对话",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url_or_id": {
+            "type": "string",
+            "description": "推文 URL 或 ID"
+          }
+        },
+        "required": [
+          "url_or_id"
+        ]
+      }
+    },
+    {
+      "name": "x_tweets",
+      "skill": "agency-bin-xreach",
+      "description": "获取用户推文列表",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "推文数量"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      }
+    },
+    {
+      "name": "x_followers",
+      "skill": "agency-bin-xreach",
+      "description": "获取用户关注者",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "数量限制"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      }
+    },
+    {
+      "name": "x_following",
+      "skill": "agency-bin-xreach",
+      "description": "获取用户关注的人",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "数量限制"
+          }
+        },
+        "required": [
+          "handle"
+        ]
+      }
+    },
+    {
+      "name": "analyze_repo",
+      "skill": "agency-github-researcher",
+      "description": "对 GitHub 仓库进行 L1 级实证研究：分析 README、目录树、关键配置文件及核心代码逻辑。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repo_url": {
+            "type": "string",
+            "description": "GitHub 仓库地址"
+          },
+          "depth": {
+            "type": "string",
+            "description": "分析深度：summary (README + 结构), deep (核心代码逻辑 + 架构图)"
+          }
+        },
+        "required": [
+          "repo_url"
+        ]
+      }
+    },
+    {
+      "name": "ask_web",
+      "skill": "agency-web-oracle",
+      "description": "与任何网页进行深度对话。输入 URL 和具体问题，获得基于 L1 事实的精准回答。",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标网页 URL"
+          },
+          "query": {
+            "type": "string",
+            "description": "你想向这个网站提问的具体内容"
+          }
+        },
+        "required": [
+          "url",
+          "query"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_comment": "MCP Server configurations - add your custom MCP servers here",
+  "servers": {
+    "chrome-devtools": {
+      "command": ["npx", "chrome-devtools-mcp"],
+      "args": ["--browserUrl", "http://127.0.0.1:9222"],
+      "requires_chrome": true,
+      "description": "Chrome DevTools MCP server for browser automation"
+    }
+  },
+  "default_timeout": 60,
+  "chrome_debug_port": "http://127.0.0.1:9222"
+}

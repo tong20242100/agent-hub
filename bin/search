@@ -1,0 +1,309 @@
+#!/usr/bin/env python3
+"""
+Search - 全网搜索工具
+
+特性:
+- Tavily AI Search (支持多个 API key 轮询池)
+- DuckDuckGo (免费 fallback)
+- 支持环境变量和 vault 文件读取 keys
+
+用法:
+    search "AI Agent 最新进展"
+    search "Python 异步编程" --max 10
+    search "Claude Code 教程" --json
+
+配置 API Keys (按优先级):
+    1. 环境变量: TAVILY_API_KEYS="key1,key2,key3"
+    2. 环境变量: TAVILY_API_KEY="your-key"
+    3. Vault 文件: ~/.config/agent-hub/tavily_key (每行一个 key)
+    4. Legacy: ~/.openclaw-vault/tavily_key
+"""
+
+import os
+import sys
+import json
+import argparse
+import requests
+from typing import Optional, List, Dict, Any
+
+# ============ API Key 池配置 ============
+# 优先使用 XDG 标准路径，兼容 legacy 路径
+VAULT_PATHS = [
+    os.path.expanduser("~/.config/agent-hub/tavily_key"),  # XDG 标准
+    os.path.expanduser("~/.openclaw-vault/tavily_key"),    # Legacy 兼容
+]
+
+
+def get_tavily_keys() -> List[str]:
+    """读取 Tavily API keys（支持环境变量和 vault 文件）"""
+    keys = []
+    
+    # 方式1: 环境变量 TAVILY_API_KEYS (逗号分隔多个，优先级最高)
+    multi_keys = os.environ.get("TAVILY_API_KEYS", "")
+    if multi_keys:
+        keys.extend([k.strip() for k in multi_keys.split(",") if k.strip()])
+        if keys:
+            return keys
+    
+    # 方式2: 环境变量 TAVILY_API_KEY (单个)
+    single_key = os.environ.get("TAVILY_API_KEY", "")
+    if single_key:
+        keys.append(single_key)
+        return keys
+    
+    # 方式3: 环境变量 TAVILY_API_KEY_1, TAVILY_API_KEY_2, ...
+    for i in range(1, 10):
+        key = os.environ.get(f"TAVILY_API_KEY_{i}", "")
+        if key:
+            keys.append(key)
+    if keys:
+        return keys
+    
+    # 方式4: 从 vault 文件读取 (尝试多个路径)
+    for vault_path in VAULT_PATHS:
+        if os.path.exists(vault_path):
+            with open(vault_path) as f:
+                for line in f:
+                    key = line.strip()
+                    if key and not key.startswith("#"):
+                        keys.append(key)
+            if keys:
+                return keys
+    
+    # 方式4: 兼容单个 TAVILY_API_KEY
+    single_key = os.environ.get("TAVILY_API_KEY", "")
+    if single_key and single_key not in keys:
+        keys.append(single_key)
+    
+    return keys
+
+# 预加载 key 池
+_TAVILY_KEY_POOL = []
+_TAVILY_INDEX = 0
+
+
+def _init_key_pool():
+    """初始化 key 池"""
+    global _TAVILY_KEY_POOL
+    _TAVILY_KEY_POOL = get_tavily_keys()
+
+
+def get_next_tavily_key() -> Optional[str]:
+    """轮询获取下一个可用 key"""
+    global _TAVILY_INDEX
+    if not _TAVILY_KEY_POOL:
+        _init_key_pool()
+    if not _TAVILY_KEY_POOL:
+        return None
+    key = _TAVILY_KEY_POOL[_TAVILY_INDEX % len(_TAVILY_KEY_POOL)]
+    _TAVILY_INDEX += 1
+    return key
+
+
+def search_tavily(query: str, max_results: int = 5) -> Dict[str, Any]:
+    """使用 Tavily AI Search (带 key 池轮询)"""
+    keys = get_tavily_keys()
+    
+    if not keys:
+        return {"error": "No Tavily API keys configured", "fallback": "duckduckgo"}
+    
+    tried_keys = []
+    for _ in range(len(keys)):
+        api_key = get_next_tavily_key()
+        if not api_key:
+            break
+            
+        try:
+            from tavily import TavilyClient
+            client = TavilyClient(api_key=api_key)
+            result = client.search(
+                query=query,
+                max_results=max_results,
+                include_answer=True,
+                include_raw_content=False,
+                include_images=False
+            )
+            return {
+                "source": "tavily",
+                "answer": result.get("answer", ""),
+                "results": [
+                    {
+                        "title": r.get("title", ""),
+                        "url": r.get("url", ""),
+                        "content": r.get("content", "")[:300]
+                    }
+                    for r in result.get("results", [])[:max_results]
+                ]
+            }
+        except Exception as e:
+            error_msg = str(e).lower()
+            tried_keys.append(api_key[:12] + "...")
+            
+            if "rate limit" in error_msg or "429" in error_msg:
+                print(f"⚠️ Key {api_key[:12]}... rate limited, trying next...", file=sys.stderr)
+                continue
+            elif "invalid" in error_msg or "401" in error_msg:
+                print(f"⚠️ Key {api_key[:12]}... invalid, trying next...", file=sys.stderr)
+                continue
+            else:
+                return {"error": str(e), "fallback": "duckduckgo"}
+    
+    return {
+        "error": f"All {len(tried_keys)} keys failed",
+        "fallback": "duckduckgo"
+    }
+
+
+def search_duckduckgo(query: str, max_results: int = 10) -> Dict[str, Any]:
+    """使用 DuckDuckGo (免费 fallback)"""
+    try:
+        url = "https://api.duckduckgo.com/"
+        params = {
+            "q": query,
+            "format": "json",
+            "no_html": 1,
+            "skip_disambig": 1,
+            "count": max_results
+        }
+        response = requests.get(url, params=params, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+        
+        results = []
+        for item in data.get("RelatedTopics", [])[:max_results]:
+            if isinstance(item, dict):
+                text = item.get("Text", "")
+                first_url = item.get("FirstURL", "")
+                title = text.split(" - ")[0] if " - " in text else text[:100]
+                results.append({
+                    "title": title,
+                    "url": first_url,
+                    "content": text[:300]
+                })
+        
+        answer = data.get("Answer", "") or data.get("AbstractText", "")
+        
+        return {
+            "source": "duckduckgo",
+            "answer": answer,
+            "results": results
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def format_human(results: Dict[str, Any], max_results: int = 5) -> str:
+    """格式化为人类可读输出"""
+    output = []
+    
+    source = results.get("source", "unknown").upper()
+    output.append(f"🔍 搜索结果 (来源: {source})")
+    output.append("=" * 50)
+    
+    answer = results.get("answer", "").strip()
+    if answer:
+        output.append(f"\n💡 {answer}")
+        output.append("-" * 50)
+    
+    items = results.get("results", [])
+    if not items:
+        output.append("\n⚠️ 未找到结果")
+        return "\n".join(output)
+    
+    for i, item in enumerate(items[:max_results], 1):
+        title = item.get("title", "无标题")[:60]
+        url = item.get("url", "")
+        content = item.get("content", "")[:150]
+        
+        output.append(f"\n{i}. {title}")
+        if url:
+            output.append(f"   🔗 {url}")
+        if content:
+            output.append(f"   📝 {content}...")
+    
+    return "\n".join(output)
+
+
+def format_json(results: Dict[str, Any]) -> str:
+    """格式化为 JSON 输出"""
+    return json.dumps(results, ensure_ascii=False, indent=2)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Search - 全网搜索工具",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+配置 Tavily API Keys (按优先级):
+    # 方式1: 环境变量 (推荐)
+    export TAVILY_API_KEYS="key1,key2,key3"
+    export TAVILY_API_KEY="your-single-key"
+    
+    # 方式2: Vault 文件
+    mkdir -p ~/.config/agent-hub
+    echo "your-api-key" > ~/.config/agent-hub/tavily_key
+
+获取 API Key:
+    https://tavily.com
+
+示例:
+    search "AI Agent 最新进展"
+    search "Python 异步编程" --max 10
+    search "Claude Code 教程" --json
+        """
+    )
+    parser.add_argument("query", nargs="?", help="搜索关键词")
+    parser.add_argument("--max", "-n", type=int, default=5, help="最大结果数 (默认: 5)")
+    parser.add_argument("--json", "-j", action="store_true", help="JSON 格式输出")
+    parser.add_argument("--source", "-s", choices=["tavily", "duckduckgo", "auto"], 
+                        default="auto", help="指定搜索来源")
+    
+    args = parser.parse_args()
+    
+    if not args.query:
+        parser.print_help()
+        sys.exit(1)
+    
+    # 打印 key 池状态
+    keys = get_tavily_keys()
+    if keys:
+        print(f"🔑 Tavily Key 池: {len(keys)} keys loaded", file=sys.stderr)
+    else:
+        vault_paths_str = " or ".join(VAULT_PATHS)
+        print(f"⚠️ No Tavily keys found. Configure via:", file=sys.stderr)
+        print(f"   - Env: TAVILY_API_KEYS or TAVILY_API_KEY", file=sys.stderr)
+        print(f"   - File: {vault_paths_str}", file=sys.stderr)
+    
+    # 搜索
+    results = {}
+    
+    if args.source == "auto":
+        if keys:
+            results = search_tavily(args.query, args.max)
+            if "error" in results and results.get("fallback") == "duckduckgo":
+                print("⚠️ Tavily 失败，尝试 DuckDuckGo...", file=sys.stderr)
+                results = search_duckduckgo(args.query, args.max)
+        else:
+            print("ℹ️ 无 Tavily keys，使用 DuckDuckGo", file=sys.stderr)
+            results = search_duckduckgo(args.query, args.max)
+    elif args.source == "tavily":
+        results = search_tavily(args.query, args.max)
+        if "error" in results and results.get("fallback") == "duckduckgo":
+            print("⚠️ Tavily 失败，尝试 DuckDuckGo...", file=sys.stderr)
+            results = search_duckduckgo(args.query, args.max)
+    else:
+        results = search_duckduckgo(args.query, args.max)
+    
+    # 输出
+    if "error" in results and not results.get("results"):
+        print(f"❌ 搜索失败: {results['error']}", file=sys.stderr)
+        sys.exit(1)
+    
+    if args.json:
+        print(format_json(results))
+    else:
+        print(format_human(results, args.max))
+
+
+if __name__ == "__main__":
+    main()

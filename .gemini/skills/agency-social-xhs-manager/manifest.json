@@ -1,0 +1,24 @@
+{
+  "name": "agency-social-xhs-manager",
+  "version": "2.0.0",
+  "description": "- **隐秘探查**: 绕过 Web UI 限制，直接通过逆向 API 抓取笔记、评论树与用户主页。",
+  "commands": [
+    {
+      "name": "xhs",
+      "usage": "xhs [arguments]",
+      "description": "Executable command for agency-social-xhs-manager."
+    }
+  ],
+  "tags": [
+    "小红书",
+    "XHS",
+    "社交",
+    "口碑",
+    "营销",
+    "探查"
+  ],
+  "capability": "隐秘探查、口碑分析、内容发布、风控规避",
+  "author": "Nexus Team (AI Enhanced)",
+  "protocol": "nexus-cognitive-2.0",
+  "schema": "SCHEMA.json"
+}

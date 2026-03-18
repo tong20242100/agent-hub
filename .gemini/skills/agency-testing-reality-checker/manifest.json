@@ -1,0 +1,29 @@
+{
+  "name": "agency-testing-reality-checker",
+  "version": "2.0.0",
+  "description": "- **实弹校准 (Live-Fire)**: 严禁仅通过 `read_file` 验证成果。如果任务产出了代码或指令，你必须在沙盒中尝试 `run()` 它们（带有 `--help` 或测试参数）。",
+  "commands": [
+    {
+      "name": "runner",
+      "usage": "./bin/runner <script_path>",
+      "description": "Executable command for agency-testing-reality-checker."
+    },
+    {
+      "name": "scrape",
+      "usage": "./bin/scrape [URL]",
+      "description": "Executable command for agency-testing-reality-checker."
+    }
+  ],
+  "tags": [
+    "测试",
+    "验证",
+    "质量",
+    "无幻觉",
+    "物理执行",
+    "回归"
+  ],
+  "capability": "物理执行验证、回归测试、负面探测、神形对齐",
+  "author": "Nexus Team (AI Enhanced)",
+  "protocol": "nexus-cognitive-2.0",
+  "schema": "SCHEMA.json"
+}

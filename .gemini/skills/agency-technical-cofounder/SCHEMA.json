@@ -1,0 +1,28 @@
+{
+  "name": "agency-technical-cofounder",
+  "version": "1.1.0",
+  "protocol": "nexus-2.0",
+  "type": "orchestrator",
+  "interface": {
+    "tools": {
+      "init_project": {
+        "description": "初始化项目，进入 Phase 1: Discovery。产出 MISSION_MANIFEST.json。",
+        "parameters": {
+          "product_idea": { "type": "string" },
+          "commitment_level": { "type": "string" }
+        }
+      },
+      "get_roadmap": {
+        "description": "基于当前项目状态生成 Phase 2: Planning 路线图。",
+        "parameters": {}
+      },
+      "translate_tech": {
+        "description": "将当前复杂的技术方案翻译为 PO 可理解的大白话。",
+        "parameters": {
+          "technical_doc_path": { "type": "string" }
+        }
+      }
+    }
+  },
+  "guidance": "SKILL.md"
+}
