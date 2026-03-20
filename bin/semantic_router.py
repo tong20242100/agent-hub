@@ -76,24 +76,138 @@ class SemanticRouter:
     1. 为每个工具构建语义表示（description + tags + tool_name）
     2. 预计算所有工具的 embedding
     3. 查询时计算 query embedding，返回最匹配的工具
+    
+    三级渐进式加载（Codex 风格）：
+    - Level 1: tools_manifest.json（元数据，启动时加载）
+    - Level 2: SCHEMA.json（完整定义，按需加载）
+    - Level 3: guidance.md（详细指导，暂未实现）
     """
     
-    def __init__(self, cache_enabled: bool = True):
+    def __init__(self, cache_enabled: bool = True, lazy: bool = True):
         """
         Args:
             cache_enabled: 是否启用 embedding 缓存
+            lazy: True=Level 1 only (快启动), False=全量加载 (兼容模式)
         """
         self.cache_enabled = cache_enabled
-        self.tools: Dict[str, Dict] = {}
+        self.lazy = lazy
+        self.tools: Dict[str, Dict] = {}  # L1: 轻量元数据
+        self._schema_cache: Dict[str, Dict] = {}  # L2: 完整定义缓存
         self.embeddings: Dict[str, Any] = {}  # numpy arrays, lazy loaded
         self.tool_texts: Dict[str, str] = {}
         self.personas: Dict[str, Dict] = {}  # 认知型人格
         
-        # 加载工具、人格（轻量级，毫秒级）
-        self._load_tools()
+        if lazy:
+            # Level 1: 快速加载 manifest
+            self._load_manifest()
+        else:
+            # 兼容模式：全量加载
+            self._load_tools()
+        
         self._load_personas()
         # 延迟加载 embedding（重量级，只在语义匹配时加载）
         self._embeddings_loaded = False
+    
+    def _load_manifest(self):
+        """
+        Level 1: 从 tools_manifest.json 加载轻量元数据
+        
+        只包含路由所需的字段：name, skill, skill_dir, description, requires, ai_hints
+        不加载 parameters、command 等完整定义
+        """
+        if not MANIFEST_PATH.exists():
+            # Fallback to full load if manifest missing
+            self._load_tools()
+            return
+        
+        try:
+            with open(MANIFEST_PATH, 'r', encoding='utf-8') as f:
+                manifest = json.load(f)
+            
+            for tool_def in manifest.get("tools", []):
+                tool_name = tool_def.get("name")
+                if not tool_name:
+                    continue
+                
+                skill_dir = tool_def.get("skill_dir", "")
+                description = tool_def.get("description", "")
+                requires = tool_def.get("requires", {})
+                ai_hints = tool_def.get("ai_hints", {})
+                
+                # 构建语义文本（用于路由）
+                tool_keywords = tool_name.replace('_', ' ')
+                intent_hints = self._get_intent_hints(tool_name, description, ai_hints)
+                
+                semantic_text = f"{tool_keywords}: {description}"
+                if intent_hints:
+                    semantic_text += f" [intent: {intent_hints}]"
+                
+                self.tools[tool_name] = {
+                    "skill": tool_def.get("skill", ""),
+                    "skill_dir": skill_dir,
+                    "tool_description": description,
+                    "semantic_text": semantic_text,
+                    # L1 字段
+                    "ai_hints": ai_hints,
+                    "requires": requires,
+                    # L2 占位（按需加载）
+                    "_loaded": False,
+                    "parameters": {},
+                    "required": [],
+                    "command": "",
+                }
+                
+        except Exception as e:
+            print(f"⚠️  Error loading manifest: {e}, falling back to full load")
+            self._load_tools()
+    
+    def _load_schema_for_tool(self, tool_name: str) -> bool:
+        """
+        Level 2: 按需加载单个工具的完整 SCHEMA.json 定义
+        
+        Returns:
+            True if loaded successfully
+        """
+        if tool_name not in self.tools:
+            return False
+        
+        tool_info = self.tools[tool_name]
+        if tool_info.get("_loaded"):
+            return True
+        
+        skill_dir = tool_info.get("skill_dir", "")
+        schema_path = SKILLS_DIR / skill_dir / "SCHEMA.json"
+        
+        if not schema_path.exists():
+            return False
+        
+        try:
+            with open(schema_path, 'r', encoding='utf-8') as f:
+                schema = json.load(f)
+            
+            # 找到这个工具的定义
+            tool_def = schema.get("tools", {}).get(tool_name, {})
+            
+            # 更新工具信息 - 保留完整的 parameters 结构（包含 extraction）
+            params_def = tool_def.get("parameters", {})
+            tool_info["parameters"] = params_def.get("properties", {})
+            tool_info["parameters_full"] = params_def  # 保留完整定义，包含 extraction
+            tool_info["required"] = params_def.get("required", [])
+            tool_info["command"] = tool_def.get("command", "")
+            
+            # 工具级别的 ai_hints 覆盖 skill 级别
+            tool_ai_hints = tool_def.get("ai_hints", {})
+            if tool_ai_hints:
+                merged = tool_info.get("ai_hints", {}).copy()
+                merged.update(tool_ai_hints)
+                tool_info["ai_hints"] = merged
+            
+            tool_info["_loaded"] = True
+            return True
+            
+        except Exception as e:
+            print(f"⚠️  Error loading schema for {tool_name}: {e}")
+            return False
     
     def _get_intent_hints(self, tool_name: str, tool_desc: str, ai_hints: Dict = None) -> str:
         """为工具生成意图关键词，优先使用 ai_hints"""
@@ -127,20 +241,22 @@ class SemanticRouter:
     
     def _load_tools(self):
         """
-        从 SCHEMA.json 加载所有工具
+        Level 2: 从 SCHEMA.json 全量加载所有工具定义
         
-        三级渐进式加载（Codex 风格）：
-        - Level 1: tools_manifest.json（元数据，快速加载）
-        - Level 2: SCHEMA.json（完整定义，按需加载）
-        - Level 3: guidance.md（详细指导，按需加载）
+        用于兼容模式 (lazy=False) 或作为 manifest 加载失败时的 fallback
+        包含完整定义：parameters, command, ai_hints 等
         
-        当前实现：直接加载 SCHEMA.json（兼容模式）
-        TODO: 实现 Level 1 优先加载
+        注意：跳过 type=cognitive 的 skill，因为它们的 tools 只是委托说明(delegate_to)，
+        不是真正可执行的工具。Cognitive skill 的内容由 _load_personas 加载。
         """
         for schema_path in SKILLS_DIR.glob("*/SCHEMA.json"):
             try:
                 with open(schema_path, 'r', encoding='utf-8') as f:
                     schema = json.load(f)
+                
+                # 跳过 cognitive 类型（方法论框架，不是可执行工具）
+                if schema.get("type") == "cognitive":
+                    continue
                 
                 skill_name = schema.get("name", schema_path.parent.name)
                 skill_dir = schema_path.parent.name
@@ -152,6 +268,13 @@ class SemanticRouter:
                 skill_requires = schema.get("requires", {})
                 
                 for tool_name, tool_def in schema.get("tools", {}).items():
+                    # 处理同名工具冲突：保留有 command 的定义
+                    existing = self.tools.get(tool_name, {})
+                    new_cmd = tool_def.get("command", "")
+                    if existing.get("_loaded") and existing.get("command") and not new_cmd:
+                        # 已存在有 command 的定义，跳过空 command 的覆盖
+                        continue
+                    
                     # 构建工具的语义文本
                     tool_desc = tool_def.get("description", "")
                     tool_tags = tool_def.get("tags", [])
@@ -177,10 +300,12 @@ class SemanticRouter:
                         "required": tool_def.get("parameters", {}).get("required", []),
                         "command": tool_def.get("command", ""),
                         "semantic_text": semantic_text,
-                        # 新增：AI 指导（Codex 风格）
+                        # AI 指导（Codex 风格）
                         "ai_hints": skill_ai_hints,
-                        # 新增：依赖检查（门控）
-                        "requires": skill_requires
+                        # 依赖检查（门控）
+                        "requires": skill_requires,
+                        # L2 已加载
+                        "_loaded": True,
                     }
                     
             except Exception as e:
@@ -259,21 +384,39 @@ class SemanticRouter:
                 self.embeddings[tool_name] = np.array(emb_list)
     
     def _extract_args(self, query: str, tool_name: str, tool_def: Dict) -> Dict[str, Any]:
-        """从查询中提取参数"""
+        """
+        从查询中提取参数
+        
+        支持两种模式：
+        1. 声明式：使用 SCHEMA 中 parameters.extraction 定义的规则
+        2. 兜底：原有硬编码逻辑（向后兼容）
+        """
         import re
         
         args = {}
         params = tool_def.get("parameters", {})
         required = tool_def.get("required", [])
         
+        # 遍历参数定义，按声明式规则提取
+        for param_name, param_def in params.items():
+            extraction = param_def.get("extraction")
+            
+            if extraction:
+                # 声明式提取
+                extracted = self._extract_by_rule(query, param_name, extraction, args)
+                if extracted is not None:
+                    args[param_name] = extracted
+        
+        # === 兜底逻辑（向后兼容） ===
+        
         # URL 参数
-        if "url" in params:
+        if "url" in params and "url" not in args:
             url_match = re.search(r'https?://[^\s<>"{}|\\^`\[\]]+', query)
             if url_match:
                 args["url"] = url_match.group(0)
         
         # GitHub repo 参数
-        if "repo" in params:
+        if "repo" in params and "repo" not in args:
             repo_match = re.search(r'\b([a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+)\b', query)
             if repo_match:
                 repo = repo_match.group(1)
@@ -281,10 +424,14 @@ class SemanticRouter:
                     args["repo"] = repo
         
         # 查询参数
-        if "query" in params:
-            # 移除 URL 和 repo
-            clean_query = re.sub(r'https?://[^\s]+', '', query)
-            clean_query = re.sub(r'[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+', '', clean_query)
+        if "query" in params and "query" not in args:
+            # 移除已提取的 URL 和 repo
+            clean_query = query
+            if "url" in args:
+                clean_query = re.sub(re.escape(args["url"]), '', clean_query)
+            if "repo" in args:
+                clean_query = re.sub(re.escape(args["repo"]), '', clean_query)
+            
             # 过滤停用词
             stop_words = {'搜索', '查找', '关于', '的', '内容', '获取', '查看', '分析',
                          '上', '中', '里', '请', '帮我', '我要', '想要', '能不能', '可以',
@@ -318,26 +465,119 @@ class SemanticRouter:
         
         return args
     
-    # 人格规则：复杂任务匹配认知型人格
-    PERSONA_RULES = [
-        # 研究类
-        (r"(深度|详细|完整|深入).*(研究|分析|调研|调查)", "agency-deep-researcher"),
-        (r"(行业|市场|竞品).*(分析|研究|报告)", "agency-deep-researcher"),
-        # 工程类
-        (r"(重构|优化|实现|开发|编写).*(代码|模块|功能|系统)", "agency-engineering-ai-engineer"),
-        (r"(修复|解决).*(bug|问题|错误)", "agency-engineering-ai-engineer"),
-        # 测试类
-        (r"(测试|验证|检查|确保|确认).*(正确|可用|工作)", "agency-testing-reality-checker"),
-        (r"(审查|审核).*(代码|结果|产出)", "agency-testing-reality-checker"),
-        # 增长类
-        (r"(病毒|传播|爆款|增长|裂变)", "agency-viral-writer"),
-        (r"(内容|文案).*(优化|爆款|传播)", "agency-viral-writer"),
-        # GitHub 专项
-        (r"(GitHub|gh).*(深度|详细|完整).*(分析|研究)", "agency-github-researcher"),
-    ]
+    def _extract_by_rule(self, query: str, param_name: str, extraction: Dict, 
+                         already_extracted: Dict) -> Any:
+        """
+        按声明式规则提取参数
+        
+        Args:
+            query: 用户查询
+            param_name: 参数名
+            extraction: 提取规则
+            already_extracted: 已提取的参数（用于移除已提取实体）
+        
+        Returns:
+            提取的值或 None
+        """
+        import re
+        
+        ext_type = extraction.get("type")
+        
+        if ext_type == "clean_query":
+            # 清理型查询：移除指定模式，返回剩余内容
+            clean = query
+            
+            # 移除已提取的实体
+            for key, value in already_extracted.items():
+                if isinstance(value, str):
+                    clean = clean.replace(value, '')
+                elif isinstance(value, (int, float)):
+                    # 移除数字及其后面的单位词
+                    clean = re.sub(rf'{value}\s*(个|条|篇|结果|项)?', '', clean)
+            
+            # 移除指定模式
+            for pattern in extraction.get("remove_patterns", []):
+                clean = re.sub(pattern, '', clean)
+            
+            # 移除常见的修饰词
+            clean = re.sub(r'(json|JSON|json格式|格式输出)', '', clean)
+            clean = re.sub(r'\d+\s*(个|条|篇|结果|项)', '', clean)
+            
+            # 提取单词
+            words = re.findall(r'[\u4e00-\u9fa5]+|[a-zA-Z0-9]+', clean)
+            filtered = [w for w in words if len(w) >= extraction.get("min_length", 2)]
+            
+            return ' '.join(filtered) if filtered else None
+        
+        elif ext_type == "regex":
+            # 正则提取
+            pattern = extraction.get("pattern")
+            if pattern:
+                match = re.search(pattern, query)
+                if match:
+                    value = match.group(1) if match.lastindex else match.group(0)
+                    # 验证
+                    if extraction.get("validate") == "not_url" and value.startswith('http'):
+                        return None
+                    return value
+            return None
+        
+        elif ext_type == "number_keyword":
+            # 数字+关键词提取：如 "5个结果" → 5
+            keywords = extraction.get("keywords", [])
+            for kw in keywords:
+                # 支持多种格式："5个"、"5 条"、"10篇"
+                match = re.search(rf'(\d+)\s*{re.escape(kw)}', query)
+                if match:
+                    return int(match.group(1))
+            # 也支持纯数字后跟关键词的格式
+            for kw in keywords:
+                match = re.search(rf'(\d+)\s*{re.escape(kw)}', query)
+                if match:
+                    return int(match.group(1))
+            return None
+        
+        elif ext_type == "keyword_flag":
+            # 关键词标志：如果包含关键词则返回 True
+            keywords = extraction.get("keywords", [])
+            for kw in keywords:
+                if kw in query:
+                    return True
+            return None
+        
+        elif ext_type == "entity":
+            # 预定义实体提取
+            entity_type = extraction.get("entity_type")
+            if entity_type == "url":
+                match = re.search(r'https?://[^\s<>"{}|\\^`\[\]]+', query)
+                return match.group(0) if match else None
+            elif entity_type == "github_repo":
+                match = re.search(r'\b([a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+)\b', query)
+                if match:
+                    repo = match.group(1)
+                    if not repo.startswith('http'):
+                        return repo
+            return None
+        
+        return None
     
     # 规则层：高优先级的意图规则（按优先级排序，更具体的规则在前）
     INTENT_RULES = [
+        # === 深度研究（最高优先级）===
+        (r"(深度|全面|详细|深入).*(研究|调查|分析)", "deep_research"),
+        (r"研究.*(最佳实践|趋势|现状|架构)", "deep_research"),
+        (r"(research|investigate|analyze).*(topic|subject|question)", "deep_research"),
+        (r"(综合|全面).*(研究|分析|调查)", "deep_research"),
+        
+        # === GitHub（高优先级，因为 repo 格式明确）===
+        (r"[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+.*仓库", "gh_view"),  # owner/repo ...仓库
+        (r"(查看|查找|获取|分析).*[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+", "gh_view"),  # 动词+repo
+        (r"(深度|详细|完整|深入).*(github|仓库|repo).*(分析|研究)", "analyze_repo"),
+        (r"github.*(文件|源码|code|内容)", "gh_contents"),
+        (r"github.*(release|发布|版本)", "gh_releases"),
+        (r"(查看|获取|分析).*(github|仓库|repo)", "gh_view"),
+        (r"github.*(搜索|查找)", "gh_view"),
+        
         # === 网页抓取（按防护情况区分）===
         (r"(隐身|stealth|防爬|绕过|突破).*(抓取|爬取|读取|获取)", "stealth_get"),
         (r"(小红书|xhs).*(抓取|爬取|获取|内容)", "stealth_get"),
@@ -346,15 +586,9 @@ class SemanticRouter:
         (r"(普通|标准|一般|简单).*(抓取|爬取|获取)", "scrape_url"),
         (r"(抓取|爬取|获取).*(网页|页面|https?://)", "scrape_url"),
         
-        # === GitHub（深度分析 vs 快速查看）===
-        (r"(深度|详细|完整|深入).*(github|仓库|repo).*(分析|研究)", "analyze_repo"),
-        (r"github.*(文件|源码|code|内容)", "gh_contents"),
-        (r"github.*(release|发布|版本)", "gh_releases"),
-        (r"(查看|获取|分析).*(github|仓库|repo)", "gh_view"),
-        (r"github.*(搜索|查找)", "gh_view"),
-        
-        # === X/Twitter ===
-        (r"(搜索|查找|找).*(X|推特|twitter)", "x_search"),
+        # === X/Twitter（必须明确提到 X/推特/Twitter）===
+        (r"在.*(X|推特|twitter).*(搜索|查找|找)", "x_search"),
+        (r"(X|推特|twitter).*(搜索|查找|找|内容|推文)", "x_search"),
         (r"(查看|获取).*(X|推特|twitter).*(用户|主页)", "x_user"),
         (r"(发布|发送|推).*(X|推特|twitter)", "post_thread"),
         
@@ -365,8 +599,14 @@ class SemanticRouter:
         
         # === 搜索 ===
         (r"(搜索|查找|检索).*(网页|网络|全网|深度)", "web_search"),
-        (r"^(搜索|查找|检索)\s", "web_search"),  # 以搜索开头
+        (r"^搜索(关于|一下)?\s*", "web_search"),  # 以搜索开头，包括"搜索关于"
+        (r"^查找\s", "web_search"),  # 以查找开头
+        (r"^检索\s", "web_search"),  # 以检索开头
+        (r"^帮我找\s", "web_search"),  # 帮我找开头
         (r"(搜索|查询).*(知识库|历史|记忆)", "memory_query"),
+        
+        # === 小红书专用（必须在通用搜索之后）===
+        (r"(小红书|xhs).*(搜索|查找|找)", "search"),
         
         # === 记忆 ===
         (r"(保存|存储).*(记忆|知识|洞察)", "memory_save"),
@@ -381,22 +621,8 @@ class SemanticRouter:
                     return tool_name, 1.0  # 规则匹配给满分
         return None
     
-    def _match_persona(self, query: str) -> Optional[Tuple[str, str]]:
-        """
-        人格匹配：检测复杂任务，返回匹配的人格
-        
-        Returns:
-            (persona_name, persona_content) 或 None
-        """
-        import re
-        for pattern, persona_name in self.PERSONA_RULES:
-            if re.search(pattern, query, re.IGNORECASE):
-                if persona_name in self.personas:
-                    persona_info = self.personas[persona_name]
-                    return persona_name, persona_info.get("content", "")
-        return None
-    
-    def route(self, query: str, top_k: int = 1, threshold: float = 0.3) -> Optional[RouteMatch]:
+    def route(self, query: str, top_k: int = 1, threshold: float = 0.3, 
+              persona: str = None) -> Optional[RouteMatch]:
         """
         路由查询到最匹配的工具
         
@@ -404,28 +630,33 @@ class SemanticRouter:
             query: 用户查询
             top_k: 返回前 k 个匹配
             threshold: 最低相似度阈值
+            persona: 显式指定的 persona 名称（可选）
         
         Returns:
-            RouteMatch 或 None（包含可选的人格信息）
+            RouteMatch 或 None
         """
-        # 0. 人格匹配（优先检测复杂任务）
-        persona_name, persona_content = None, None
-        persona_result = self._match_persona(query)
-        if persona_result:
-            persona_name, persona_content = persona_result
-        
         # 1. 规则匹配（优先，无需加载 embedding）
         rule_result = self._rule_match(query)
         if rule_result:
             tool_name, score = rule_result
             tool_info = self.tools[tool_name]
+            
+            # Level 2: 按需加载完整 schema
+            if not tool_info.get("_loaded"):
+                self._load_schema_for_tool(tool_name)
+            
+            # 获取 persona 内容（如果显式指定）
+            persona_content = None
+            if persona and persona in self.personas:
+                persona_content = self.personas[persona].get("content")
+            
             return RouteMatch(
                 tool_name=tool_name,
                 skill_name=tool_info["skill"],
                 score=score,
                 tool_def=tool_info,
                 extracted_args=self._extract_args(query, tool_name, tool_info),
-                persona=persona_name,
+                persona=persona,
                 persona_content=persona_content
             )
         
@@ -456,13 +687,22 @@ class SemanticRouter:
         best_tool, best_score = scores[0]
         tool_info = self.tools[best_tool]
         
+        # Level 2: 按需加载完整 schema
+        if not tool_info.get("_loaded"):
+            self._load_schema_for_tool(best_tool)
+        
+        # 获取 persona 内容（如果显式指定）
+        persona_content = None
+        if persona and persona in self.personas:
+            persona_content = self.personas[persona].get("content")
+        
         return RouteMatch(
             tool_name=best_tool,
             skill_name=tool_info["skill"],
             score=best_score,
             tool_def=tool_info,
             extracted_args=self._extract_args(query, best_tool, tool_info),
-            persona=persona_name,
+            persona=persona,
             persona_content=persona_content
         )
     
@@ -494,6 +734,11 @@ class SemanticRouter:
             return None
         
         tool_info = self.tools[tool_name]
+        
+        # Level 2: 按需加载完整 schema
+        if not tool_info.get("_loaded"):
+            self._load_schema_for_tool(tool_name)
+        
         return RouteMatch(
             tool_name=tool_name,
             skill_name=tool_info["skill"],
@@ -513,8 +758,11 @@ class SemanticRouter:
     
     def stats(self) -> Dict[str, Any]:
         """返回路由器统计信息"""
+        loaded_count = sum(1 for t in self.tools.values() if t.get("_loaded"))
         return {
             "tools_count": len(self.tools),
+            "tools_loaded_l2": loaded_count,  # Level 2 已加载数量
+            "lazy_mode": self.lazy,
             "personas_count": len(self.personas),
             "embeddings_count": len(self.embeddings),
             "tools": list(self.tools.keys()),

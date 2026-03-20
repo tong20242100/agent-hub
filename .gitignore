@@ -29,6 +29,7 @@ knowledge/.sync_hash_cache.json
 knowledge/.update_cache.json
 knowledge/.router_cache/
 knowledge/watchlist_state.json
+knowledge/.research_checkpoints/
 
 # Generated indices (personal)
 knowledge/KNOWLEDGE_INDEX.json
@@ -120,3 +121,6 @@ scripts/diagnostic/
 TOOLS_MANIFEST.md
 project_evaluation.md.resolved
 knowledge/tools_manifest.json
+# Removed individual checkpoints
+The-Complete-Guide-to-Building-Skill-for-Claude.pdf
+NEXUS.md.v2

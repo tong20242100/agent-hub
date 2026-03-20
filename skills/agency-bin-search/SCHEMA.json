@@ -12,17 +12,30 @@
         "properties": {
           "query": {
             "type": "string",
-            "description": "搜索关键词"
+            "description": "搜索关键词",
+            "extraction": {
+              "type": "clean_query",
+              "remove_patterns": ["搜索", "查找", "检索", "关于", "的内容", "帮我"],
+              "min_length": 2
+            }
           },
           "max_results": {
             "type": "integer",
             "default": 5,
-            "description": "结果数量"
+            "description": "结果数量",
+            "extraction": {
+              "type": "number_keyword",
+              "keywords": ["个", "条", "篇", "结果"]
+            }
           },
           "json_output": {
             "type": "boolean",
             "default": false,
-            "description": "是否输出 JSON 格式"
+            "description": "是否输出 JSON 格式",
+            "extraction": {
+              "type": "keyword_flag",
+              "keywords": ["json", "JSON", "json格式"]
+            }
           }
         },
         "required": ["query"]

@@ -15,6 +15,10 @@ jsonschema>=4.0.0
 # MCP Server (for Claude Desktop / Cursor integration)
 mcp>=1.0.0
 
+# LangGraph - Agent Orchestration
+langgraph>=0.2.0
+langchain-core>=0.3.0
+
 # Optional: For Tavily search (bin/search)
 # tavily-python>=0.3.0
 
