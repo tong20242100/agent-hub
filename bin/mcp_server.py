@@ -43,7 +43,19 @@ except ImportError:
 
 # Paths
 WORKSPACE_ROOT = Path(__file__).parent.parent
-SKILLS_DIR = WORKSPACE_ROOT / "skills"
+SKILLS_DIRS = [
+    WORKSPACE_ROOT / "skills",
+    WORKSPACE_ROOT / "skills-cognitive",
+]
+
+
+def find_all_skill_dirs() -> list[Path]:
+    """返回所有技能目录（含 cognitive）"""
+    dirs = []
+    for d in SKILLS_DIRS:
+        if d.exists():
+            dirs.extend(sorted(d.iterdir()))
+    return [d for d in dirs if d.is_dir()]
 
 # Initialize MCP server
 server = Server("agent-hub")
@@ -51,13 +63,11 @@ server = Server("agent-hub")
 
 def load_all_schemas() -> Dict[str, Dict]:
     """
-    加载所有 skills 的 SCHEMA.json
-    
-    只排除 type="cognitive" 的技能（思维框架，不是可执行工具）
+    加载所有 skills 的 SCHEMA.json（含 skills-cognitive）
     """
     schemas = {}
-    
-    for skill_dir in SKILLS_DIR.iterdir():
+
+    for skill_dir in find_all_skill_dirs():
         if not skill_dir.is_dir():
             continue
         

@@ -69,6 +69,11 @@ AGENT_PATHS = {
 # 项目路径
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = PROJECT_ROOT / "skills"
+SKILLS_COGNITIVE_DIR = PROJECT_ROOT / "skills-cognitive"
+
+SKILL_DIRS = [SKILLS_DIR]
+if SKILLS_COGNITIVE_DIR.exists():
+    SKILL_DIRS.append(SKILLS_COGNITIVE_DIR)
 CACHE_PATH = PROJECT_ROOT / "knowledge" / ".update_cache.json"
 
 
@@ -542,16 +547,17 @@ def update(install: bool, json_output: bool):
     click.echo("🔍 检测更新中...\n")
 
     results: List[UpdateInfo] = []
-    for schema_file in SKILLS_DIR.glob("*/SCHEMA.json"):
-        try:
-            with open(schema_file) as f:
-                data = json.load(f)
-            name = data.get("name", schema_file.parent.name)
-            info = check_skill_update(name, data)
-            info.schema_path = str(schema_file)
-            results.append(info)
-        except Exception:
-            pass
+    for sd in SKILL_DIRS:
+        for schema_file in sd.glob("*/SCHEMA.json"):
+            try:
+                with open(schema_file) as f:
+                    data = json.load(f)
+                name = data.get("name", schema_file.parent.name)
+                info = check_skill_update(name, data)
+                info.schema_path = str(schema_file)
+                results.append(info)
+            except Exception:
+                pass
 
     # 缓存结果
     CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)

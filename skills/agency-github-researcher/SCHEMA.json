@@ -33,8 +33,14 @@
   "ai_hints": {
     "when_to_use": "当用户需要对 GitHub 仓库进行深度实证研究（L1 证据、架构分析、技术栈识别）时",
     "examples": [
-      {"repo_url": "owner/repo", "depth": "summary"},
-      {"repo_url": "owner/repo", "depth": "deep"}
+      {
+        "repo_url": "owner/repo",
+        "depth": "summary"
+      },
+      {
+        "repo_url": "owner/repo",
+        "depth": "deep"
+      }
     ],
     "avoid": "快速查看仓库信息用 agent-reach/gh_view；下载源码用 agency-bin-gh"
   },
@@ -43,5 +49,14 @@
       "gh"
     ],
     "env": []
-  }
+  },
+  "dependencies": [
+    {
+      "name": "gh",
+      "type": "brew",
+      "description": "GitHub CLI",
+      "check_command": "gh --version",
+      "update_cmd": "brew upgrade gh"
+    }
+  ]
 }

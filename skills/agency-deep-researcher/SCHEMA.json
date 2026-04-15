@@ -60,7 +60,9 @@
             "default": 3
           }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       },
       "ai_hints": {
         "before_call": "⚠️ 调用前必须：1) 跟用户确认需求（见 workflow.clarify）；2) 将确认结果整合到 query 参数中",
@@ -75,9 +77,14 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "query": {"type": "string", "description": "搜索关键词"}
+          "query": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       }
     },
     "web_fetch": {
@@ -86,9 +93,14 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "url": {"type": "string", "description": "目标 URL"}
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          }
         },
-        "required": ["url"]
+        "required": [
+          "url"
+        ]
       }
     },
     "github_search": {
@@ -97,9 +109,14 @@
       "parameters": {
         "type": "object",
         "properties": {
-          "query": {"type": "string", "description": "搜索关键词"}
+          "query": {
+            "type": "string",
+            "description": "搜索关键词"
+          }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       }
     }
   },
@@ -107,5 +124,14 @@
     "agency-bin-search",
     "agency-bin-scrape",
     "agency-bin-cross-verify"
+  ],
+  "dependencies": [
+    {
+      "name": "tavily-python",
+      "type": "pip",
+      "description": "Tavily Search API client",
+      "check_command": "pip show tavily-python",
+      "update_cmd": "pip install --upgrade tavily-python"
+    }
   ]
 }

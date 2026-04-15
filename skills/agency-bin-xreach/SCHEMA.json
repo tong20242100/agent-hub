@@ -15,7 +15,14 @@
             "description": "搜索关键词",
             "extraction": {
               "type": "clean_query",
-              "remove_patterns": ["X", "推特", "twitter", "上搜索", "在", "搜索"],
+              "remove_patterns": [
+                "X",
+                "推特",
+                "twitter",
+                "上搜索",
+                "在",
+                "搜索"
+              ],
               "min_length": 2
             }
           },
@@ -25,11 +32,18 @@
             "description": "结果数量",
             "extraction": {
               "type": "number_keyword",
-              "keywords": ["条", "个", "篇", "结果"]
+              "keywords": [
+                "条",
+                "个",
+                "篇",
+                "结果"
+              ]
             }
           }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       }
     },
     "x_user": {
@@ -43,7 +57,9 @@
             "description": "用户名（不带 @）"
           }
         },
-        "required": ["handle"]
+        "required": [
+          "handle"
+        ]
       }
     },
     "x_tweet": {
@@ -57,7 +73,9 @@
             "description": "推文 URL 或 ID"
           }
         },
-        "required": ["url_or_id"]
+        "required": [
+          "url_or_id"
+        ]
       }
     },
     "x_thread": {
@@ -71,7 +89,9 @@
             "description": "推文 URL 或 ID"
           }
         },
-        "required": ["url_or_id"]
+        "required": [
+          "url_or_id"
+        ]
       }
     },
     "x_tweets": {
@@ -90,7 +110,9 @@
             "description": "推文数量"
           }
         },
-        "required": ["handle"]
+        "required": [
+          "handle"
+        ]
       }
     },
     "x_followers": {
@@ -109,7 +131,9 @@
             "description": "数量限制"
           }
         },
-        "required": ["handle"]
+        "required": [
+          "handle"
+        ]
       }
     },
     "x_following": {
@@ -128,12 +152,24 @@
             "description": "数量限制"
           }
         },
-        "required": ["handle"]
+        "required": [
+          "handle"
+        ]
       }
     }
   },
   "ai_hints": {
-    "triggers": ["X", "推特", "twitter", "推文", "tweet", "关注", "follower", "线程", "thread"],
+    "triggers": [
+      "X",
+      "推特",
+      "twitter",
+      "推文",
+      "tweet",
+      "关注",
+      "follower",
+      "线程",
+      "thread"
+    ],
     "intent": "X/Twitter 数据采集",
     "conditions": {
       "use_this": [
@@ -147,15 +183,32 @@
       }
     },
     "examples": [
-      {"query": "AI Agent"},
-      {"handle": "elonmusk"},
-      {"url_or_id": "https://x.com/user/status/123456"}
+      {
+        "query": "AI Agent"
+      },
+      {
+        "handle": "elonmusk"
+      },
+      {
+        "url_or_id": "https://x.com/user/status/123456"
+      }
     ]
   },
   "requires": {
-    "bins": ["xreach"],
+    "bins": [
+      "xreach"
+    ],
     "env": []
   },
   "type": "bin-wrapper",
-  "bin_path": "xreach"
+  "bin_path": "xreach",
+  "dependencies": [
+    {
+      "name": "requests",
+      "type": "pip",
+      "description": "HTTP library for X API",
+      "check_command": "pip show requests",
+      "update_cmd": "pip install --upgrade requests"
+    }
+  ]
 }

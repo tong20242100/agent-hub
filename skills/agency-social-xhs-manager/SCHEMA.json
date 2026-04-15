@@ -1,8 +1,0 @@
-{
-  "name": "agency-social-xhs-manager",
-  "version": "2.0.0",
-  "protocol": "nexus-cognitive-2.0",
-  "description": "- **隐秘探查**: 绕过 Web UI 限制，直接通过逆向 API 抓取笔记、评论树与用户主页。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md"
-}

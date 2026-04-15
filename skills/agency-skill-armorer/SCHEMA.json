@@ -1,8 +1,0 @@
-{
-  "name": "agency-skill-armorer",
-  "version": "2.0.0",
-  "protocol": "nexus-cognitive-2.0",
-  "description": "作为 Nexus 仓库的「军火商」，负责搜索、验证、获取并集成全网最强力的 Agent Skills。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md"
-}

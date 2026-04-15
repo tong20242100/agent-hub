@@ -24,7 +24,12 @@
             "description": "搜索关键词",
             "extraction": {
               "type": "clean_query",
-              "remove_patterns": ["小红书", "搜索", "查找", "笔记"],
+              "remove_patterns": [
+                "小红书",
+                "搜索",
+                "查找",
+                "笔记"
+              ],
               "min_length": 2
             }
           }
@@ -90,5 +95,14 @@
       "python3"
     ],
     "env": []
-  }
+  },
+  "dependencies": [
+    {
+      "name": "requests",
+      "type": "pip",
+      "description": "HTTP library",
+      "check_command": "pip show requests",
+      "update_cmd": "pip install --upgrade requests"
+    }
+  ]
 }

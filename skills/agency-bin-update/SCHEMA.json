@@ -74,5 +74,14 @@
   "requires": {
     "bins": [],
     "env": []
-  }
+  },
+  "dependencies": [
+    {
+      "name": "requests",
+      "type": "pip",
+      "description": "HTTP library",
+      "check_command": "pip show requests",
+      "update_cmd": "pip install --upgrade requests"
+    }
+  ]
 }

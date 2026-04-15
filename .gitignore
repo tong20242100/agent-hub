@@ -51,6 +51,9 @@ agent_hub.egg-info/
 # Local config (sensitive, personal)
 config/
 
+# Cognitive skills (private, not open source)
+skills-cognitive/
+
 # Personal skill state files
 skills/.skills_store_lock.json
 skills/manifest.json

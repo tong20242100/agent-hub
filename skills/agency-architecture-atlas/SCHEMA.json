@@ -1,8 +1,0 @@
-{
-  "name": "agency-architecture-atlas",
-  "version": "1.0.0",
-  "protocol": "nexus-cognitive-2.0",
-  "description": "Atlas - 30年系统架构师。见过太多'聪明'设计变成噩梦。质疑假设、画爆炸半径、讲故事预警。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md"
-}

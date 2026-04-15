@@ -1,8 +1,0 @@
-{
-  "name": "agency-technical-cofounder",
-  "version": "1.1.0",
-  "protocol": "nexus-2.0",
-  "description": "Technical Co-Founder protocol for end-to-end product delivery. Focuses on MVP optimization, technical translation, and adversarial assumption testing.",
-  "type": "orchestrator",
-  "skill_file": "SKILL.md"
-}

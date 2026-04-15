@@ -12,7 +12,10 @@
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["latest", "stable"],
+            "enum": [
+              "latest",
+              "stable"
+            ],
             "default": "stable",
             "description": "latest=最新上传，stable=推荐稳定"
           }
@@ -36,7 +39,9 @@
             "description": "是否执行完整能力扫描"
           }
         },
-        "required": ["model_id"]
+        "required": [
+          "model_id"
+        ]
       }
     },
     "nvidia_advise": {
@@ -65,12 +70,23 @@
             "description": "模型 ID"
           }
         },
-        "required": ["model_id"]
+        "required": [
+          "model_id"
+        ]
       }
     }
   },
   "ai_hints": {
-    "triggers": ["nvidia", "gpu", "模型", "model", "Llama", "DeepSeek", "推理", "inference"],
+    "triggers": [
+      "nvidia",
+      "gpu",
+      "模型",
+      "model",
+      "Llama",
+      "DeepSeek",
+      "推理",
+      "inference"
+    ],
     "intent": "NVIDIA 模型搜索与评测",
     "conditions": {
       "use_this": [
@@ -81,15 +97,36 @@
       "use_alternative": {}
     },
     "examples": [
-      {"type": "stable"},
-      {"model_id": "meta/llama-3.3-70b-instruct", "scan": true},
-      {"query": "code"}
+      {
+        "type": "stable"
+      },
+      {
+        "model_id": "meta/llama-3.3-70b-instruct",
+        "scan": true
+      },
+      {
+        "query": "code"
+      }
     ]
   },
   "requires": {
-    "bins": ["python3", "curl"],
-    "env": ["NVIDIA_API_KEY"]
+    "bins": [
+      "python3",
+      "curl"
+    ],
+    "env": [
+      "NVIDIA_API_KEY"
+    ]
   },
   "type": "bin-wrapper",
-  "bin_path": "bin/nvidia"
+  "bin_path": "bin/nvidia",
+  "dependencies": [
+    {
+      "name": "requests",
+      "type": "pip",
+      "description": "HTTP library for NVIDIA API",
+      "check_command": "pip show requests",
+      "update_cmd": "pip install --upgrade requests"
+    }
+  ]
 }

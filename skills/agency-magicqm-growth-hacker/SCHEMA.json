@@ -1,8 +1,0 @@
-{
-  "name": "agency-magicqm-growth-hacker",
-  "version": "2.0.0",
-  "protocol": "nexus-cognitive-2.0",
-  "description": "- **借势不留白 (Piggyback with Brand)**: 在蹭温馨热帖流量时，禁止只发同理心评论。必须在回复链的第 3 条或第 5 条植入「身份锚点」。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md"
-}

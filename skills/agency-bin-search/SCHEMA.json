@@ -15,7 +15,14 @@
             "description": "搜索关键词",
             "extraction": {
               "type": "clean_query",
-              "remove_patterns": ["搜索", "查找", "检索", "关于", "的内容", "帮我"],
+              "remove_patterns": [
+                "搜索",
+                "查找",
+                "检索",
+                "关于",
+                "的内容",
+                "帮我"
+              ],
               "min_length": 2
             }
           },
@@ -25,7 +32,12 @@
             "description": "结果数量",
             "extraction": {
               "type": "number_keyword",
-              "keywords": ["个", "条", "篇", "结果"]
+              "keywords": [
+                "个",
+                "条",
+                "篇",
+                "结果"
+              ]
             }
           },
           "json_output": {
@@ -34,34 +46,73 @@
             "description": "是否输出 JSON 格式",
             "extraction": {
               "type": "keyword_flag",
-              "keywords": ["json", "JSON", "json格式"]
+              "keywords": [
+                "json",
+                "JSON",
+                "json格式"
+              ]
             }
           }
         },
-        "required": ["query"]
+        "required": [
+          "query"
+        ]
       }
     }
   },
   "ai_hints": {
-    "triggers": ["搜索", "search", "查找", "查找", "检索", "query", "找"],
+    "triggers": [
+      "搜索",
+      "search",
+      "查找",
+      "查找",
+      "检索",
+      "query",
+      "找"
+    ],
     "intent": "全网搜索获取信息",
     "conditions": {
-      "use_this": ["需要搜索网页信息", "需要查找资料", "需要检索内容"],
+      "use_this": [
+        "需要搜索网页信息",
+        "需要查找资料",
+        "需要检索内容"
+      ],
       "use_alternative": {
         "scrape_url": "已知具体 URL，需要抓取内容",
         "memory_query": "搜索本地知识库"
       }
     },
     "examples": [
-      {"query": "AI Agent 最新进展"},
-      {"query": "Python 异步编程最佳实践", "max_results": 10},
-      {"query": "Claude Code 使用教程", "json_output": true}
+      {
+        "query": "AI Agent 最新进展"
+      },
+      {
+        "query": "Python 异步编程最佳实践",
+        "max_results": 10
+      },
+      {
+        "query": "Claude Code 使用教程",
+        "json_output": true
+      }
     ]
   },
   "requires": {
-    "bins": ["python3"],
-    "env": ["TAVILY_API_KEY"]
+    "bins": [
+      "python3"
+    ],
+    "env": [
+      "TAVILY_API_KEY"
+    ]
   },
   "type": "bin-wrapper",
-  "bin_path": "bin/search"
+  "bin_path": "bin/search",
+  "dependencies": [
+    {
+      "name": "tavily-python",
+      "type": "pip",
+      "description": "Tavily Search API client",
+      "check_command": "pip show tavily-python",
+      "update_cmd": "pip install --upgrade tavily-python"
+    }
+  ]
 }

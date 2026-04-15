@@ -58,12 +58,16 @@
     }
   },
   "requires": {
-    "bins": [],
+    "bins": ["xreach"],
     "env": []
   },
-  "dependencies": {
-    "note": "复用 xreach 的认证信息 (~/.xreach/session.json)",
-    "setup": "首次使用需运行: xreach auth extract --browser chrome"
-  },
+  "dependencies": [
+    {
+      "name": "xreach",
+      "type": "custom",
+      "description": "X/Twitter 认证复用",
+      "check_command": "test -f ~/.xreach/session.json"
+    }
+  ],
   "type": "python-script"
 }

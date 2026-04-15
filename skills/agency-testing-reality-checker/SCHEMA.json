@@ -1,8 +1,0 @@
-{
-  "name": "agency-testing-reality-checker",
-  "version": "2.0.0",
-  "protocol": "nexus-cognitive-2.0",
-  "description": "- **实弹校准 (Live-Fire)**: 严禁仅通过 `read_file` 验证成果。如果任务产出了代码或指令，你必须在沙盒中尝试 `run()` 它们（带有 `--help` 或测试参数）。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md"
-}

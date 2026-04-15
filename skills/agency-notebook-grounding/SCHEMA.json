@@ -1,8 +1,0 @@
-{
-  "name": "agency-notebook-grounding",
-  "version": "2.0.0",
-  "protocol": "nexus-cognitive-2.0",
-  "description": "作为 Agentic OS 的「事实核查员」与「长时记忆外挂」，负责利用 Google NotebookLM 的 Gemini 2.5 能力，对海量非结构化数据进行无幻觉的深度研判与溯源。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md"
-}

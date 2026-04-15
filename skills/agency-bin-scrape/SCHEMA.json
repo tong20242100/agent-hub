@@ -25,15 +25,30 @@
             "description": "递归深度"
           }
         },
-        "required": ["url"]
+        "required": [
+          "url"
+        ]
       }
     }
   },
   "ai_hints": {
-    "triggers": ["抓取", "scrape", "爬取", "网页", "page", "提取", "fetch", "url"],
+    "triggers": [
+      "抓取",
+      "scrape",
+      "爬取",
+      "网页",
+      "page",
+      "提取",
+      "fetch",
+      "url"
+    ],
     "intent": "快速抓取静态网页",
     "conditions": {
-      "use_this": ["静态页面", "无反爬保护", "无 JS 渲染需求"],
+      "use_this": [
+        "静态页面",
+        "无反爬保护",
+        "无 JS 渲染需求"
+      ],
       "use_alternative": {
         "stealth_get": "有 Cloudflare/小红书/知乎保护",
         "fetch": "需要 JS 渲染（lightpanda）",
@@ -41,14 +56,37 @@
       }
     },
     "examples": [
-      {"url": "https://example.com"},
-      {"url": "https://blog.example.com/article", "recursive": true}
+      {
+        "url": "https://example.com"
+      },
+      {
+        "url": "https://blog.example.com/article",
+        "recursive": true
+      }
     ]
   },
   "requires": {
-    "bins": ["python3"],
+    "bins": [
+      "python3"
+    ],
     "env": []
   },
   "type": "bin-wrapper",
-  "bin_path": "bin/scrape"
+  "bin_path": "bin/scrape",
+  "dependencies": [
+    {
+      "name": "requests",
+      "type": "pip",
+      "description": "HTTP library",
+      "check_command": "pip show requests",
+      "update_cmd": "pip install --upgrade requests"
+    },
+    {
+      "name": "beautifulsoup4",
+      "type": "pip",
+      "description": "HTML parser",
+      "check_command": "pip show beautifulsoup4",
+      "update_cmd": "pip install --upgrade beautifulsoup4"
+    }
+  ]
 }

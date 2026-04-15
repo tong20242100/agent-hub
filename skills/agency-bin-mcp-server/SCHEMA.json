@@ -46,7 +46,15 @@
   "source": {
     "type": "local_script"
   },
-  "dependencies": [],
+  "dependencies": [
+    {
+      "name": "mcp",
+      "type": "pip",
+      "description": "MCP protocol library",
+      "check_command": "pip show mcp",
+      "update_cmd": "pip install --upgrade mcp"
+    }
+  ],
   "type": "bin-wrapper",
   "bin_path": "bin/mcp-server",
   "requires": {

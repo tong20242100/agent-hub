@@ -21,9 +21,15 @@
       "ai_hints": {
         "when_to_use": "需要全面扫描本地所有Agent技能目录，包括嵌套目录和符号链接",
         "examples": [
-          {"args": ""},
-          {"args": "--follow-links"},
-          {"args": "--max-depth 5"}
+          {
+            "args": ""
+          },
+          {
+            "args": "--follow-links"
+          },
+          {
+            "args": "--max-depth 5"
+          }
         ],
         "avoid": "只需要快速查看顶层技能时使用 scan 命令"
       }
@@ -32,6 +38,15 @@
   "dependencies": [],
   "ai_hints": {
     "when_to_use": "需要全面了解本地Agent技能分布情况",
-    "examples": [{"query": "扫描所有技能"}]
+    "examples": [
+      {
+        "query": "扫描所有技能"
+      }
+    ]
+  },
+  "source": {
+    "type": "local_script",
+    "installed_version": "1.0.0",
+    "installed_at": "2026-04-15"
   }
 }
