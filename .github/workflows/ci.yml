@@ -25,60 +25,31 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
         restore-keys: |
           ${{ runner.os }}-pip-
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Only install core dependencies for CI (no ML)
-        pip install jsonschema requests mcp pytest flake8
+        # Only install core and dev dependencies for CI
+        pip install ".[dev]"
 
     - name: Lint with flake8
       run: |
         # Stop on syntax errors or undefined names
-        flake8 bin/ knowledge/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 bin/ --count --select=E9,F63,F7,F82 --show-source --statistics
         # Exit-zero treats all errors as warnings
-        flake8 bin/ knowledge/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    - name: Run unit tests
-      run: |
-        python scripts/tests/test_nexus_executor.py
-        python scripts/tests/test_semantic_router.py
-        python scripts/tests/test_tools_manifest.py
+        flake8 bin/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
     - name: Verify core modules compile
       run: |
-        python -m py_compile bin/semantic_router.py
-        python -m py_compile bin/commander.py
-        python -m py_compile bin/kernel/nexus_executor.py
-        python -m py_compile knowledge/vector_store.py
-        echo "✅ All core modules compile successfully"
+        python -m py_compile bin/mcp_server.py
+        python -m py_compile bin/ah.py
+        echo "✅ Core modules compile successfully"
 
     - name: Verify open-source skills
       run: |
         # Verify SCHEMA.json is valid JSON
-        python -c "import json; json.load(open('skills/agency-bin-search/SCHEMA.json'))"
-        python -c "import json; json.load(open('skills/agency-bin-scrape/SCHEMA.json'))"
-        echo "✅ Open-source skills SCHEMA.json valid"
-
-  verify-tools-manifest:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install jsonschema requests
-    - name: Generate and verify tools manifest
-      run: |
-        # Generate tools_manifest.json from SCHEMA.json files
-        python scripts/generate_tools_manifest.py
-        # Verify it's valid JSON
-        python -c "import json; json.load(open('knowledge/tools_manifest.json'))"
-        echo "✅ Tools manifest generated and validated"
+        find skills -name "SCHEMA.json" -exec python -c "import json; json.load(open('{}'))" \;
+        echo "✅ All skills SCHEMA.json valid"

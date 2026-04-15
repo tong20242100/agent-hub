@@ -24,7 +24,7 @@ from playwright_stealth import Stealth
 # 核心演进: 强制使用 launch_persistent_context + 模拟人工录入 + 精准轮询提取
 # ==============================================================================
 
-VAULT_DIR = "/Users/tong/.openclaw-vault"
+VAULT_DIR = os.path.expanduser("~/.openclaw-vault")
 BROWSER_PROFILE_DIR = os.path.join(VAULT_DIR, "notebooklm_stable_profile")
 AUTH_STATE_PATH = os.path.join(VAULT_DIR, "notebooklm_state.json")
 

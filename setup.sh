@@ -56,9 +56,8 @@ if [ ! -f "knowledge/user_profile.json" ]; then
     cp knowledge/user_profile.template.json knowledge/user_profile.json
 fi
 
-# Generate tools manifest
-echo -e "${YELLOW}Generating tools manifest...${NC}"
-python3 scripts/generate_tools_manifest.py 2>/dev/null || echo "Note: generate_tools_manifest.py not found, skipping"
+# Generate tools manifest (deprecated in 2.0.0, everything is SCHEMA.json driven)
+echo -e "${YELLOW}Everything is SCHEMA.json driven, no manifest generation needed.${NC}"
 
 echo ""
 echo -e "${GREEN}✅ Setup complete!${NC}"

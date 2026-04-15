@@ -18,8 +18,8 @@ import os
 # 作用: 遵循 Model Context Protocol，将本地 bin/ 武器暴露给外部 AI 客户端。
 # ==============================================================================
 
-MANIFEST_PATH = "/Users/tong/agent-hub/tools/mcp_manifest.json"
-BIN_DIR = "/Users/tong/agent-hub/bin"
+MANIFEST_PATH = os.path.join(WORKSPACE_ROOT, "knowledge/tools_manifest.json")
+BIN_DIR = os.path.join(WORKSPACE_ROOT, "bin")
 
 # 注入内核神经元与流量调节官
 sys.path.append(os.path.join(BIN_DIR, 'kernel'))
@@ -30,12 +30,14 @@ except ImportError:
     governor = None
 
 def load_tools():
+    if not os.path.exists(MANIFEST_PATH):
+        return []
     with open(MANIFEST_PATH, 'r') as f:
         return json.load(f).get('tools', [])
 
 def find_active_run_dir():
     """找到最近活跃的沙盒目录"""
-    runs_root = "/Users/tong/agent-hub/workspace"
+    runs_root = os.path.join(WORKSPACE_ROOT, "workspace")
     if not os.path.exists(runs_root): return None
     dirs = [os.path.join(runs_root, d) for d in os.listdir(runs_root) if os.path.isdir(os.path.join(runs_root, d))]
     if not dirs: return None
