@@ -70,3 +70,4 @@ config/model_router.json
 
 # Generated manifests
 TOOLS_MANIFEST.md
+bin/lightpanda
