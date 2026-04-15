@@ -1,0 +1,205 @@
+#!/usr/bin/env python3
+"""
+知识库自动同步模块
+
+提供两种同步模式：
+1. 手动同步: python3 bin/knowledge_sync
+2. 自动同步: 被 nexus_executor 调用
+
+同步触发条件：
+- 新研究报告写入 knowledge/research/
+- 知识库文件被修改
+"""
+
+import os
+import sys
+import json
+import glob
+import re
+import hashlib
+from datetime import datetime
+from pathlib import Path
+
+# 项目根目录
+PROJECT_ROOT = Path(__file__).parent.parent
+RESEARCH_DIR = PROJECT_ROOT / "knowledge" / "research"
+INDEX_PATH = PROJECT_ROOT / "knowledge" / "KNOWLEDGE_INDEX.json"
+MAP_PATH = PROJECT_ROOT / "knowledge" / "KNOWLEDGE_MAP.md"
+HASH_CACHE_PATH = PROJECT_ROOT / "knowledge" / ".sync_hash_cache.json"
+
+
+def compute_file_hash(file_path):
+    """计算文件哈希值"""
+    with open(file_path, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
+
+
+def load_hash_cache():
+    """加载哈希缓存"""
+    if HASH_CACHE_PATH.exists():
+        with open(HASH_CACHE_PATH, 'r') as f:
+            return json.load(f)
+    return {}
+
+
+def save_hash_cache(cache):
+    """保存哈希缓存"""
+    with open(HASH_CACHE_PATH, 'w') as f:
+        json.dump(cache, f, indent=2)
+
+
+def check_needs_sync():
+    """检查是否需要同步"""
+    if not RESEARCH_DIR.exists():
+        return False
+    
+    cache = load_hash_cache()
+    current_hashes = {}
+    
+    md_files = list(RESEARCH_DIR.glob("*.md"))
+    for f_path in md_files:
+        fname = f_path.name
+        current_hash = compute_file_hash(f_path)
+        current_hashes[fname] = current_hash
+        
+        # 如果文件是新的或被修改
+        if fname not in cache or cache[fname] != current_hash:
+            return True, current_hashes
+    
+    return False, current_hashes
+
+
+def extract_frontmatter(file_path):
+    """提取文件 frontmatter"""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    match = re.search(r'^---\s*(.*?)\s*---\s*(.*)', content, re.DOTALL)
+    if match:
+        yaml_str, body = match.groups()
+        metadata = {}
+        for line in yaml_str.split('\n'):
+            if ':' in line:
+                k, v = line.split(':', 1)
+                metadata[k.strip()] = v.strip().strip('"').strip("'").strip('[]')
+        return metadata, body[:1000]
+    return None, content[:1000]
+
+
+def sync_knowledge(force=False):
+    """同步知识库"""
+    # 检查是否需要同步
+    if not force:
+        needs_sync, current_hashes = check_needs_sync()
+        if not needs_sync:
+            return {"status": "skipped", "message": "No changes detected"}
+    else:
+        current_hashes = {}
+        for f_path in RESEARCH_DIR.glob("*.md"):
+            current_hashes[f_path.name] = compute_file_hash(f_path)
+    
+    # 构建索引
+    index = {
+        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "total": 0,
+        "findings": []
+    }
+    
+    md_files = sorted(RESEARCH_DIR.glob("*.md"), key=lambda x: x.stat().st_mtime, reverse=True)
+    
+    for f_path in md_files:
+        fname = f_path.name
+        meta, summary_snippet = extract_frontmatter(f_path)
+        
+        # 从文件名提取日期
+        date_match = re.search(r'(\d{8})', fname)
+        date_str = date_match.group(1) if date_match else "Unknown"
+        if date_str != "Unknown":
+            date_str = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
+        
+        tags = ["research"]
+        title = fname.replace(".md", "")
+        final_date = date_str
+        
+        if meta:
+            tags = [t.strip() for t in meta.get("tags", "research").split(',')]
+            title = meta.get("title", title)
+            final_date = meta.get("date", final_date)
+        
+        index["findings"].append({
+            "title": title,
+            "date": final_date,
+            "path": f"research/{fname}",
+            "tags": tags,
+            "summary": summary_snippet.replace('\n', ' ')[:200] + "..."
+        })
+    
+    index["total"] = len(index["findings"])
+    
+    # 写入索引
+    with open(INDEX_PATH, 'w', encoding='utf-8') as f:
+        json.dump(index, f, ensure_ascii=False, indent=2)
+    
+    # 写入 MAP
+    with open(MAP_PATH, 'w', encoding='utf-8') as f:
+        f.write("# 🦞 Nexus Knowledge Map\n\n")
+        f.write(f"最后同步: {index['last_updated']} | 总计: {index['total']} 篇\n\n")
+        f.write("| 日期 | 主题 | 标签 |\n|---|---|---|\n")
+        for item in index["findings"]:
+            f.write(f"| {item['date']} | [{item['title']}]({item['path']}) | `{','.join(item['tags'][:3])}` |\n")
+    
+    # 保存哈希缓存
+    save_hash_cache(current_hashes)
+    
+    result = {
+        "status": "success",
+        "total": index["total"],
+        "message": f"Synced {index['total']} documents",
+        "vector_indexed": False
+    }
+    
+    # 自动向量化索引
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT / "knowledge"))
+        from vector_store import index_knowledge
+        vector_result = index_knowledge(force=False)
+        result["vector_indexed"] = True
+        result["vector_stats"] = vector_result
+    except Exception as e:
+        result["vector_error"] = str(e)
+    
+    return result
+
+
+def auto_sync():
+    """自动同步入口（供外部调用）"""
+    result = sync_knowledge(force=False)
+    if result["status"] == "success":
+        print(f"✅ [Knowledge Sync] {result['message']}")
+        if result.get("vector_indexed"):
+            print(f"📊 [Vector Index] {result.get('vector_stats', {}).get('total_documents', 0)} chunks")
+    return result
+
+
+def main():
+    """命令行入口"""
+    import argparse
+    parser = argparse.ArgumentParser(description="Knowledge Sync Tool")
+    parser.add_argument("--force", "-f", action="store_true", help="Force sync even if no changes")
+    parser.add_argument("--no-vector", action="store_true", help="Skip vector indexing")
+    args = parser.parse_args()
+    
+    print("🔄 [Knowledge Sync] Starting sync...")
+    result = sync_knowledge(force=args.force)
+    
+    if result["status"] == "skipped":
+        print(f"⏭️ [Knowledge Sync] {result['message']}")
+    else:
+        print(f"✅ [Knowledge Sync] {result['message']}")
+        if result.get("vector_indexed"):
+            stats = result.get("vector_stats", {})
+            print(f"📊 [Vector Index] {stats.get('indexed', 0)} docs → {stats.get('total_documents', 0)} chunks")
+
+
+if __name__ == "__main__":
+    main()

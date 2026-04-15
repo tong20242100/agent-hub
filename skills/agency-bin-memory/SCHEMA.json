@@ -1,0 +1,107 @@
+{
+  "name": "agency-bin-memory",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "description": "跨工具共享知识层 - 语义检索与用户偏好管理",
+  "tools": {
+    "memory_query": {
+      "description": "语义搜索知识库。输入自然语言查询，返回最相关的知识片段。支持跨工具共享，一次记住到处可用。",
+      "command": "../../knowledge/vector_store.py query {query}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "自然语言查询，如 '浏览器自动化工具' 或 '上次研究的 MCP 结论'"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    },
+    "memory_save": {
+      "description": "保存记忆/洞察到知识库。支持 insight/preference/decision/snippet 四种类型，可被所有工具查询。",
+      "command": "bin/memory save --type {memory_type} --content \"{content}\" --tags \"{tags}\" --source \"{source}\"",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "memory_type": {
+            "type": "string",
+            "enum": [
+              "insight",
+              "preference",
+              "decision",
+              "snippet"
+            ],
+            "default": "insight",
+            "description": "记忆类型: insight(洞察), preference(偏好), decision(决策), snippet(代码片段)"
+          },
+          "content": {
+            "type": "string",
+            "description": "记忆内容"
+          },
+          "tags": {
+            "type": "string",
+            "default": "",
+            "description": "标签，逗号分隔，如 'research,browser'"
+          },
+          "source": {
+            "type": "string",
+            "default": "unknown",
+            "description": "来源工具名称，如 'vscode', 'iflow', 'antigravity'"
+          }
+        },
+        "required": [
+          "content"
+        ]
+      }
+    },
+    "memory_profile": {
+      "description": "获取或更新用户偏好配置。跨工具共享用户偏好设置，包括语言风格、常用工具、关注领域等。",
+      "command": "bin/memory profile --action {action} --updates \"{updates}\"",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "get",
+              "update"
+            ],
+            "default": "get",
+            "description": "get=获取偏好, update=更新偏好"
+          },
+          "updates": {
+            "type": "string",
+            "default": "{}",
+            "description": "更新内容(JSON格式)，如 '{\"preferences\":{\"tone\":\"detailed\"}}'"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    },
+    "memory_index": {
+      "description": "重建知识库向量索引。当知识库内容更新后调用，确保语义搜索能找到最新内容。",
+      "command": "../../knowledge/vector_store.py index --force",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要使用 跨工具共享知识层 - 语义检索与用户偏好管理 语义搜索知识库。输入自然语言查询，返回最相关的知识片段... 相关功能时",
+    "examples": [],
+    "avoid": "请参考工具描述了解正确用法"
+  },
+  "requires": {
+    "bins": [
+      "python3"
+    ],
+    "env": []
+  }
+}

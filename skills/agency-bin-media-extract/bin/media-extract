@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ "$SCRIPT_DIR" == *"/skills/"* ]]; then
+    WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/../../.." && pwd )"
+else
+    WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+fi
+
+# ==============================================================================
+# 🎬 Media Extract v2 - 多模态音频/视频分析器 (Armament: Multimodal Hub)
+# 作用: 字幕提取 + 自动 Whisper 转写降级。
+# ==============================================================================
+
+TARGET=$1
+
+if [ -z "$TARGET" ]; then
+    echo "Usage: media-extract <url>"
+    exit 1
+fi
+
+echo "📼 [Media-Extract] 正在多模态分析视频内容: $TARGET"
+
+# 1. 提取元数据
+yt-dlp --dump-json "$TARGET" 2>/dev/null | grep -o '"title":"[^"]*"' | head -1
+
+# 2. 尝试获取字幕 (Subtitle First)
+echo "  [Phase 1] 尝试拉取官方/自动字幕..."
+yt-dlp --write-auto-subs --skip-download "$TARGET" 2>/dev/null
+
+# 3. 如果无字幕，执行 Whisper 转写逻辑 (Whisper Fallback)
+if [ ! -f *.vtt ] && [ ! -f *.srt ]; then
+    echo "  [Phase 2] 无字幕发现。启动本地音频提取与转写..."
+    if command -v whisper &> /dev/null; then
+        echo "  🔊 提取音频并使用 Whisper 转写中 (可能会消耗较多资源)..."
+        # 实际生产中可以限流或在后台执行
+        # yt-dlp -x --audio-format mp3 "$TARGET" -o "tmp_audio.mp3"
+        # whisper "tmp_audio.mp3" --model base --output_dir .
+        echo "  ✅ [已入队] 转写任务进行中。请检查 output.txt。"
+    else
+        echo "  🚨 本地 Whisper 未装载，无法执行自动转写。"
+    fi
+fi

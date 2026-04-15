@@ -1,0 +1,197 @@
+{
+  "name": "agency-bin-bb-browser",
+  "version": "0.8.3",
+  "protocol": "nexus-2.0",
+  "description": "bb-browser - Your browser is the API. CLI + MCP server for AI agents to control Chrome with your login state.",
+  "tools": {
+    "bb_site": {
+      "description": "执行站点命令。例如: bb_site(command='twitter/search', args=['AI agent'])",
+      "command": "bb-browser site {command} {args}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "站点命令，格式: platform/action（如 twitter/search, zhihu/hot）"
+          },
+          "args": {
+            "type": "array",
+            "description": "命令参数",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "command"
+        ]
+      }
+    },
+    "bb_list": {
+      "description": "列出所有可用的站点适配器",
+      "command": "bb-browser site list",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "bb_update": {
+      "description": "更新社区适配器",
+      "command": "bb-browser site update",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "bb_recommend": {
+      "description": "查看与浏览习惯匹配的适配器",
+      "command": "bb-browser site recommend",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "bb_open": {
+      "description": "打开 URL。例如: bb_open(url='https://example.com')",
+      "command": "bb-browser open {url}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "bb_snapshot": {
+      "description": "获取页面可访问性树快照",
+      "command": "bb-browser snapshot -i",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "bb_click": {
+      "description": "点击元素。例如: bb_click(ref='@3')",
+      "command": "bb-browser click {ref}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "元素引用（如 @3）"
+          }
+        },
+        "required": [
+          "ref"
+        ]
+      }
+    },
+    "bb_fill": {
+      "description": "填充输入框。例如: bb_fill(ref='@5', value='hello')",
+      "command": "bb-browser fill {ref} '{value}'",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "元素引用"
+          },
+          "value": {
+            "type": "string",
+            "description": "填充的值"
+          }
+        },
+        "required": [
+          "ref",
+          "value"
+        ]
+      }
+    },
+    "bb_eval": {
+      "description": "执行 JavaScript。例如: bb_eval(script='document.title')",
+      "command": "bb-browser eval \"{script}\"",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "JavaScript 代码"
+          }
+        },
+        "required": [
+          "script"
+        ]
+      }
+    },
+    "bb_fetch": {
+      "description": "带登录态的 fetch。例如: bb_fetch(url='https://api.example.com/data')",
+      "command": "bb-browser fetch {url} --json",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "请求 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "bb_screenshot": {
+      "description": "截取页面截图",
+      "command": "bb-browser screenshot",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "bb_network": {
+      "description": "捕获网络请求",
+      "command": "bb-browser network requests --with-body --json",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    "bb_daemon": {
+      "description": "启动 daemon 服务",
+      "command": "bb-browser daemon {args}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "绑定主机（默认 localhost:19824）"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要使用 bb-browser - Your browser is the API. CLI + MCP se... 相关功能时",
+    "examples": [],
+    "avoid": "请参考工具描述了解正确用法"
+  },
+  "source": {
+    "type": "npm",
+    "package": "bb-browser",
+    "repo": "epiral/bb-browser",
+    "installed_version": "0.8.3",
+    "installed_at": "2026-03-17",
+    "update_command": "npm update -g bb-browser"
+  },
+  "requires": {
+    "bins": [
+      "npx"
+    ],
+    "env": []
+  }
+}

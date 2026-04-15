@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ "$SCRIPT_DIR" == *"/skills/"* ]]; then
+    WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/../../.." && pwd )"
+else
+    WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+fi
+
+
+# ==============================================================================
+# ⚖️ Cross-Verify - 冲突探测与事实核查武器 (v6.0 Consolidated)
+# 作用: 针对一个正面结论，搜寻负面/质疑证据。
+# ==============================================================================
+
+CLAIM=$1
+
+if [ -z "$CLAIM" ]; then
+    echo "Usage: cross-verify <claim_to_check>"
+    exit 1
+fi
+
+echo "⚖️ [Cross-Verify] 正在为该论点寻找冲突证据: '$CLAIM'"
+
+# 1. 全网搜索负面证据
+echo "  🔍 检索负面证据..."
+$WORKSPACE_ROOT/bin/search "${CLAIM} (bug OR fail OR issue OR problem OR criticism)" 2>/dev/null | head -n 15
+
+# 2. 在 GitHub Issues 寻找物理证据
+echo "  🔍 检索 GitHub Issue..."
+if command -v gh &> /dev/null; then
+    gh issue list --search "${CLAIM} is:issue" --limit 5 2>/dev/null || echo "  (无 GitHub Issue 记录)"
+fi
+
+# 3. Reddit 社区反馈
+echo "  🔍 检索 Reddit 反馈..."
+$WORKSPACE_ROOT/bin/search "site:reddit.com ${CLAIM}" 2>/dev/null | head -n 10
+
+echo -e "\n✅ [Audit Complete] 冲突信号已采集。"

@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+import os
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if "/skills/" in _SCRIPT_DIR:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../.."))
+else:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, ".."))
+
+import sys
+import os
+
+try:
+    from scrapling.fetchers import StealthyFetcher
+except ImportError:
+    print("❌ Critical Error: 'scrapling' dependency not found.")
+    print("💡 Solution: Please run 'pip install scrapling[fetchers] && scrapling install' to arm this weapon.")
+    sys.exit(1)
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: scrapling-stealth <url> [css_selector]")
+        sys.exit(1)
+
+    url = sys.argv[1]
+    selector = sys.argv[2] if len(sys.argv) > 2 else "body"
+
+    print(f"🕷️  [Scrapling] Stealthily fetching: {url}...")
+    
+    try:
+        # 🛡️ Core Capability: Adaptive stealth fetching
+        page = StealthyFetcher.fetch(url, headless=True, network_idle=True)
+        content = page.css(selector).get()
+        
+        if content:
+            print("\n✅ [Success] Extracted Content:\n")
+            print(content[:1000] + ("..." if len(content) > 1000 else ""))
+            
+            # Save to temporary file for user
+            with open("scraped_result.html", "w") as f:
+                f.write(content)
+            print(f"\n📁 Full content saved to: scraped_result.html")
+        else:
+            print(f"⚠️  [Warning] No content found for selector: {selector}")
+            
+    except Exception as e:
+        print(f"❌ [Error] Scrapling failed: {e}")
+
+if __name__ == "__main__":
+    main()

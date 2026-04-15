@@ -56,13 +56,6 @@ if [ ! -f "knowledge/user_profile.json" ]; then
     cp knowledge/user_profile.template.json knowledge/user_profile.json
 fi
 
-# Create .env from example if it doesn't exist
-if [ ! -f ".env" ]; then
-    echo -e "${YELLOW}Creating .env file...${NC}"
-    cp .env.example .env
-    echo -e "${YELLOW}⚠️  Please edit .env and add your API keys${NC}"
-fi
-
 # Generate tools manifest
 echo -e "${YELLOW}Generating tools manifest...${NC}"
 python3 scripts/generate_tools_manifest.py 2>/dev/null || echo "Note: generate_tools_manifest.py not found, skipping"
@@ -72,7 +65,7 @@ echo -e "${GREEN}✅ Setup complete!${NC}"
 echo ""
 echo "To get started:"
 echo "  1. Activate the virtual environment: source .venv/bin/activate"
-echo "  2. Try the semantic router: python3 bin/semantic_router.py --stats"
+echo "  2. Run the MCP server: python3 bin/mcp_server.py"
 echo "  3. Read the documentation: cat README.md"
 echo ""
 echo "Optional dependencies:"

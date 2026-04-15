@@ -1,0 +1,51 @@
+{
+  "name": "agency-bin-notify",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "多端消息推送工具，支持将任务里程碑分发至飞书、Bark 等终端。",
+  "tools": {
+    "send": {
+      "description": "推送通知至飞书/Bark 等通讯端。例如: send(message='任务完成')",
+      "command": "bin/notify {message}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "通知消息正文"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要发送通知、提醒时",
+    "examples": [
+      {
+        "message": "任务完成"
+      }
+    ],
+    "avoid": "确保通知服务已配置"
+  },
+  "requires": {
+    "bins": [
+      "notify"
+    ]
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [
+    {
+      "name": "requests",
+      "type": "pip",
+      "description": "Python HTTP library for webhook calls",
+      "check_command": "pip show requests"
+    }
+  ],
+  "type": "bin-wrapper",
+  "bin_path": "bin/notify"
+}

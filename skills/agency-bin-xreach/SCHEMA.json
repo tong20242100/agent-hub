@@ -1,0 +1,161 @@
+{
+  "name": "agency-bin-xreach",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "description": "X/Twitter 数据采集 CLI - 搜索/用户/推文/线程/关注关系",
+  "tools": {
+    "x_search": {
+      "description": "搜索 X/Twitter 推文",
+      "command": "xreach search --count {limit} {query}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "搜索关键词",
+            "extraction": {
+              "type": "clean_query",
+              "remove_patterns": ["X", "推特", "twitter", "上搜索", "在", "搜索"],
+              "min_length": 2
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "default": 10,
+            "description": "结果数量",
+            "extraction": {
+              "type": "number_keyword",
+              "keywords": ["条", "个", "篇", "结果"]
+            }
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    "x_user": {
+      "description": "获取用户信息",
+      "command": "xreach user {handle}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名（不带 @）"
+          }
+        },
+        "required": ["handle"]
+      }
+    },
+    "x_tweet": {
+      "description": "获取单条推文",
+      "command": "xreach tweet {url_or_id}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url_or_id": {
+            "type": "string",
+            "description": "推文 URL 或 ID"
+          }
+        },
+        "required": ["url_or_id"]
+      }
+    },
+    "x_thread": {
+      "description": "获取完整线程/对话",
+      "command": "xreach thread {url_or_id}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url_or_id": {
+            "type": "string",
+            "description": "推文 URL 或 ID"
+          }
+        },
+        "required": ["url_or_id"]
+      }
+    },
+    "x_tweets": {
+      "description": "获取用户推文列表",
+      "command": "xreach tweets {handle} --count {limit}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 20,
+            "description": "推文数量"
+          }
+        },
+        "required": ["handle"]
+      }
+    },
+    "x_followers": {
+      "description": "获取用户关注者",
+      "command": "xreach followers {handle} --count {limit}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100,
+            "description": "数量限制"
+          }
+        },
+        "required": ["handle"]
+      }
+    },
+    "x_following": {
+      "description": "获取用户关注的人",
+      "command": "xreach following {handle} --count {limit}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "limit": {
+            "type": "integer",
+            "default": 100,
+            "description": "数量限制"
+          }
+        },
+        "required": ["handle"]
+      }
+    }
+  },
+  "ai_hints": {
+    "triggers": ["X", "推特", "twitter", "推文", "tweet", "关注", "follower", "线程", "thread"],
+    "intent": "X/Twitter 数据采集",
+    "conditions": {
+      "use_this": [
+        "需要搜索 Twitter 内容",
+        "需要获取用户信息",
+        "需要获取推文或线程"
+      ],
+      "use_alternative": {
+        "x_article": "需要获取 X Article 长文内容",
+        "search": "全网搜索（不限于 Twitter）"
+      }
+    },
+    "examples": [
+      {"query": "AI Agent"},
+      {"handle": "elonmusk"},
+      {"url_or_id": "https://x.com/user/status/123456"}
+    ]
+  },
+  "requires": {
+    "bins": ["xreach"],
+    "env": []
+  },
+  "type": "bin-wrapper",
+  "bin_path": "xreach"
+}

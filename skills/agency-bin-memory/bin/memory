@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""
+Memory CLI - 跨工具知识管理接口
+"""
+
+import sys
+import json
+import argparse
+from pathlib import Path
+
+# 添加 knowledge 目录到路径
+KNOWLEDGE_DIR = Path(__file__).parent.parent.parent / "knowledge"
+sys.path.insert(0, str(KNOWLEDGE_DIR))
+
+from vector_store import memory_save, get_user_profile, update_user_profile
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Memory CLI")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    
+    # save 命令
+    save_parser = subparsers.add_parser("save", help="保存记忆")
+    save_parser.add_argument("--type", dest="memory_type", default="insight",
+                            choices=["insight", "preference", "decision", "snippet"])
+    save_parser.add_argument("--content", required=True)
+    save_parser.add_argument("--tags", default="")
+    save_parser.add_argument("--source", default="unknown")
+    
+    # profile 命令
+    profile_parser = subparsers.add_parser("profile", help="用户偏好管理")
+    profile_parser.add_argument("--action", choices=["get", "update"], default="get")
+    profile_parser.add_argument("--updates", default="{}")
+    
+    args = parser.parse_args()
+    
+    if args.command == "save":
+        tags = [t.strip() for t in args.tags.split(",") if t.strip()]
+        result = memory_save(
+            content=args.content,
+            memory_type=args.memory_type,
+            tags=tags,
+            source=args.source
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    
+    elif args.command == "profile":
+        if args.action == "get":
+            profile = get_user_profile()
+            print(json.dumps(profile, ensure_ascii=False, indent=2))
+        else:
+            try:
+                updates = json.loads(args.updates)
+                profile = update_user_profile(updates)
+                print(json.dumps({
+                    "status": "success",
+                    "message": "偏好已更新",
+                    "profile": profile
+                }, ensure_ascii=False, indent=2))
+            except json.JSONDecodeError as e:
+                print(json.dumps({
+                    "status": "error",
+                    "message": f"JSON 解析错误: {e}"
+                }, ensure_ascii=False, indent=2))
+                sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

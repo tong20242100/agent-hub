@@ -2,321 +2,170 @@
 
 # Agent-Hub
 
-**Write JSON, not glue code.**
+**一次安装，所有 AI Agent 共享**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
-
-**[English](README.md)** • **[中文](README_CN.md)**
 
 </div>
 
 ---
 
-Turn any CLI tool into an AI skill with one JSON file. No Python wrappers, no glue code.
+## 这是什么
 
-**The problems you're facing:**
+一个 MCP 服务器，让你写的 CLI 工具能被所有 AI Agent 共享使用。
 
-| Problem | What happens | Agent-Hub solution |
-|---------|--------------|-------------------|
-| **Tool discovery hell** | 100 skills/tools, AI doesn't know which one to use | Rule-based routing + semantic vector fallback: <10ms |
-| **Client fragmentation** | Cursor plugin ≠ Gemini skill ≠ Claude tool | One skill repo, all clients share |
-| **Cross-client amnesia** | Yesterday's research in Gemini? Claude doesn't know | Unified memory layer (knowledge/vector_store.py) |
-| **Lifecycle chaos** | Local skills/binaries scattered, no version tracking | Centralized registry: skill status, versions, updates |
+支持：Claude Code、Claude Desktop、Gemini CLI、Cursor、Codex CLI、**OpenClaw Agent**、**Hermes Agent** 等。
 
-**The hidden power:** `skill_update_check` auto-detects version changes across GitHub Releases, npm, pip, and Homebrew — like `apt` or `brew`, but for AI skills.
+**写一次 SCHEMA.json，所有 Agent 都能调用。**
 
 ---
 
-## Quick Start
+## 为什么需要
 
-```bash
-# Install
-git clone https://github.com/tong20242100/agent-hub.git
-cd agent-hub
-pip install -e .
+你安装了 Claude、Gemini、Cursor、OpenClaw、Hermes 多个 Agent，每个都要重复配置工具。同一个工具装 N 遍，版本还不一致。
 
-# Or with ML features (semantic search, memory)
-pip install -e ".[ml]"
-
-# Try it
-ah "search AI Agent news"
-# → Routes to: web_search | Args: {"query": "AI Agent news", "limit": 10}
-
-ah "scrape https://example.com"
-# → Routes to: scrape_url | Args: {"url": "https://example.com"}
-
-ah --stats
-# → 📊 路由器统计: 工具数: 90, 人格数: 9
-```
+Agent-Hub 解决这个问题：**工具只需安装一次，所有 Agent 通过 MCP 共享。**
 
 ---
 
-## Core Innovation: Conditional Syntax
+## 开箱即用
 
-One line of JSON replaces 10 lines of Python.
+**34 个技能包**，配置后立刻可用：
 
-**Before (glue code):**
-```python
-def call_scrape(url, recursive=False, depth=2):
-    cmd = ["./bin/scrape", url]
-    if recursive:
-        cmd.append("--recursive")
-    if depth != 2:
-        cmd.extend(["--depth", str(depth)])
-    return subprocess.run(cmd, capture_output=True)
-```
-
-**After (Agent-Hub):**
-```json
-{
-  "command": "bin/scrape {url} {recursive?--recursive} {depth?--depth {depth}}"
-}
-```
-
-| Syntax | Meaning |
-|--------|---------|
-| `{param}` | Required parameter |
-| `{param?--flag}` | Boolean: add flag if true |
-| `{param?--opt {param}}` | Optional with value |
+| 功能 | 技能包 |
+|------|--------|
+| 网页搜索 | `agency-bin-search` (Tavily API) |
+| 网页抓取 | `agency-bin-scrape`, `agency-bin-scrapling-stealth` |
+| 浏览器控制 | `agency-bin-chrome-devtools` (29 个操作) |
+| GitHub | `agency-bin-gh`, `agency-github-researcher` |
+| 小红书 | `agency-bin-xiaohongshu-mcp` |
+| 跨 Agent 记忆 | `agency-bin-memory` |
 
 ---
 
-## How It Works
+## 核心价值
 
-### Three-Level Progressive Loading
+### 1. 声明式定义
 
-| Level | What loads | Token cost | When |
-|-------|------------|------------|------|
-| **L1** | Tool manifest (name + description + ai_hints) | ~2K | Router startup |
-| **L2** | Matched SCHEMA.json (full parameters) | ~500 | After routing |
-| **L3** | SKILL.md (detailed guidance, optional) | ~1K | Before execution |
+**传统方式**：写 Python glue code，注册工具，处理参数...
 
-**Result:** Fast startup, minimal context waste.
-
-### Gate Checks
-
-Before execution, `requires` field is validated:
+**Agent-Hub 方式**：写一个 SCHEMA.json，完事。
 
 ```json
 {
-  "requires": {
-    "bins": ["gh", "yt-dlp"],      // Must exist in PATH
-    "env": ["GITHUB_TOKEN"]        // Must be set in environment
+  "name": "my-search",
+  "tools": {
+    "search": {
+      "description": "搜索网页",
+      "command": "bin/search {query}",
+      "parameters": {
+        "type": "object",
+        "properties": { "query": {"type": "string"} },
+        "required": ["query"]
+      }
+    }
   }
 }
 ```
 
-Missing dependency? Clear error message, no silent failures.
+MCP Server 自动发现，自动暴露。
 
-### AI Native Fields
+### 2. AI 自描述工具
 
-Every tool includes `ai_hints` — guidance for AI agents:
+每个工具都有 `ai_hints`，告诉 LLM **何时用、怎么用、何时不用**：
 
 ```json
 {
   "ai_hints": {
-    "when_to_use": "When user asks about GitHub repo info",
-    "examples": [{"repo": "owner/repo"}],
-    "avoid": "Don't use full URLs, use owner/repo format"
+    "when_to_use": "用户需要获取最新网页信息",
+    "avoid": "不要用于已知的静态页面"
   }
 }
 ```
 
-AI reads this and knows exactly how to use the tool. No guessing.
+**工具主动告诉 AI 怎么用自己。** 这是 Agent-Hub 独有的差异化。
 
 ---
 
-## Key Features
+## 快速开始
 
-- **Sub-100ms response** — Regex short-circuit + lazy loading + cached embeddings
-- **Security by design** — Schema type enforcement, shlex sanitization, requires gate checks
-- **Built-in package manager** — Auto-detect updates from GitHub Releases, npm, pip, Homebrew
+### 1. 安装
 
 ```bash
-python3 bin/skill_update_check        # Check for updates
-python3 bin/skill_update_install      # Interactive install
-python3 bin/skill_update_install --all
+git clone https://github.com/tong20242100/agent-hub.git
+cd agent-hub
+pip install -e .
 ```
 
----
+### 2. 配置 Agent
 
-## Client Integration
+**方法 1：让 Agent 自己配置（推荐）**
 
-### CLI (Gemini CLI, Claude Code, iFlow CLI)
+直接把下面这段发给你的 Agent：
 
-After `pip install -e .`, use globally:
-```bash
-ah "search for AI Agent news"
-nexus "scrape https://example.com"
+```
+请帮我配置 Agent-Hub MCP 服务器。项目路径是 /path/to/agent-hub。
+
+你需要：
+1. 确定你是哪个 Agent（Claude Code、Gemini CLI、Cursor、Codex、OpenClaw、Hermes 等）
+2. 找到你的配置文件路径
+3. 添加 MCP 服务器配置
+
+配置完成后，验证工具是否可用：帮我搜索 "MCP protocol"
 ```
 
-### Claude Desktop / Cursor (via MCP)
+**方法 2：手动配置**
 
-Add to your MCP config:
+编辑对应配置文件，添加：
 
 ```json
 {
   "mcpServers": {
     "agent-hub": {
       "command": "python3",
-      "args": ["/absolute/path/to/agent-hub/bin/mcp_server.py"]
+      "args": ["/path/to/agent-hub/bin/mcp_server.py"]
     }
   }
 }
 ```
 
-> Replace `/absolute/path/to` with your actual installation path.
+| Agent | 配置格式 | 配置文件 |
+|-------|---------|---------|
+| Claude Code CLI | JSON | `~/.claude.json` |
+| Claude Desktop | JSON | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Gemini CLI | JSON | `~/.gemini/settings.json` |
+| Cursor | JSON | `~/.cursor/mcp.json` |
+| Codex CLI | TOML | `~/.codex/config.toml` |
+| OpenClaw Agent | JSON | `~/.openclaw/openclaw.json` |
+| Hermes Agent | YAML | `~/.hermes/config.yaml` |
 
-### Python Module
+**注意**：Codex 用 TOML，Hermes 用 YAML，格式略有不同。详见 [配置文档](docs/configuration.md)。
 
-```python
-from bin.semantic_router import SemanticRouter
+### 3. 验证
 
-router = SemanticRouter()
-match = router.route("search for AI news")
-if match:
-    print(match.tool_name, match.extracted_args)
+在 Agent 中测试：
+
+```
+帮我搜索 "MCP protocol latest news"
 ```
 
 ---
 
-## Add Your Own Skill
-
-Create `skills/your-skill/SCHEMA.json`:
-
-```json
-{
-  "name": "your-skill",
-  "tools": {
-    "your_tool": {
-      "description": "What it does",
-      "command": "your-binary {input} {verbose?--verbose}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "input": {"type": "string", "description": "Input"},
-          "verbose": {"type": "boolean", "default": false}
-        },
-        "required": ["input"]
-      },
-      "ai_hints": {
-        "when_to_use": "When user needs to...",
-        "examples": [{"input": "example"}]
-      }
-    }
-  },
-  "requires": {
-    "bins": ["your-binary"],
-    "env": ["OPTIONAL_API_KEY"]
-  }
-}
-```
-
-No Python required. See [CONTRIBUTING.md](CONTRIBUTING.md) for full syntax.
-
----
-
-## Project Structure
-
-```
-skills/
-├── agency-bin-search/     # Web search (SCHEMA.json)
-├── agency-bin-scrape/     # Web scraping (SCHEMA.json)
-├── agency-architecture-atlas/  # AI architecture knowledge (SCHEMA + SKILL.md)
-├── agency-skill-armorer/  # Skill creation helper (SCHEMA + SKILL.md)
-└── ...
-
-bin/
-├── semantic_router.py     # Intent → Tool mapping
-├── mcp_server.py          # MCP protocol server
-├── search                 # Web search wrapper (Tavily)
-├── skill_update_check     # Package update checker
-├── skill_update_install   # Package installer
-└── kernel/
-    └── nexus_executor.py  # Safe command execution
-
-knowledge/
-└── vector_store.py        # Cross-client memory (ChromaDB)
-```
-
----
-
-## Available Skills
-
-| Skill | Type | Description |
-|-------|------|-------------|
-| `agency-bin-search` | Tool | Web search via Tavily API |
-| `agency-bin-scrape` | Tool | Web scraping via Jina Reader |
-| `agency-architecture-atlas` | Cognitive | AI Agent architecture knowledge base |
-| `agency-skill-armorer` | Cognitive | Skill creation and schema generator |
-
----
-
-## Optional Dependencies
-
-Unlock advanced skills with these optional tools:
-
-### CLI Tools
-
-| Tool | Install | Enables |
-|------|---------|---------|
-| **GitHub CLI** | `brew install gh` | `gh_view`, `analyze_repo`, `verify` |
-| **yt-dlp** | `brew install yt-dlp` | Video/audio extraction from YouTube, Bilibili, etc. |
-| **Node.js** | `brew install node` | Browser automation (Chrome DevTools, BB Browser) |
-| **scrapling** | `pip install scrapling` | Stealth web scraping (anti-bot bypass) |
-| **OpenCLI** | `pip install opencli` | Generic CLI interface |
-
-### Environment Variables
-
-| Variable | Get from | Enables |
-|----------|----------|---------|
-| `TAVILY_API_KEY` | [tavily.com](https://tavily.com) | Web search (`web_search`) |
-
-### Quick Install (macOS)
+## 统一管理
 
 ```bash
-# Core tools
-brew install gh node yt-dlp
-
-# Python packages for stealth scraping
-pip install scrapling patchright playwright-stealth
-
-# Environment variables (add to ~/.zshrc or ~/.bashrc)
-export TAVILY_API_KEY="your-key-here"
+ah scan           # 扫描所有工具
+ah list           # 查看列表
+ah update         # 检测更新
+ah update -i      # 一键更新所有
+ah remove <name>  # 卸载
 ```
 
-### Quick Install (Linux)
-
-```bash
-# Core tools
-sudo apt install gh nodejs yt-dlp
-# or
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-
-# Python packages
-pip install scrapling patchright playwright-stealth
-```
-
-> **Note:** Windows users can use `winget` or `scoop` for CLI tools. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
----
-
-## Contributing
-
-PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for design philosophy and full syntax reference.
-
-If this saves you from writing glue code, give it a ⭐.
-
----
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for release history.
+一处更新，处处生效。
 
 ---
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file.
+MIT

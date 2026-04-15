@@ -41,8 +41,8 @@ dev = [
 ]
 
 [project.scripts]
-ah = "bin.semantic_router:main"
-nexus = "bin.semantic_router:main"
+agent-hub = "bin.mcp_server:main"
+ah = "bin.ah:cli"
 
 [project.urls]
 Homepage = "https://github.com/tong20242100/agent-hub"

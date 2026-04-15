@@ -1,0 +1,8 @@
+{
+  "name": "agency-viral-writer",
+  "version": "2.0.0",
+  "protocol": "nexus-cognitive-2.0",
+  "description": "- **150x 回复策略**: 严禁只生成主推文。必须同时生成 3-5 条针对潜在评论的「高互动回复模板」。作者互动是 2026 算法的第一驱动力。",
+  "type": "cognitive",
+  "skill_file": "SKILL.md"
+}

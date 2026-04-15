@@ -1,0 +1,96 @@
+{
+  "name": "agency-bin-lightpanda",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "description": "Lightpanda 无头浏览器。Zig 编写，内存占用 1/9 Chrome，速度 11x。支持 fetch/serve/mcp 三种模式。",
+  "tools": {
+    "fetch": {
+      "description": "抓取网页内容。支持 html/markdown/semantic_tree 输出。例如: fetch(url='https://example.com', dump='markdown')",
+      "command": "bin/lightpanda fetch --dump {dump} --log_level warn {url}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          },
+          "dump": {
+            "type": "string",
+            "description": "输出格式: html, markdown, semantic_tree, semantic_tree_text",
+            "default": "markdown",
+            "enum": [
+              "html",
+              "markdown",
+              "semantic_tree",
+              "semantic_tree_text"
+            ]
+          },
+          "strip_mode": {
+            "type": "string",
+            "description": "移除内容: js, css, ui, full (逗号分隔)"
+          },
+          "obey_robots": {
+            "type": "boolean",
+            "description": "遵守 robots.txt",
+            "default": false
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "serve": {
+      "description": "启动 CDP 服务器。供 Puppeteer/Playwright 连接。例如: serve(host='127.0.0.1', port=9222)",
+      "command": "bin/lightpanda serve --host {host} --port {port} --log_level warn",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "监听地址",
+            "default": "127.0.0.1"
+          },
+          "port": {
+            "type": "integer",
+            "description": "监听端口",
+            "default": 9222
+          }
+        },
+        "required": []
+      }
+    },
+    "mcp": {
+      "description": "启动 MCP 服务器 (stdio 模式)。供 AI Agent 直接调用。",
+      "command": "bin/lightpanda mcp",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要渲染 JS 动态页面，且对内存/速度有要求时",
+    "examples": [
+      {"url": "https://spa-example.com", "dump": "markdown"},
+      {"url": "https://react-app.com", "dump": "semantic_tree"}
+    ],
+    "avoid": "静态页面用 scrape_url 更快；需要交互用 chrome-devtools；有防护用 stealth_get"
+  },
+  "source": {
+    "type": "github_release",
+    "repo": "lightpanda-io/browser",
+    "asset_pattern": "lightpanda-macos-arm64",
+    "installed_version": "nightly-20260315",
+    "installed_at": "2026-03-16",
+    "download_url": "https://github.com/lightpanda-io/browser/releases"
+  },
+  "requires": {
+    "bins": [
+      "python3",
+      "lightpanda"
+    ],
+    "env": []
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "name": "agency-deep-researcher",
+  "version": "2.0.0",
+  "type": "hybrid",
+  "description": "深度研究 - 先确认需求，再执行多源搜索，生成有实际价值的研究报告",
+  "ai_hints": {
+    "triggers": [
+      "深度研究",
+      "全面调查",
+      "详细分析",
+      "综合研究",
+      "deep research",
+      "comprehensive analysis",
+      "literature review"
+    ],
+    "when_to_use": "需要深度调查、多源验证、全面分析时使用"
+  },
+  "workflow": {
+    "description": "两阶段流程：先确认，再执行",
+    "steps": [
+      {
+        "id": "clarify",
+        "name": "需求确认",
+        "required": true,
+        "description": "在调用 deep_research 之前，必须先跟用户确认以下问题",
+        "questions": [
+          "1. 你是谁？（角色/技术水平/团队规模）",
+          "2. 你想要什么形式的结果？（操作指南/选型对比/技术分析/多角色协作指南等）",
+          "3. 重点关注什么？（效率/质量/成本/学习曲线等）"
+        ],
+        "output": "将用户的回答整合到 query 参数中，格式：'原始问题（用户背景：xxx。期望结果：xxx。重点关注：xxx）'"
+      },
+      {
+        "id": "execute",
+        "name": "执行研究",
+        "required": true,
+        "command": "python3 bin/research_loop.py {query} --json --no-interactive --max-iterations {max_iterations}",
+        "depends_on": "clarify"
+      }
+    ]
+  },
+  "tools": {
+    "deep_research": {
+      "description": "执行深度研究。⚠️ 注意：调用前必须先完成需求确认，将用户背景和期望整合到 query 中",
+      "command": "python3 bin/research_loop.py {query} --json --no-interactive --max-iterations {max_iterations}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "研究主题。⚠️ 必须包含用户背景和期望结果，格式：'主题（用户背景：xxx。期望结果：xxx）'",
+            "extraction": {
+              "type": "clean_query",
+              "min_length": 2
+            }
+          },
+          "max_iterations": {
+            "type": "integer",
+            "description": "最大迭代次数，建议 3-4 轮以获得足够深度",
+            "default": 3
+          }
+        },
+        "required": ["query"]
+      },
+      "ai_hints": {
+        "before_call": "⚠️ 调用前必须：1) 跟用户确认需求（见 workflow.clarify）；2) 将确认结果整合到 query 参数中",
+        "when_to_use": "需要深度研究某个主题，自动执行多源搜索",
+        "output": "JSON 格式，包含报告、来源覆盖统计、迭代次数",
+        "quality_gate": "如果评估分数（覆盖/深度/可操作性）都 >= 7，报告质量合格"
+      }
+    },
+    "web_search": {
+      "description": "使用 Tavily 进行全网深度搜索",
+      "delegate_to": "agency-bin-search",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "搜索关键词"}
+        },
+        "required": ["query"]
+      }
+    },
+    "web_fetch": {
+      "description": "抓取网页完整内容",
+      "delegate_to": "agency-bin-scrape",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string", "description": "目标 URL"}
+        },
+        "required": ["url"]
+      }
+    },
+    "github_search": {
+      "description": "搜索 GitHub 仓库和代码",
+      "delegate_to": "agency-bin-gh",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {"type": "string", "description": "搜索关键词"}
+        },
+        "required": ["query"]
+      }
+    }
+  },
+  "related_skills": [
+    "agency-bin-search",
+    "agency-bin-scrape",
+    "agency-bin-cross-verify"
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "name": "agency-bin-defuddle",
+  "version": "0.14.0",
+  "protocol": "nexus-2.0",
+  "description": "Defuddle - Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markdown",
+  "tools": {
+    "defuddle_parse": {
+      "description": "解析网页内容。例如: defuddle_parse(url='https://example.com', format='markdown')",
+      "command": "defuddle parse {url} {args}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL 或本地 HTML 文件路径"
+          },
+          "format": {
+            "type": "string",
+            "description": "输出格式: html, markdown, json",
+            "enum": [
+              "html",
+              "markdown",
+              "json"
+            ],
+            "default": "markdown"
+          },
+          "property": {
+            "type": "string",
+            "description": "提取特定属性: title, author, description, domain, published"
+          },
+          "output": {
+            "type": "string",
+            "description": "输出文件路径"
+          },
+          "debug": {
+            "type": "boolean",
+            "description": "启用调试模式",
+            "default": false
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "defuddle_extract_title": {
+      "description": "提取网页标题。例如: defuddle_extract_title(url='https://example.com')",
+      "command": "defuddle parse {url} --property title",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "defuddle_extract_author": {
+      "description": "提取文章作者。例如: defuddle_extract_author(url='https://example.com')",
+      "command": "defuddle parse {url} --property author",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "defuddle_extract_metadata": {
+      "description": "提取完整元数据（JSON 格式）。例如: defuddle_extract_metadata(url='https://example.com')",
+      "command": "defuddle parse {url} --json",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    },
+    "defuddle_to_markdown": {
+      "description": "将网页转换为 Markdown。例如: defuddle_to_markdown(url='https://example.com', output='article.md')",
+      "command": "defuddle parse {url} --markdown {output_arg}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "网页 URL"
+          },
+          "output": {
+            "type": "string",
+            "description": "输出文件路径（可选）"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要使用 Defuddle - Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markd... 相关功能时",
+    "examples": [],
+    "avoid": "请参考工具描述了解正确用法"
+  },
+  "source": {
+    "type": "npm",
+    "package": "defuddle",
+    "repo": "kepano/defuddle",
+    "installed_version": "0.14.0",
+    "installed_at": "2026-03-17",
+    "update_command": "npm update -g defuddle"
+  },
+  "requires": {
+    "bins": [
+      "npx"
+    ],
+    "env": []
+  }
+}

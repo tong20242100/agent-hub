@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+"""
+技能更新检测器 - 只检测，不安装
+
+用法：
+    python3 bin/skill_update_check           # Markdown 报告
+    python3 bin/skill_update_check --json    # JSON 输出
+"""
+
+import json
+import subprocess
+import platform
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, asdict
+
+SCRIPT_PATH = Path(__file__).resolve()
+PROJECT_ROOT = SCRIPT_PATH.parent.parent.parent.parent
+SKILLS_DIR = PROJECT_ROOT / "skills"
+CACHE_PATH = PROJECT_ROOT / "knowledge" / ".update_cache.json"
+
+
+@dataclass
+class UpdateInfo:
+    """更新信息"""
+    skill_name: str
+    tool_type: str
+    current_version: str
+    latest_version: Optional[str]
+    has_update: bool
+    source_url: Optional[str]
+    message: str
+    schema_path: Optional[str] = None
+    dependencies: Optional[List[Dict]] = None
+
+
+# ============ 依赖检测 ============
+
+def check_brew_package(name: str) -> Dict:
+    """检查 brew 包"""
+    try:
+        r = subprocess.run(["brew", "list", "--versions", name], capture_output=True, text=True, timeout=10)
+        if r.returncode == 0 and r.stdout.strip():
+            parts = r.stdout.strip().split()
+            current = parts[-1] if len(parts) > 1 else "installed"
+            outdated = subprocess.run(["brew", "outdated", name], capture_output=True, text=True, timeout=10)
+            has_update = outdated.returncode == 0 and outdated.stdout.strip()
+            return {"name": name, "type": "brew", "installed": True, "current_version": current, 
+                    "has_update": has_update, "update_cmd": f"brew upgrade {name}"}
+    except Exception:
+        pass
+    return {"name": name, "type": "brew", "installed": False, "update_cmd": f"brew install {name}"}
+
+
+def check_pip_package(name: str) -> Dict:
+    """检查 pip 包"""
+    try:
+        r = subprocess.run(["pip", "show", name], capture_output=True, text=True, timeout=10)
+        if r.returncode == 0:
+            current = None
+            for line in r.stdout.split("\n"):
+                if line.startswith("Version:"):
+                    current = line.split(":", 1)[1].strip()
+                    break
+            outdated = subprocess.run(["pip", "list", "--outdated", "--format=json"], capture_output=True, text=True, timeout=30)
+            has_update, latest = False, None
+            if outdated.returncode == 0:
+                for pkg in json.loads(outdated.stdout):
+                    if pkg.get("name", "").lower() == name.lower():
+                        has_update, latest = True, pkg.get("latest_version")
+                        break
+            return {"name": name, "type": "pip", "installed": True, "current_version": current,
+                    "latest_version": latest, "has_update": has_update, "update_cmd": f"pip install --upgrade {name}"}
+    except Exception:
+        pass
+    return {"name": name, "type": "pip", "installed": False, "update_cmd": f"pip install {name}"}
+
+
+def check_npm_package(name: str) -> Dict:
+    """检查 npm 全局包"""
+    try:
+        r = subprocess.run(["npm", "list", "-g", name, "--depth=0"], capture_output=True, text=True, timeout=10)
+        if r.returncode == 0 and name in r.stdout:
+            import re
+            match = re.search(rf"{name}@([\d.]+)", r.stdout)
+            current = match.group(1) if match else "installed"
+            lr = subprocess.run(["npm", "view", name, "version"], capture_output=True, text=True, timeout=10)
+            latest = lr.stdout.strip() if lr.returncode == 0 else None
+            return {"name": name, "type": "npm", "installed": True, "current_version": current,
+                    "latest_version": latest, "has_update": latest and latest != current,
+                    "update_cmd": f"npm update -g {name}"}
+    except Exception:
+        pass
+    return {"name": name, "type": "npm", "installed": False, "update_cmd": f"npm install -g {name}"}
+
+
+def check_dependencies(deps: List[Dict]) -> List[Dict]:
+    """检查所有依赖"""
+    results = []
+    for dep in deps:
+        name, dtype = dep.get("name", ""), dep.get("type", "custom")
+        if dtype == "brew":
+            results.append(check_brew_package(name))
+        elif dtype == "pip":
+            results.append(check_pip_package(name))
+        elif dtype == "npm":
+            results.append(check_npm_package(name))
+        else:
+            cmd = dep.get("check_command", f"{name} --version")
+            try:
+                r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+                results.append({"name": name, "type": "custom", "installed": r.returncode == 0,
+                               "current_version": r.stdout.strip()[:50] if r.stdout else None})
+            except Exception:
+                results.append({"name": name, "type": "custom", "installed": False})
+    return results
+
+
+# ============ 版本检测 ============
+
+def get_github_release(repo: str) -> Optional[Dict]:
+    """获取 GitHub 最新 Release"""
+    try:
+        r = subprocess.run(["gh", "release", "view", "--repo", repo, "--json", "tagName,assets,url"], 
+                          capture_output=True, text=True, timeout=30)
+        return json.loads(r.stdout) if r.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def get_npm_version(package: str) -> Optional[str]:
+    """获取 npm 包最新版本"""
+    try:
+        r = subprocess.run(["npm", "view", package, "version"], capture_output=True, text=True, timeout=10)
+        return r.stdout.strip() if r.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def check_skill(name: str, schema: Dict) -> UpdateInfo:
+    """检查单个技能更新状态"""
+    data = schema["data"]
+    version = data.get("version", "unknown")
+    source = data.get("source", {})
+    deps = data.get("dependencies", [])
+    schema_path = schema.get("path")
+
+    # 有外部来源
+    if source:
+        stype = source.get("type", "")
+        
+        if stype == "github_release":
+            repo = source.get("repo", "")
+            if not repo:
+                return UpdateInfo(name, "github_release", version, None, False, None, "缺少 repo", schema_path)
+            
+            release = get_github_release(repo)
+            if not release:
+                return UpdateInfo(name, "github_release", version, None, False, f"https://github.com/{repo}", 
+                                 "无法获取版本", schema_path)
+            
+            latest = release.get("tagName", "")
+            current = source.get("installed_version", version)
+            has_update = latest and latest != current
+            
+            return UpdateInfo(name, "github_release", current, latest, has_update,
+                             f"https://github.com/{repo}/releases",
+                             f"🆕 可更新到 {latest}" if has_update else "✅ 已是最新", schema_path)
+        
+        elif stype == "npm":
+            pkg = source.get("package", "")
+            if not pkg:
+                return UpdateInfo(name, "npm", version, None, False, None, "缺少 package", schema_path)
+            
+            latest = get_npm_version(pkg)
+            current = source.get("installed_version", version)
+            has_update = latest and latest != current
+            
+            return UpdateInfo(name, "npm", current, latest, has_update,
+                             f"https://www.npmjs.com/package/{pkg}",
+                             f"🆕 可更新到 {latest}" if has_update else "✅ 已是最新", schema_path)
+    
+    # 本地脚本 - 检查依赖
+    dep_results = check_dependencies(deps) if deps else None
+    missing = [d for d in (dep_results or []) if not d.get("installed")]
+    updateable = [d for d in (dep_results or []) if d.get("has_update")]
+    
+    if missing:
+        msg = f"⚠️ 缺少依赖: {', '.join(d['name'] for d in missing)}"
+    elif updateable:
+        msg = f"🔄 依赖可更新: {', '.join(d['name'] for d in updateable)}"
+    else:
+        msg = "本地技能，依赖完整" if deps else "本地技能"
+    
+    return UpdateInfo(name, "local_script", version, None, len(updateable) > 0, None, msg, schema_path, dep_results)
+
+
+def check_all() -> List[UpdateInfo]:
+    """检查所有技能"""
+    results = []
+    for schema_file in SKILLS_DIR.glob("*/SCHEMA.json"):
+        try:
+            with open(schema_file) as f:
+                data = json.load(f)
+            name = data.get("name", schema_file.parent.name)
+            results.append(check_skill(name, {"data": data, "path": str(schema_file)}))
+        except Exception:
+            pass
+    return results
+
+
+# ============ 输出 ============
+
+def generate_report(results: List[UpdateInfo], json_output: bool = False) -> str:
+    """生成报告"""
+    if json_output:
+        return json.dumps([asdict(r) for r in results], ensure_ascii=False, indent=2)
+    
+    lines = ["# 🔍 技能更新检测报告", ""]
+    
+    # 需要更新
+    updates = [r for r in results if r.has_update]
+    if updates:
+        lines.extend(["## 🔴 需要更新", "", "| 技能 | 当前 | 最新 |", "|------|------|------|"])
+        for r in updates:
+            lines.append(f"| {r.skill_name} | {r.current_version} | {r.latest_version or '-'} |")
+        lines.append("")
+    
+    # 本地技能
+    local = [r for r in results if r.tool_type == "local_script"]
+    if local:
+        lines.extend(["## 📦 本地技能", "", "| 技能 | 版本 | 状态 |", "|------|------|------|"])
+        for r in local:
+            lines.append(f"| {r.skill_name} | {r.current_version} | {r.message} |")
+            if r.dependencies:
+                for d in r.dependencies:
+                    status = "❌" if not d.get("installed") else ("🔄" if d.get("has_update") else "✅")
+                    lines.append(f"|   └ {d['name']} | {d.get('current_version', '-')} | {status} {d['type']} |")
+        lines.append("")
+    
+    # 已是最新
+    ok = [r for r in results if not r.has_update and r.tool_type in ("github_release", "npm")]
+    if ok:
+        lines.extend(["## ✅ 已是最新", "", "| 技能 | 版本 |", "|------|------|"])
+        for r in ok:
+            lines.append(f"| {r.skill_name} | {r.current_version} |")
+    
+    return "\n".join(lines)
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="技能更新检测器")
+    parser.add_argument("--json", "-j", action="store_true", help="JSON 输出")
+    args = parser.parse_args()
+    
+    print("🔍 检测更新中...")
+    results = check_all()
+    
+    # 缓存结果
+    CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(CACHE_PATH, 'w') as f:
+        json.dump({"last_check": datetime.now().isoformat(), "results": [asdict(r) for r in results]}, f, ensure_ascii=False)
+    
+    print(generate_report(results, args.json))
+    
+    updates = [r for r in results if r.has_update]
+    if updates:
+        print(f"\n💡 使用 bin/skill_update_install 更新")
+
+
+if __name__ == "__main__":
+    main()

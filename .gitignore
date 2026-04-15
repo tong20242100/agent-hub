@@ -6,10 +6,6 @@
 *.bak
 
 # Runtime State
-.mission_state.json
-ARMORY.json
-proxy_test_results.json
-QCLAW_OPEN_SIGNAL.txt
 runs/
 __pycache__/
 *.log
@@ -20,28 +16,14 @@ __pycache__/
 .env
 .env.local
 .env.*.local
-.openclaw-vault/
 
 # Personal Data (user-specific)
-knowledge/user_profile.json
-knowledge/.chroma_db/
-knowledge/.sync_hash_cache.json
-knowledge/.update_cache.json
-knowledge/.router_cache/
-knowledge/watchlist_state.json
-knowledge/.research_checkpoints/
+knowledge/
+scripts/
 
-# Generated indices (personal)
-knowledge/KNOWLEDGE_INDEX.json
-knowledge/KNOWLEDGE_MAP.md
-
-# Research outputs (may contain personal data)
-knowledge/research/*.md
-!knowledge/research/.gitkeep
-
-# Distribution outputs (personal)
-knowledge/distribution/*
-!knowledge/distribution/.gitkeep
+# Project Specific (Temporary/Analysis Reports)
+Skills全球现状调查报告.md
+项目结论.md
 
 # Build/Dist
 dist/
@@ -56,45 +38,18 @@ node_modules/
 *.swo
 *~
 
-# Third-party binaries (not part of this project)
-bin/lightpanda
-bin/xhs-login
-bin/xhs-mcp
-bin/nvidia
-bin/knowledge_sync
-bin/media-extract
-bin/notebook-ops
-bin/notify
-bin/runner
-bin/mcp-server
-bin/memory
-bin/scrape
-bin/scrapling-stealth
-bin/cross-verify
-bin/gh
-bin/viral-engine
-bin/nexus_http_server.py
+# Python
+.venv/
+.ruff_cache/
+.pytest_cache/
+agent_hub.egg-info/
 
-# Skills bin directories (third-party/personal scripts)
-skills/agency-bin-*/bin/
+# AI Assistant (local only)
+.qwen/
+.workbuddy/
 
-# Third-party skills (not part of core architecture)
-skills/agency-bin-*/
-!skills/agency-bin-search/
-!skills/agency-bin-scrape/
-
-# External/Personal skills (not for open source)
-skills/agency-engineering-ai-engineer/
-skills/agency-github-researcher/
-skills/agency-magicqm-growth-hacker/
-skills/agency-social-xhs-manager/
-skills/agency-viral-writer/
-skills/agency-notebook-grounding/
-skills/agency-testing-reality-checker/
-
-# Proprietary cognitive skills (not for open source)
-skills/agency-deep-researcher/
-skills/agency-technical-cofounder/
+# Local config (sensitive, personal)
+config/
 
 # Personal skill state files
 skills/.skills_store_lock.json
@@ -107,20 +62,11 @@ bin/*.exe
 bin/*.dll
 bin/*.so
 bin/*.dylib
-knowledge/research/*.json
 config/model_router.json
 
-# Private agent state directories (contain personal skills/cache)
+# Private agent state directories
 .gemini/
 .antigravity/
 
-scripts/viral_engine/processor_v3.py
-scripts/diagnostic/
-
-# Generated manifests (personal environment snapshot)
+# Generated manifests
 TOOLS_MANIFEST.md
-project_evaluation.md.resolved
-knowledge/tools_manifest.json
-# Removed individual checkpoints
-The-Complete-Guide-to-Building-Skill-for-Claude.pdf
-NEXUS.md.v2

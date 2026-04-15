@@ -1,0 +1,47 @@
+{
+  "name": "agency-github-researcher",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "description": "GitHub 仓库深度研究员 - L1 级实证研究：README 分析、目录树、关键配置及核心代码逻辑。",
+  "tools": {
+    "analyze_repo": {
+      "description": "对 GitHub 仓库进行 L1 级实证研究：分析 README、目录树、关键配置文件及核心代码逻辑。",
+      "command": "bin/github-researcher analyze {repo_url} {depth}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "repo_url": {
+            "type": "string",
+            "description": "GitHub 仓库地址"
+          },
+          "depth": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "deep"
+            ],
+            "default": "deep",
+            "description": "分析深度：summary (README + 结构), deep (核心代码逻辑 + 架构图)"
+          }
+        },
+        "required": [
+          "repo_url"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要对 GitHub 仓库进行深度实证研究（L1 证据、架构分析、技术栈识别）时",
+    "examples": [
+      {"repo_url": "owner/repo", "depth": "summary"},
+      {"repo_url": "owner/repo", "depth": "deep"}
+    ],
+    "avoid": "快速查看仓库信息用 agent-reach/gh_view；下载源码用 agency-bin-gh"
+  },
+  "requires": {
+    "bins": [
+      "gh"
+    ],
+    "env": []
+  }
+}

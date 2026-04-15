@@ -1,0 +1,37 @@
+{
+  "name": "agency-bin-full-scan",
+  "version": "1.0.0",
+  "type": "bin-wrapper",
+  "description": "全量深度扫描所有Agent技能目录，支持递归扫描和符号链接追踪",
+  "tools": {
+    "full_scan": {
+      "description": "全量扫描所有Agent技能目录，检测嵌套技能和符号链接",
+      "command": "python3 bin/ah.py full-scan {args}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "string",
+            "description": "可选参数: --follow-links (-f) 跟踪符号链接, --max-depth (-d) 设置最大扫描深度",
+            "default": ""
+          }
+        },
+        "required": []
+      },
+      "ai_hints": {
+        "when_to_use": "需要全面扫描本地所有Agent技能目录，包括嵌套目录和符号链接",
+        "examples": [
+          {"args": ""},
+          {"args": "--follow-links"},
+          {"args": "--max-depth 5"}
+        ],
+        "avoid": "只需要快速查看顶层技能时使用 scan 命令"
+      }
+    }
+  },
+  "dependencies": [],
+  "ai_hints": {
+    "when_to_use": "需要全面了解本地Agent技能分布情况",
+    "examples": [{"query": "扫描所有技能"}]
+  }
+}

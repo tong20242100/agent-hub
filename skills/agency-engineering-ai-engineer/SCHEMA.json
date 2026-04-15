@@ -1,0 +1,8 @@
+{
+  "name": "agency-engineering-ai-engineer",
+  "version": "2.0.0",
+  "protocol": "nexus-cognitive-2.0",
+  "description": "- **Repo-Map 优先**: 在对任何新项目动手前，禁止盲目读取深度文件。必须先调用 `list_directory` 和 `grep_search` 构建「仓库地图」（类、函数签名、核心接口）。",
+  "type": "cognitive",
+  "skill_file": "SKILL.md"
+}

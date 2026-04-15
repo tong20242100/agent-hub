@@ -1,0 +1,52 @@
+{
+  "name": "agency-bin-gh",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "GitHub 专用物理工具，通过 API 或 Repo View 深入探测代码库结构。",
+  "tools": {
+    "gh_view": {
+      "description": "查看 GitHub 仓库信息。例如: gh_view(repo='owner/repo')",
+      "command": "bin/gh repo view {repo}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "repo": {
+            "type": "string",
+            "description": "GitHub 仓库路径 (owner/repo)"
+          }
+        },
+        "required": [
+          "repo"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要深入分析 GitHub 仓库（文件结构、源码、Release、搜索）时",
+    "examples": [
+      {"repo": "owner/repo", "command": "repo view"},
+      {"repo": "owner/repo", "path": "src/main.rs", "command": "raw"},
+      {"query": "rust web framework", "command": "search"}
+    ],
+    "avoid": "快速查看用 agent-reach/gh_view 更简单；完整研究报告用 agency-github-researcher"
+  },
+  "requires": {
+    "bins": [
+      "gh"
+    ]
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [
+    {
+      "name": "gh",
+      "type": "brew",
+      "description": "GitHub CLI",
+      "check_command": "gh --version",
+      "update_command": "brew upgrade gh"
+    }
+  ],
+  "type": "bin-wrapper",
+  "bin_path": "bin/gh"
+}

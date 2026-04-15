@@ -1,0 +1,69 @@
+{
+  "name": "agency-bin-x-article",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "description": "X/Twitter Article 长文获取工具 - 标题、正文、摘要、图片、统计数据",
+  "tools": {
+    "x_article": {
+      "description": "获取 X Article 文章完整内容。支持 /i/article/ 和 /status/ 两种 URL 格式，返回标题、正文、Grok摘要、所有图片URL、作者信息、发布时间和互动统计。",
+      "command": "python3 bin/x_article.py {url_or_id} {format}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url_or_id": {
+            "type": "string",
+            "description": "文章 URL 或推文 ID。支持格式: https://x.com/i/article/xxx 或 https://x.com/user/status/xxx 或纯数字 ID"
+          },
+          "format": {
+            "type": "string",
+            "default": "json",
+            "enum": ["json", "text"],
+            "description": "输出格式: json (结构化数据) 或 text (纯文本阅读)"
+          }
+        },
+        "required": ["url_or_id"]
+      }
+    }
+  },
+  "ai_hints": {
+    "triggers": ["X Article", "X 文章", "推特长文", "X 长文", "Twitter Article", "i/article"],
+    "intent": "获取 X 平台的长文内容",
+    "conditions": {
+      "use_this": [
+        "URL 包含 /i/article/",
+        "需要获取 X 平台发布的长篇文章",
+        "需要文章的所有图片 URL"
+      ],
+      "use_alternative": {
+        "x_tweet": "普通推文（非 Article 格式）",
+        "x_thread": "推文线程",
+        "stealth_get": "无登录态时的备选方案"
+      }
+    },
+    "examples": [
+      {"url_or_id": "https://x.com/i/article/2033941492633362432"},
+      {"url_or_id": "https://x.com/GoogleCloudTech/status/2033953579824758855"},
+      {"url_or_id": "2033941492633362432", "format": "text"}
+    ],
+    "output_fields": {
+      "id": "文章 ID",
+      "title": "文章标题",
+      "plain_text": "纯文本正文",
+      "summary_text": "Grok AI 生成的摘要",
+      "cover_image": "封面图片 URL 和尺寸",
+      "images": "文章内所有图片 URL 列表",
+      "author": "作者信息 (screen_name, name)",
+      "published_at": "发布时间 (ISO 8601)",
+      "stats": "互动统计 (likes, retweets, replies)"
+    }
+  },
+  "requires": {
+    "bins": [],
+    "env": []
+  },
+  "dependencies": {
+    "note": "复用 xreach 的认证信息 (~/.xreach/session.json)",
+    "setup": "首次使用需运行: xreach auth extract --browser chrome"
+  },
+  "type": "python-script"
+}

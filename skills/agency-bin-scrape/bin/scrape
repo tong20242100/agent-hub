@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""
+Scrape - 网页抓取工具
+
+用法:
+    ./bin/scrape <url>                     # 静态抓取
+    ./bin/scrape <url> --recursive         # 递归追踪外部链接
+    ./bin/scrape <url> --depth 3           # 递归深度 (默认2)
+"""
+
+import os
+import sys
+import re
+import subprocess
+import argparse
+import requests
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if "/skills/" in _SCRIPT_DIR:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../.."))
+else:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, ".."))
+
+
+def scrape_single(url: str) -> str:
+    """抓取单个页面"""
+    jina_url = f"https://r.jina.ai/{url}"
+    try:
+        response = requests.get(jina_url, timeout=30)
+        response.raise_for_status()
+        return response.text
+    except Exception as e:
+        return f"❌ Error: {e}"
+
+
+def scrape_recursive(url: str, depth: int = 2) -> None:
+    """递归抓取，追踪外部链接"""
+    print(f"🕵️ [Scout] 正在穿透: {url} (深度: {depth})")
+    
+    content = scrape_single(url)
+    if content.startswith("❌"):
+        print(content)
+        return
+    
+    print("\n" + "=" * 40)
+    print(content[:2000] + ("..." if len(content) > 2000 else ""))
+    print("=" * 40)
+    
+    if depth <= 1:
+        return
+    
+    # 提取外部链接
+    links = re.findall(r'https?://[^\s\)\>\]\"\'\}]+', content)
+    # 过滤噪音
+    filtered = [l for l in links if not any(x in l for x in ["google", "twitter.com/home", "github.com/login"])]
+    
+    if not filtered:
+        print("\n📭 无外部链接")
+        return
+    
+    print(f"\n🎯 发现 {len(filtered)} 条外部链接，追踪前 3 条...")
+    
+    for i, link in enumerate(list(set(filtered))[:3], 1):
+        print(f"\n--- [{i}] 追踪: {link} ---")
+        sub_content = scrape_single(link)
+        print(sub_content[:500] + ("..." if len(sub_content) > 500 else ""))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="网页抓取")
+    parser.add_argument("url", help="目标 URL")
+    parser.add_argument("--recursive", "-r", action="store_true", help="递归追踪外部链接")
+    parser.add_argument("--depth", "-d", type=int, default=2, help="递归深度")
+    args = parser.parse_args()
+    
+    if args.recursive:
+        scrape_recursive(args.url, args.depth)
+    else:
+        print(f"📖 抓取: {args.url}")
+        content = scrape_single(args.url)
+        print("\n" + "=" * 40)
+        print(content)
+        print("=" * 40)
+
+
+if __name__ == "__main__":
+    main()

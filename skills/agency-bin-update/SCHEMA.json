@@ -1,0 +1,78 @@
+{
+  "name": "agency-bin-update",
+  "version": "2.1.0",
+  "protocol": "nexus-2.0",
+  "description": "技能更新检测与安装 - 检测 GitHub/npm/依赖更新，交互式安装",
+  "tools": {
+    "update_check": {
+      "description": "检测所有技能和工具的更新状态，返回需要更新的列表。",
+      "command": "bin/skill_update_check",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "update_check_json": {
+      "description": "检测更新状态，JSON 格式输出（适合程序解析）。",
+      "command": "bin/skill_update_check --json",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "update_install": {
+      "description": "交互式安装更新，显示可更新列表并等待用户选择。",
+      "command": "bin/skill_update_install",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "update_install_skill": {
+      "description": "安装指定技能的更新。",
+      "command": "bin/skill_update_install ${skill}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "skill": {
+            "type": "string",
+            "description": "技能名称"
+          }
+        },
+        "required": [
+          "skill"
+        ]
+      }
+    },
+    "update_install_all": {
+      "description": "更新所有可更新的技能。",
+      "command": "bin/skill_update_install --all",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "update_deps": {
+      "description": "只更新本地脚本的依赖（brew/pip/npm）。",
+      "command": "bin/skill_update_install --deps",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要使用 技能更新检测与安装 - 检测 GitHub/npm/依赖更新，交互式安装 检测所有技能和工具的更新状... 相关功能时",
+    "examples": [],
+    "avoid": "请参考工具描述了解正确用法"
+  },
+  "requires": {
+    "bins": [],
+    "env": []
+  }
+}

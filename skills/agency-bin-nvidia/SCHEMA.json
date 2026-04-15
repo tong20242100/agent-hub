@@ -1,0 +1,95 @@
+{
+  "name": "agency-bin-nvidia",
+  "version": "1.0.0",
+  "protocol": "nexus-2.0",
+  "description": "NVIDIA GPU 模型情报站 - 搜索/探测/推荐/评测一体化",
+  "tools": {
+    "nvidia_scout": {
+      "description": "搜索可用模型。latest=最新模型，stable=推荐模型",
+      "command": "bin/nvidia scout {type}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["latest", "stable"],
+            "default": "stable",
+            "description": "latest=最新上传，stable=推荐稳定"
+          }
+        },
+        "required": []
+      }
+    },
+    "nvidia_probe": {
+      "description": "探测模型能力。--scan 执行科学评测套件",
+      "command": "bin/nvidia probe {model_id}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "description": "模型 ID，如 meta/llama-3.3-70b-instruct"
+          },
+          "scan": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否执行完整能力扫描"
+          }
+        },
+        "required": ["model_id"]
+      }
+    },
+    "nvidia_advise": {
+      "description": "根据需求推荐模型。query: code/reasoning/fast/all",
+      "command": "bin/nvidia advise {query}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "default": "all",
+            "description": "需求类型: code/reasoning/fast/all"
+          }
+        },
+        "required": []
+      }
+    },
+    "nvidia_rank": {
+      "description": "科学评测模型（GSM8K/HumanEval/MMLU）",
+      "command": "bin/nvidia rank {model_id}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string",
+            "description": "模型 ID"
+          }
+        },
+        "required": ["model_id"]
+      }
+    }
+  },
+  "ai_hints": {
+    "triggers": ["nvidia", "gpu", "模型", "model", "Llama", "DeepSeek", "推理", "inference"],
+    "intent": "NVIDIA 模型搜索与评测",
+    "conditions": {
+      "use_this": [
+        "需要查找 NVIDIA 可用模型",
+        "需要评测模型能力",
+        "需要推荐适合的模型"
+      ],
+      "use_alternative": {}
+    },
+    "examples": [
+      {"type": "stable"},
+      {"model_id": "meta/llama-3.3-70b-instruct", "scan": true},
+      {"query": "code"}
+    ]
+  },
+  "requires": {
+    "bins": ["python3", "curl"],
+    "env": ["NVIDIA_API_KEY"]
+  },
+  "type": "bin-wrapper",
+  "bin_path": "bin/nvidia"
+}

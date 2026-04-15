@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [[ "$SCRIPT_DIR" == *"/skills/"* ]]; then
+    WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/../../.." && pwd )"
+else
+    WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+fi
+
+
+# ==============================================================================
+# 🚀 GitHub Research Armament v1.0 - 专用 GitHub 深度探测。直接调用系统 `gh` CLI，穿透仓库源码、Issue、与 Release。
+# Usage: $WORKSPACE_ROOT/bin/gh <repo|search|user> <target>
+# ==============================================================================
+
+if ! command -v gh &> /dev/null; then
+    echo "❌ [Error] 系统未安装 `gh` CLI。建议使用 `brew install gh` 后重试。"
+    exit 1
+fi
+
+COMMAND=$1
+shift
+TARGETS="$@"
+
+# Helper to find REAL_TARGET (owner/repo) from a list of arguments
+find_repo() {
+    for t in $@; do
+        if [[ "$t" == *"/"* ]]; then
+            # Check if it has at least one / (for owner/repo)
+            echo "$t"
+            return
+        fi
+    done
+}
+
+case $COMMAND in
+    repo)
+        REAL_TARGET=$(find_repo $TARGETS)
+        [[ -z "$REAL_TARGET" ]] && REAL_TARGET=${@: -1}
+
+        echo "📂 [GitHub] 正在探查仓库详情: $REAL_TARGET"
+        gh repo view "$REAL_TARGET" --web=false
+        echo -e "\n--- ⚖️  仓库统计 ---"
+        gh repo view "$REAL_TARGET" --json "stargazerCount,forkCount,description,languages" -q '"★ \(.stargazerCount) | 🍴 \(.forkCount)\n描述: \(.description)\n语言: \(.languages | keys | join(", "))"'
+        ;;
+    search)
+        echo "🔍 [GitHub] 正在全域搜索: $TARGETS"
+        gh repo search $TARGETS --limit 10
+        ;;
+    user)
+        REAL_TARGET=$1
+        echo "👤 [GitHub] 正在探查用户/组织: $REAL_TARGET"
+        gh api "users/$REAL_TARGET" -q '"用户名: \(.login)\n位置: \(.location)\n简介: \(.bio)\n公开仓库: \(.public_repos)"'
+        ;;
+    contents)
+        # Handle formats like: bin/gh contents owner/repo OR bin/gh contents owner/repo relative/path
+        REPO_PART=$1
+        PATH_PART=$2
+        # If REPO_PART contains more than one /, it might be owner/repo/path
+        if [[ $(echo "$REPO_PART" | tr -cd '/' | wc -c) -gt 1 ]]; then
+            # Extract owner/repo (first two segments)
+            REAL_REPO=$(echo "$REPO_PART" | cut -d'/' -f1,2)
+            REAL_PATH=$(echo "$REPO_PART" | cut -d'/' -f3-)
+        else
+            REAL_REPO=$REPO_PART
+            REAL_PATH=$PATH_PART
+        fi
+
+        echo "🌳 [GitHub] 正在获取文件结构: $REAL_REPO (路径: ${REAL_PATH:-root})"
+        gh api "repos/$REAL_REPO/contents/$REAL_PATH" --jq '.[] | "- \(.name) (\(.type))"'
+        ;;
+    raw)
+        # Handle format: bin/gh raw owner/repo/path/to/file or bin/gh raw owner/repo path/to/file
+        REPO_PART=$1
+        PATH_PART=$2
+        if [[ $(echo "$REPO_PART" | tr -cd '/' | wc -c) -gt 1 ]]; then
+            REAL_REPO=$(echo "$REPO_PART" | cut -d'/' -f1,2)
+            REAL_PATH=$(echo "$REPO_PART" | cut -d'/' -f3-)
+        else
+            REAL_REPO=$REPO_PART
+            REAL_PATH=$PATH_PART
+        fi
+        echo "📄 [GitHub] 正在拉取源文件: $REAL_REPO / $REAL_PATH"
+        # Access the raw media type using API headers
+        gh api "repos/$REAL_REPO/contents/$REAL_PATH" -H "Accept: application/vnd.github.v3.raw"
+        ;;
+    releases)
+        REAL_TARGET=$1
+        echo "📦 [GitHub] 正在获取最新发布版本: $REAL_TARGET"
+        gh release list -R "$REAL_TARGET" --limit 3
+        ;;
+    api)
+        # Pass-through for advanced usage
+        echo "🔗 [GitHub] 执行原生 API 调用: gh api $TARGETS"
+        gh api $TARGETS
+        ;;
+    *)
+        echo "Usage: $WORKSPACE_ROOT/bin/gh <repo|search|user|contents|releases|api> <target> [additional_args]"
+        echo "Example: $WORKSPACE_ROOT/bin/gh repo D4Vinci/Scrapling"
+        echo "Example: $WORKSPACE_ROOT/bin/gh contents D4Vinci/Scrapling scrapling/core"
+        exit 1
+        ;;
+esac

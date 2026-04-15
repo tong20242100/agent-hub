@@ -1,0 +1,52 @@
+{
+  "name": "agency-bin-cross-verify",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "强制扫库验证工具，通过寻找反面证据杜绝模型幻觉。",
+  "tools": {
+    "verify": {
+      "description": "强制扫库验证单边结论，杜绝幻觉。例如: verify(claim='AI 将取代程序员')",
+      "command": "bin/cross-verify {claim}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "description": "待验证的断言或结论"
+          }
+        },
+        "required": [
+          "claim"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要交叉验证信息、核实事实时",
+    "examples": [
+      {
+        "claim": "Python 3.12 发布日期"
+      }
+    ],
+    "avoid": "需要多个信息源才能有效验证"
+  },
+  "requires": {
+    "bins": [
+      "gh"
+    ]
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [
+    {
+      "name": "gh",
+      "type": "brew",
+      "description": "GitHub CLI for issue search",
+      "check_command": "gh --version",
+      "update_command": "brew upgrade gh"
+    }
+  ],
+  "type": "bin-wrapper",
+  "bin_path": "bin/cross-verify"
+}

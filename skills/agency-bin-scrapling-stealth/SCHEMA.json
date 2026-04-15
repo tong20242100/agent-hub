@@ -1,0 +1,56 @@
+{
+  "name": "agency-bin-scrapling-stealth",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "隐身爬虫工具，专治小红书、知乎等重度防爬盾牌网页。",
+  "tools": {
+    "stealth_get": {
+      "description": "绕过 Cloudflare 盾牌提取网页。支持主动交互（点击、滚动等）。",
+      "command": "bin/scrapling-stealth {url} --click {click_target}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "目标 URL"
+          },
+          "click_target": {
+            "type": "string",
+            "description": "可选：指定要点击的按钮文本或 CSS 选择器 (如 'CC,字幕')"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要抓取有防护的网页（小红书、知乎、Cloudflare 盾牌）时",
+    "examples": [
+      {
+        "url": "https://xiaohongshu.com/..."
+      }
+    ],
+    "avoid": "普通网页不需要用这个，用 scrape_url 即可"
+  },
+  "requires": {
+    "bins": [
+      "scrapling"
+    ]
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [
+    {
+      "name": "scrapling",
+      "type": "pip",
+      "description": "Web scraping with anti-bot bypass",
+      "check_command": "pip show scrapling",
+      "update_command": "pip install --upgrade scrapling[fetchers]"
+    }
+  ],
+  "type": "bin-wrapper",
+  "bin_path": "bin/scrapling-stealth"
+}

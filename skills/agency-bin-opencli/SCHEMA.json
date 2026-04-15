@@ -1,0 +1,92 @@
+{
+  "name": "agency-bin-opencli",
+  "version": "0.6.2",
+  "protocol": "nexus-2.0",
+  "description": "OpenCLI - 17 个网站一键 API 化。复用 Chrome 登录态，零风控风险。",
+  "tools": {
+    "opencli": {
+      "description": "OpenCLI 统一入口。支持 17 个网站: bilibili/twitter/xiaohongshu/zhihu/weibo/reddit/v2ex/xueqiu/youtube/hackernews/bbc/reuters/smzdm/ctrip/boss/coupang/yahoo-finance。用法: opencli <site> <command> [args]",
+      "command": "opencli {site} {command} {args}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "site": {
+            "type": "string",
+            "description": "站点名: bilibili, twitter, xiaohongshu, zhihu, weibo, reddit, v2ex, xueqiu, youtube, hackernews, bbc, reuters, smzdm, ctrip, boss, coupang, yahoo-finance"
+          },
+          "command": {
+            "type": "string",
+            "description": "子命令: search/hot/feed/user/timeline/trending 等"
+          },
+          "args": {
+            "type": "string",
+            "default": "",
+            "description": "参数，如 --keyword 'xxx' --limit 10"
+          }
+        },
+        "required": ["site", "command"]
+      }
+    }
+  },
+  "ai_hints": {
+    "triggers": [
+      "B站", "bilibili", "小红书", "xiaohongshu", "xhs",
+      "知乎", "zhihu", "微博", "weibo", "推特", "twitter",
+      "Reddit", "V2EX", "雪球", "xueqiu", "YouTube", "youtube",
+      "HackerNews", "HN", "BBC", "路透", "reuters", "什么值得买", "smzdm",
+      "携程", "ctrip", "BOSS直聘", "boss", "Coupang", "coupang",
+      "雅虎财经", "yahoo-finance"
+    ],
+    "intent": "网站数据采集",
+    "conditions": {
+      "use_this": [
+        "需要访问上述 17 个网站的数据",
+        "需要复用浏览器登录态",
+        "需要调用网站非公开 API"
+      ],
+      "use_alternative": {
+        "scrape_url": "不在支持列表的网站",
+        "stealth_get": "有反爬保护但不在支持列表",
+        "x_search": "Twitter/X 深度搜索（用 xreach）"
+      }
+    },
+    "examples": [
+      {"site": "bilibili", "command": "hot"},
+      {"site": "xiaohongshu", "command": "search", "args": "--keyword 'AI Agent'"},
+      {"site": "zhihu", "command": "hot"},
+      {"site": "twitter", "command": "search", "args": "--keyword 'Claude'"},
+      {"site": "xueqiu", "command": "stock", "args": "--symbol SH600519"}
+    ],
+    "site_commands": {
+      "bilibili": ["hot", "search", "subtitle", "user-videos", "dynamic", "feed", "following", "history", "ranking"],
+      "xiaohongshu": ["search", "feed", "user", "notifications"],
+      "zhihu": ["hot", "search", "question"],
+      "weibo": ["hot"],
+      "twitter": ["search", "trending", "timeline", "profile", "followers", "following", "bookmarks", "post", "like"],
+      "reddit": ["hot", "search", "subreddit", "frontpage"],
+      "v2ex": ["hot", "latest", "topic", "daily", "me", "notifications"],
+      "xueqiu": ["hot", "stock", "search", "feed", "hot-stock", "watchlist"],
+      "youtube": ["search"],
+      "hackernews": ["top"],
+      "bbc": ["news"],
+      "reuters": ["search"],
+      "smzdm": ["search"],
+      "ctrip": ["search"],
+      "boss": ["search"],
+      "coupang": ["search", "add-to-cart"],
+      "yahoo-finance": ["quote"]
+    }
+  },
+  "requires": {
+    "bins": ["opencli"],
+    "env": []
+  },
+  "source": {
+    "type": "npm",
+    "package": "opencli",
+    "repo": "jackwener/opencli",
+    "installed_version": "0.6.2",
+    "update_command": "npm update -g opencli"
+  },
+  "type": "bin-wrapper"
+}

@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+"""
+NVIDIA - GPU 模型情报站
+
+子命令:
+    nvidia scout <latest|stable>     # 搜索模型
+    nvidia probe <model_id> [--scan] # 探测模型
+    nvidia advise <query>            # 推荐模型
+    nvidia rank <model_id>           # 科学评测
+"""
+
+import json
+import sys
+import subprocess
+import os
+from datetime import datetime
+
+API_URL = "https://integrate.api.nvidia.com/v1/models"
+BENCHMARK_FILE = "knowledge/research/nvidia_benchmarks.json"
+
+# ============ Scout ============
+
+SCIENTIFIC_SUITE = [
+    {
+        "id": "GSM8K-Math",
+        "name": "Mathematical Reasoning",
+        "prompt": "Natalia sold clips to 48 friends in April, then sold half as many in May. How many total?",
+        "eval": lambda x: "72" in x
+    },
+    {
+        "id": "HumanEval-Code",
+        "name": "Python Coding",
+        "prompt": "Write a Python function `has_close_elements(numbers, threshold)` that checks if any two numbers are closer than threshold.",
+        "eval": lambda x: "def has_close_elements" in x and "abs(" in x
+    },
+    {
+        "id": "MMLU-Logic",
+        "name": "Professional Knowledge",
+        "prompt": "In a double-blind experiment, who knows which subjects are in the control group? A) Subjects B) Researchers C) Both D) Neither. Answer with letter only.",
+        "eval": lambda x: "D" in x[:5]
+    }
+]
+
+
+def fetch_models():
+    try:
+        result = subprocess.run(["curl", "-s", API_URL], capture_output=True, text=True, timeout=30)
+        return json.loads(result.stdout).get("data", [])
+    except:
+        return []
+
+
+def cmd_scout(sub_type="stable"):
+    models = fetch_models()
+    if not models:
+        print("❌ 无法获取模型列表")
+        return
+    
+    weights = {"nvidia": 10, "meta": 10, "mistral": 9, "deepseek-ai": 9, "google": 8, "microsoft": 8}
+    
+    def score(m):
+        base = weights.get(m.get("owned_by", "").lower(), 5)
+        mid = m.get("id", "").lower()
+        if any(k in mid for k in ["llama-3.3", "deepseek-v3", "r1", "nemotron", "phi-4"]):
+            base += 5
+        return base
+    
+    if sub_type == "latest":
+        results = models[:15]
+        title = "🆕 最新模型"
+    else:
+        results = sorted(models, key=score, reverse=True)[:15]
+        title = "🔥 推荐模型"
+    
+    print(f"\n--- {title} ---")
+    for i, m in enumerate(results, 1):
+        print(f"{i:2d}. {m['id']} ({m.get('owned_by', '?')})")
+
+
+# ============ Probe ============
+
+def probe_capability(model_id):
+    key = os.getenv("NVIDIA_API_KEY", "")
+    results = []
+    
+    print(f"\n🧪 能力探测: {model_id}")
+    print("-" * 50)
+    
+    for test in SCIENTIFIC_SUITE:
+        print(f"[{test['name']}]...", end=" ", flush=True)
+        payload = {
+            "model": model_id,
+            "messages": [{"role": "user", "content": test['prompt']}],
+            "max_tokens": 150,
+            "temperature": 0.0
+        }
+        
+        try:
+            cmd = ["curl", "-s", "-X", "POST", f"{API_URL}/../chat/completions",
+                   "-H", "Content-Type: application/json",
+                   "-H", f"Authorization: Bearer {key}",
+                   "-d", json.dumps(payload)]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=40)
+            body = json.loads(res.stdout)
+            content = body.get('choices', [{}])[0].get('message', {}).get('content', '')
+            passed = test['eval'](content)
+            results.append({"test": test['id'], "passed": passed})
+            print("✅" if passed else "❌")
+        except Exception as e:
+            print(f"⚠️ {e}")
+    
+    return results
+
+
+def cmd_probe(model_id, do_scan=False):
+    if do_scan:
+        report = probe_capability(model_id)
+        passed = sum(1 for r in report if r['passed'])
+        
+        # 持久化
+        os.makedirs(os.path.dirname(BENCHMARK_FILE), exist_ok=True)
+        benchmarks = {}
+        if os.path.exists(BENCHMARK_FILE):
+            with open(BENCHMARK_FILE) as f:
+                benchmarks = json.load(f)
+        benchmarks[model_id] = {"data": {"passed": passed, "total": len(report)}}
+        with open(BENCHMARK_FILE, 'w') as f:
+            json.dump(benchmarks, f, indent=2)
+        
+        print(f"\n📊 评分: {passed}/{len(report)}")
+    else:
+        # 简单探测
+        print(f"🔬 探测 {model_id}...")
+        try:
+            cmd = ["curl", "-s", "-w", "\n%{http_code}", f"{API_URL}/{model_id}"]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            lines = res.stdout.strip().split('\n')
+            print(f"状态: HTTP {lines[-1] if lines else 'Unknown'}")
+        except Exception as e:
+            print(f"❌ {e}")
+
+
+# ============ Advise ============
+
+def cmd_advise(query):
+    models = fetch_models()
+    query_l = query.lower()
+    
+    # 加载实测数据
+    benchmarks = {}
+    if os.path.exists(BENCHMARK_FILE):
+        with open(BENCHMARK_FILE) as f:
+            benchmarks = json.load(f)
+    
+    scored = []
+    for m in models:
+        mid = m['id']
+        mid_l = mid.lower()
+        
+        # 基础匹配
+        match = 0
+        if "code" in query_l and ("code" in mid_l or "llama" in mid_l):
+            match = 1
+        if "reasoning" in query_l and ("r1" in mid_l or "think" in mid_l):
+            match = 1
+        if "fast" in query_l and ("8b" in mid_l or "mini" in mid_l):
+            match = 1
+        
+        if match == 0 and query not in ["all", "best"]:
+            continue
+        
+        # 实证加分
+        score = match * 10
+        if mid in benchmarks:
+            score += benchmarks[mid].get('data', {}).get('passed', 0) * 5
+        
+        scored.append({"id": mid, "score": score})
+    
+    scored.sort(key=lambda x: x['score'], reverse=True)
+    
+    print(f"\n--- 🔬 推荐: {query} ---")
+    for i, r in enumerate(scored[:5], 1):
+        tested = "⭐ 实测" if r['id'] in benchmarks else ""
+        print(f"{i}. {r['id']} {tested}")
+
+
+# ============ Rank ============
+
+def cmd_rank(model_id):
+    results = probe_capability(model_id)
+    passed = sum(1 for r in results if r['passed'])
+    
+    print(f"\n🏁 科学评分: {passed}/{len(SCIENTIFIC_SUITE)}")
+    
+    # 持久化
+    os.makedirs(os.path.dirname(BENCHMARK_FILE), exist_ok=True)
+    benchmarks = {}
+    if os.path.exists(BENCHMARK_FILE):
+        with open(BENCHMARK_FILE) as f:
+            benchmarks = json.load(f)
+    
+    benchmarks[model_id] = {"scientific_data": {"score": f"{passed}/{len(SCIENTIFIC_SUITE)}"}}
+    with open(BENCHMARK_FILE, 'w') as f:
+        json.dump(benchmarks, f, indent=2)
+
+
+# ============ Main ============
+
+def main():
+    if len(sys.argv) < 2:
+        print(__doc__)
+        sys.exit(1)
+    
+    cmd = sys.argv[1]
+    
+    if cmd == "scout":
+        sub_type = sys.argv[2] if len(sys.argv) > 2 else "stable"
+        cmd_scout(sub_type)
+    elif cmd == "probe":
+        if len(sys.argv) < 3:
+            print("用法: nvidia probe <model_id> [--scan]")
+            sys.exit(1)
+        model_id = sys.argv[2]
+        do_scan = "--scan" in sys.argv
+        cmd_probe(model_id, do_scan)
+    elif cmd in ["advise", "recommend"]:
+        query = sys.argv[2] if len(sys.argv) > 2 else "all"
+        cmd_advise(query)
+    elif cmd == "rank":
+        if len(sys.argv) < 3:
+            print("用法: nvidia rank <model_id>")
+            sys.exit(1)
+        cmd_rank(sys.argv[2])
+    else:
+        print(f"未知命令: {cmd}")
+        print(__doc__)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

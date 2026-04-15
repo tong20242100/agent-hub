@@ -1,0 +1,58 @@
+{
+  "name": "agency-bin-mcp-server",
+  "version": "2.1.0",
+  "protocol": "nexus-2.0",
+  "description": "MCP 协议适配器 - 将本地 bin/ 工具暴露给外部 AI 客户端 (Gemini CLI, iFlow, VS Code)",
+  "tools": {
+    "mcp_list_tools": {
+      "description": "列出所有可用的 MCP 工具。",
+      "command": "echo '{\"method\":\"tools/list\"}' | bin/mcp-server",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "mcp_call_tool": {
+      "description": "调用指定的 MCP 工具。",
+      "command": "echo '{\"method\":\"tools/call\",\"params\":{\"name\":\"{tool_name}\",\"arguments\":{args}}}' | bin/mcp-server",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "description": "工具名称"
+          },
+          "args": {
+            "type": "object",
+            "description": "工具参数"
+          }
+        },
+        "required": [
+          "tool_name"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要启动或管理 MCP 服务器时",
+    "examples": [
+      {
+        "server": "context7"
+      }
+    ],
+    "avoid": "确保 MCP 服务器已正确配置"
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [],
+  "type": "bin-wrapper",
+  "bin_path": "bin/mcp-server",
+  "requires": {
+    "bins": [
+      "python3"
+    ],
+    "env": []
+  }
+}

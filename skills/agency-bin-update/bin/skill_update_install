@@ -1,0 +1,314 @@
+#!/usr/bin/env python3
+"""
+技能更新安装器 - 负责下载、安装、更新版本
+
+用法：
+    python3 bin/skill_update_install                    # 交互式安装
+    python3 bin/skill_update_install <skill_name>       # 安装指定技能
+    python3 bin/skill_update_install --all              # 安装所有可更新
+    python3 bin/skill_update_install --deps             # 更新依赖
+"""
+
+import json
+import subprocess
+import tempfile
+import shutil
+import platform
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, List, Optional, Any
+
+SCRIPT_PATH = Path(__file__).resolve()
+PROJECT_ROOT = SCRIPT_PATH.parent.parent.parent.parent
+SKILLS_DIR = PROJECT_ROOT / "skills"
+BIN_DIR = PROJECT_ROOT / "bin"
+CACHE_PATH = PROJECT_ROOT / "knowledge" / ".update_cache.json"
+
+
+def get_platform_suffix() -> str:
+    """获取平台后缀"""
+    s, m = platform.system().lower(), platform.machine().lower()
+    if s == "darwin":
+        return "darwin-arm64" if m in ["arm64", "aarch64"] else "darwin-x64"
+    elif s == "linux":
+        return "linux-arm64" if m in ["arm64", "aarch64"] else "linux-x64"
+    return f"{s}-{m}"
+
+
+def get_github_release(repo: str) -> Optional[Dict]:
+    """获取 GitHub Release 信息"""
+    try:
+        r = subprocess.run(["gh", "release", "view", "--repo", repo, 
+                          "--json", "tagName,assets,url"], capture_output=True, text=True, timeout=30)
+        return json.loads(r.stdout) if r.returncode == 0 else None
+    except Exception:
+        return None
+
+
+def find_asset(release: Dict, patterns: List[str]) -> Optional[str]:
+    """查找匹配的资源"""
+    suffix = get_platform_suffix()
+    for asset in release.get("assets", []):
+        name = asset.get("name", "").lower()
+        if suffix in name:
+            return asset.get("browserDownloadUrl") or asset.get("url")
+        for p in patterns:
+            if p.lower() in name:
+                return asset.get("browserDownloadUrl") or asset.get("url")
+    return None
+
+
+def download_file(url: str, dest: Path) -> bool:
+    """下载文件"""
+    print(f"  ⬇️  下载: {url}")
+    try:
+        r = subprocess.run(["curl", "-L", "-o", str(dest), url], capture_output=True, text=True, timeout=300)
+        return r.returncode == 0
+    except Exception as e:
+        print(f"  ❌ 下载失败: {e}")
+        return False
+
+
+def install_binary(url: str, name: str) -> bool:
+    """安装二进制文件"""
+    tmp = Path(tempfile.mktemp(suffix=".download"))
+    try:
+        if not download_file(url, tmp):
+            return False
+        
+        dest = BIN_DIR / name
+        
+        # 解压
+        if url.endswith((".tar.gz", ".tgz")):
+            import tarfile
+            with tarfile.open(tmp, "r:gz") as tar:
+                for m in tar.getmembers():
+                    if m.isfile() and not m.name.startswith("."):
+                        tar.extract(m, BIN_DIR)
+                        extracted = BIN_DIR / m.name
+                        extracted.chmod(0o755)
+                        if extracted.name != name:
+                            extracted.rename(dest)
+                        break
+        elif url.endswith(".zip"):
+            import zipfile
+            with zipfile.ZipFile(tmp) as zf:
+                for n in zf.namelist():
+                    if not n.startswith(".") and not n.endswith("/"):
+                        zf.extract(n, BIN_DIR)
+                        extracted = BIN_DIR / n
+                        extracted.chmod(0o755)
+                        if extracted.name != name:
+                            extracted.rename(dest)
+                        break
+        else:
+            shutil.move(str(tmp), str(dest))
+            dest.chmod(0o755)
+        
+        print(f"  ✅ 安装成功: {dest}")
+        return True
+    except Exception as e:
+        print(f"  ❌ 安装失败: {e}")
+        return False
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def update_schema(path: str, version: str):
+    """更新 SCHEMA 版本"""
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        data["version"] = version
+        if "source" in data:
+            data["source"]["installed_version"] = version
+            data["source"]["installed_at"] = datetime.now().strftime("%Y-%m-%d")
+        with open(path, 'w') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"  ⚠️  更新版本失败: {e}")
+
+
+def install_github_release(skill: str, schema: Dict) -> bool:
+    """安装 GitHub Release"""
+    source = schema.get("source", {})
+    repo = source.get("repo", "")
+    if not repo:
+        print("  ❌ 缺少 repo 配置")
+        return False
+    
+    release = get_github_release(repo)
+    if not release:
+        print("  ❌ 无法获取 Release")
+        return False
+    
+    latest = release.get("tagName", "")
+    url = find_asset(release, source.get("asset_patterns", []))
+    
+    if not url:
+        print(f"  ❌ 未找到匹配的资源 (平台: {get_platform_suffix()})")
+        return False
+    
+    # 从 URL 提取文件名
+    name = url.split("/")[-1].split(".")[0]
+    # 清理名称
+    for suffix in ["-darwin-arm64", "-darwin-x64", "-linux-arm64", "-linux-x64", "-macos-arm64"]:
+        name = name.replace(suffix, "")
+    
+    if install_binary(url, name):
+        update_schema(schema.get("_path", ""), latest)
+        return True
+    return False
+
+
+def install_npm_package(skill: str, schema: Dict) -> bool:
+    """更新 npm 包"""
+    source = schema.get("source", {})
+    pkg = source.get("package", "")
+    cmd = source.get("update_command", f"npm update -g {pkg}")
+    
+    print(f"  🔧 {cmd}")
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
+        if r.returncode == 0:
+            print("  ✅ npm 更新成功")
+            # 获取新版本
+            vr = subprocess.run(["npm", "view", pkg, "version"], capture_output=True, text=True)
+            if vr.returncode == 0:
+                update_schema(schema.get("_path", ""), vr.stdout.strip())
+            return True
+        print(f"  ❌ 失败: {r.stderr}")
+    except Exception as e:
+        print(f"  ❌ 执行失败: {e}")
+    return False
+
+
+def update_dependency(dep: Dict) -> bool:
+    """更新依赖"""
+    cmd = dep.get("update_cmd")
+    if not cmd:
+        print(f"  ⏭️  {dep['name']}: 无更新命令")
+        return False
+    
+    print(f"  🔧 {cmd}")
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=120)
+        if r.returncode == 0:
+            print(f"  ✅ {dep['name']} 更新成功")
+            return True
+        print(f"  ❌ 失败: {r.stderr[:100]}")
+    except Exception as e:
+        print(f"  ❌ 执行失败: {e}")
+    return False
+
+
+def load_cache() -> Dict:
+    """加载缓存"""
+    if CACHE_PATH.exists():
+        with open(CACHE_PATH) as f:
+            return json.load(f)
+    return {"results": []}
+
+
+def load_schema(skill_name: str) -> Optional[Dict]:
+    """加载技能 SCHEMA"""
+    for f in SKILLS_DIR.glob("*/SCHEMA.json"):
+        try:
+            with open(f) as fp:
+                data = json.load(fp)
+            if data.get("name") == skill_name:
+                data["_path"] = str(f)
+                return data
+        except Exception:
+            pass
+    return None
+
+
+def install_skill(skill_name: str) -> bool:
+    """安装/更新指定技能"""
+    schema = load_schema(skill_name)
+    if not schema:
+        print(f"❌ 未找到技能: {skill_name}")
+        return False
+    
+    source = schema.get("source", {})
+    stype = source.get("type", "")
+    
+    if stype == "github_release":
+        return install_github_release(skill_name, schema)
+    elif stype == "npm":
+        return install_npm_package(skill_name, schema)
+    else:
+        # 更新依赖
+        deps = schema.get("dependencies", [])
+        if not deps:
+            print("  ⏭️  本地技能，无需更新")
+            return True
+        
+        success = True
+        for dep in deps:
+            if dep.get("has_update"):
+                if not update_dependency(dep):
+                    success = False
+        return success
+
+
+def interactive_install(results: List[Dict]):
+    """交互式安装"""
+    updates = [r for r in results if r.get("has_update")]
+    if not updates:
+        print("✅ 无需更新")
+        return
+    
+    print(f"\n🔴 发现 {len(updates)} 个可更新:")
+    for i, r in enumerate(updates, 1):
+        print(f"  {i}. {r['skill_name']}: {r['current_version']} → {r.get('latest_version', '依赖更新')}")
+    
+    print("\n选择操作: [a]全部更新 [数字]单个更新 [q]退出")
+    choice = input("> ").strip().lower()
+    
+    if choice == 'q':
+        return
+    elif choice == 'a':
+        for r in updates:
+            print(f"\n📦 {r['skill_name']}")
+            install_skill(r['skill_name'])
+    elif choice.isdigit():
+        idx = int(choice) - 1
+        if 0 <= idx < len(updates):
+            install_skill(updates[idx]['skill_name'])
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="技能更新安装器")
+    parser.add_argument("skill", nargs="?", help="指定技能名称")
+    parser.add_argument("--all", "-a", action="store_true", help="更新所有")
+    parser.add_argument("--deps", "-d", action="store_true", help="只更新依赖")
+    args = parser.parse_args()
+    
+    cache = load_cache()
+    results = cache.get("results", [])
+    
+    if args.skill:
+        install_skill(args.skill)
+    elif args.all:
+        updates = [r for r in results if r.get("has_update")]
+        for r in updates:
+            print(f"\n📦 {r['skill_name']}")
+            install_skill(r['skill_name'])
+    elif args.deps:
+        # 只更新有依赖更新的本地技能
+        for r in results:
+            deps = r.get("dependencies") or []
+            updateable = [d for d in deps if d.get("has_update")]
+            if updateable:
+                print(f"\n📦 {r['skill_name']}")
+                for d in updateable:
+                    update_dependency(d)
+    else:
+        interactive_install(results)
+
+
+if __name__ == "__main__":
+    main()

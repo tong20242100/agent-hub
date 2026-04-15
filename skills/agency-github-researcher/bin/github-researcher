@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/../../.." && pwd )"
+
+# ==============================================================================
+# 🐙 GitHub Researcher v1.0 - L1 深度研究工具
+# 组合 gh 和 lightpanda 完成仓库深度穿透
+# Usage: github-researcher analyze <repo_url> [summary|deep]
+# ==============================================================================
+
+if ! command -v gh &> /dev/null; then
+    echo "❌ [Error] 未安装 gh CLI。请运行: brew install gh"
+    exit 1
+fi
+
+LIGHTPANDA="$WORKSPACE_ROOT/bin/lightpanda"
+COMMAND=$1
+shift
+
+case $COMMAND in
+    analyze)
+        REPO_URL="$1"
+        DEPTH="${2:-deep}"
+
+        if [[ -z "$REPO_URL" ]]; then
+            echo "❌ 用法: github-researcher analyze <repo_url> [summary|deep]"
+            exit 1
+        fi
+
+        # 标准化 repo URL（去掉 https://github.com/ 等前缀）
+        REPO=$(echo "$REPO_URL" | sed -E 's|https?://github\.com/||; s|github\.com/||; s|/$||')
+
+        echo "🐙 [GitHub Researcher] 开始 L1 实证分析: $REPO"
+        echo "📊 分析深度: $DEPTH"
+        echo ""
+
+        # Phase 1: Tree Sniffing (目录树嗅探)
+        echo "=== Phase 1: 仓库结构探查 ==="
+        gh repo view "$REPO" --json "name,owner,description,stargazerCount,forkCount,languages,createdAt,updatedAt" 2>/dev/null || {
+            echo "❌ 无法访问仓库: $REPO"
+            exit 1
+        }
+        echo ""
+
+        # Phase 2: Doc Extraction (协议文档萃取)
+        echo "=== Phase 2: 核心文档获取 ==="
+
+        # 获取 README
+        README_URL="https://raw.githubusercontent.com/$REPO/main/README.md"
+        README_CONTENT=$($LIGHTPANDA fetch --dump markdown --log_level warn "$README_URL" 2>/dev/null)
+
+        if [[ -z "$README_CONTENT" || $(echo "$README_CONTENT" | wc -c) -lt 100 ]]; then
+            # 尝试 master 分支
+            README_URL="https://raw.githubusercontent.com/$REPO/master/README.md"
+            README_CONTENT=$($LIGHTPANDA fetch --dump markdown --log_level warn "$README_URL" 2>/dev/null)
+        fi
+
+        if [[ -n "$README_CONTENT" && $(echo "$README_CONTENT" | wc -c) -ge 100 ]]; then
+            echo "📄 README 内容:"
+            echo "$README_CONTENT" | head -100
+            echo ""
+        else
+            echo "⚠️  未获取到 README 内容"
+            echo ""
+        fi
+
+        # 如果是深度分析，继续获取更多文档
+        if [[ "$DEPTH" == "deep" ]]; then
+            echo "=== Phase 3: 深度分析 ==="
+
+            # 获取目录结构
+            echo "📂 目录结构:"
+            gh api "repos/$REPO/git/trees/main?recursive=1" --jq '.tree[].path' 2>/dev/null | head -50 || \
+            gh api "repos/$REPO/git/trees/master?recursive=1" --jq '.tree[].path' 2>/dev/null | head -50
+            echo ""
+
+            # 获取技术栈文件
+            echo "🔧 技术栈文件:"
+            for file in "package.json" "Cargo.toml" "go.mod" "requirements.txt" "pyproject.toml" "Gemfile" "pom.xml"; do
+                CONTENT=$($LIGHTPANDA fetch --dump markdown --log_level warn "https://raw.githubusercontent.com/$REPO/main/$file" 2>/dev/null)
+                if [[ -n "$CONTENT" && $(echo "$CONTENT" | wc -c) -ge 50 ]]; then
+                    echo "  ✅ $file: 已获取"
+                fi
+            done
+            echo ""
+
+            # 获取核心代码目录
+            echo "🗂️  核心目录:"
+            for dir in "src" "lib" "bin" "cmd" "core"; do
+                echo "  📁 $dir/ $(gh api "repos/$REPO/contents/$dir" 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(f'({len(d)} files)' if isinstance(d,list) else '(single file)')" 2>/dev/null || echo '(not found)')"
+            done
+        fi
+
+        echo ""
+        echo "✅ L1 实证分析完成"
+        ;;
+
+    *)
+        echo "❌ 未知命令: $COMMAND"
+        echo "用法: github-researcher analyze <repo_url> [summary|deep]"
+        exit 1
+        ;;
+esac

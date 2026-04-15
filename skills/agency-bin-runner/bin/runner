@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+import os
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if "/skills/" in _SCRIPT_DIR:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../.."))
+else:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, ".."))
+
+import sys
+import subprocess
+import os
+import time
+
+# ==============================================================================
+# 🚀 Agent Execution Runner - 物理执行捕获器
+# 作用: 供 Agent 调用以运行 prototype.py，确保输出是物理真实的，而非 LLM 幻觉产生。
+# usage: ./bin/runner <script_path>
+# ==============================================================================
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: ./bin/runner <script_path>")
+        sys.exit(1)
+
+    target_script = sys.argv[1]
+    if not os.path.exists(target_script):
+        print(f"❌ Error: File not found: {target_script}")
+        sys.exit(1)
+
+    print(f"🚀 [Runner] Launching physical execution: {target_script}")
+    print("-" * 40)
+    
+    start_time = time.time()
+    try:
+        # 运行脚本，捕获所有输出
+        result = subprocess.run(
+            [sys.executable, "-u", target_script],
+            capture_output=True,
+            text=True,
+            timeout=300 # 5分钟硬超时
+        )
+        
+        elapsed = time.time() - start_time
+        
+        print(result.stdout)
+        if result.stderr:
+            print("\n--- STDERR ---", file=sys.stderr)
+            print(result.stderr, file=sys.stderr)
+            
+        print("-" * 40)
+        print(f"✅ [Runner] Execution complete in {elapsed:.2f}s (Exit Code: {result.returncode})")
+        
+    except subprocess.TimeoutExpired:
+        print(f"🔥 [Runner] CRITICAL TIMEOUT after 300s!")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ [Runner] System Error: {str(e)}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,41 @@
+{
+  "name": "agency-bin-runner",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "物理代码执行器，负责在真实环境中运行脚本并捕获物理日志。",
+  "tools": {
+    "run_code": {
+      "description": "物理执行 Python 脚本并捕获日志。例如: run_code(file='test.py')",
+      "command": "bin/runner {file}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "type": "string",
+            "description": "要运行的脚本文件路径"
+          }
+        },
+        "required": [
+          "file"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要使用 物理代码执行器，负责在真实环境中运行脚本并捕获物理日志。 物理执行 Python 脚本并捕获日志。例... 相关功能时",
+    "examples": [],
+    "avoid": "请参考工具描述了解正确用法"
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [],
+  "type": "bin-wrapper",
+  "bin_path": "bin/runner",
+  "requires": {
+    "bins": [
+      "python3"
+    ],
+    "env": []
+  }
+}

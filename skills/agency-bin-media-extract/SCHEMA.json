@@ -1,0 +1,52 @@
+{
+  "name": "agency-bin-media-extract",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "音视频与 YouTube 提取器，支持字幕获取及 Whisper 转写降级机制。",
+  "tools": {
+    "extract": {
+      "description": "提取 YouTube/B站 等媒体的字幕与元数据。例如: extract(url='https://youtube.com/...')",
+      "command": "bin/media-extract {url}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "视频 URL"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要提取视频、音频、字幕时",
+    "examples": [
+      {
+        "url": "https://youtube.com/..."
+      }
+    ],
+    "avoid": "确保视频 URL 是公开可访问的"
+  },
+  "requires": {
+    "bins": [
+      "yt-dlp"
+    ]
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [
+    {
+      "name": "yt-dlp",
+      "type": "pip",
+      "description": "YouTube and media downloader",
+      "check_command": "yt-dlp --version",
+      "update_command": "pip install --upgrade yt-dlp"
+    }
+  ],
+  "type": "bin-wrapper",
+  "bin_path": "bin/media-extract"
+}

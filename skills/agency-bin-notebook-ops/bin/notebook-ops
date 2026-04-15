@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+
+# --- Physical Path Hardening (Nexus 2.0) ---
+import os
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if "/skills/" in _SCRIPT_DIR:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, "../../.."))
+else:
+    WORKSPACE_ROOT = os.path.abspath(os.path.join(_SCRIPT_DIR, ".."))
+
+import sys
+import asyncio
+import os
+import shutil
+import json
+import argparse
+import time
+import random
+from patchright.async_api import async_playwright
+from playwright_stealth import Stealth
+
+# ==============================================================================
+# 🛰️ notebook-ops v1.1.1 - Agentic OS: NotebookLM (Strict Official Workflow)
+# 核心演进: 强制使用 launch_persistent_context + 模拟人工录入 + 精准轮询提取
+# ==============================================================================
+
+VAULT_DIR = "/Users/tong/.openclaw-vault"
+BROWSER_PROFILE_DIR = os.path.join(VAULT_DIR, "notebooklm_stable_profile")
+AUTH_STATE_PATH = os.path.join(VAULT_DIR, "notebooklm_state.json")
+
+# 📂 同步官方配置
+QUERY_INPUT_SELECTORS = [
+    "textarea.query-box-input",
+    'textarea[aria-label="Input for queries"]',
+    'textarea[aria-label*="Ask"]',
+    'textarea'
+]
+
+RESPONSE_SELECTORS = [
+    ".to-user-container .message-text-content",
+    "[data-message-author='bot']",
+    "[data-message-author='assistant']",
+]
+
+THINKING_SELECTOR = "div.thinking-message"
+
+async def human_type(page, selector, text):
+    """ 模拟真实录入延迟，绕过流式风控 """
+    for char in text:
+        await page.type(selector, char, delay=random.randint(30, 80))
+        if random.random() < 0.05:
+            await asyncio.sleep(random.uniform(0.1, 0.3))
+
+async def clean_auth():
+    print(f"🧹 清理 Profile 目录: {BROWSER_PROFILE_DIR}")
+    if os.path.exists(BROWSER_PROFILE_DIR): shutil.rmtree(BROWSER_PROFILE_DIR)
+    if os.path.exists(AUTH_STATE_PATH): os.remove(AUTH_STATE_PATH)
+    print("✅ 已清空数据。")
+
+async def authenticate():
+    print(f"🚀 启动认证环境 (Persistent Context)...")
+    os.makedirs(VAULT_DIR, exist_ok=True)
+    async with async_playwright() as p:
+        context = await p.chromium.launch_persistent_context(
+            user_data_dir=BROWSER_PROFILE_DIR,
+            headless=False,
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--no-sandbox',
+                '--no-first-run',
+                '--no-default-browser-check'
+            ],
+            ignore_default_args=["--enable-automation"]
+        )
+        page = context.pages[0]
+        await Stealth().apply_stealth_async(page)
+        
+        print("\n🔗 正在跳转 Google 登录...")
+        await page.goto("https://accounts.google.com/ServiceLogin?service=wise")
+        
+        print("\n💡 [认证指引]")
+        print("1. 完成 Google 登录。")
+        print("2. 访问 https://notebooklm.google.com/ 确认笔记本列表可见。")
+        print("3. 按下方的 Enter 保存。\n")
+        
+        input(">>> 确认已进入 NotebookLM 界面后，按 Enter 保存状态并退出...")
+        
+        # 保存 state.json 作为备用注入源 (Fix Playwright Session Bug)
+        await context.storage_state(path=AUTH_STATE_PATH)
+        print(f"✅ 认证数据已固化。")
+        await context.close()
+
+async def query_notebook(notebook_url, question):
+    """ 强制使用持久化 Context 以保持设备指纹一致 """
+    if not os.path.exists(BROWSER_PROFILE_DIR):
+        print("❌ 错误: 未检测到 Profile，请先运行: ./bin/notebook-ops auth")
+        return None
+
+    answer = None
+    async with async_playwright() as p:
+        print(f"🚀 启动 Patchright 持久化实例 (指纹一致性模式)...")
+        # 核心变动: 即使是查询也使用 launch_persistent_context
+        context = await p.chromium.launch_persistent_context(
+            user_data_dir=BROWSER_PROFILE_DIR,
+            headless=True, # 生产环境设为 True，调试可设为 False
+            args=['--disable-blink-features=AutomationControlled']
+        )
+        page = context.pages[0]
+        
+        # 如果有备用状态，手动注入以防 Session 丢失
+        if os.path.exists(AUTH_STATE_PATH):
+            with open(AUTH_STATE_PATH, 'r') as f:
+                state = json.load(f)
+                await context.add_cookies(state.get('cookies', []))
+
+        await Stealth().apply_stealth_async(page)
+        
+        print(f"🔗 正在加载笔记本: {notebook_url}")
+        try:
+            # 官方采用 domcontentloaded，更保守
+            await page.goto(notebook_url, wait_until="domcontentloaded", timeout=60000)
+            
+            # 等待输入框
+            print("⏳ 等待提问框出现...")
+            query_element = None
+            for selector in QUERY_INPUT_SELECTORS:
+                try:
+                    query_element = await page.wait_for_selector(selector, timeout=15000, state="visible")
+                    if query_element:
+                        print(f"  ✓ 匹配成功: {selector}")
+                        input_selector = selector
+                        break
+                except: continue
+            
+            if not query_element:
+                print("❌ 提取失败: 页面未渲染提问框。")
+                return None
+            
+            # 使用官方推荐的人工录入方式
+            print(f"⌨️ 正在模拟人工录入问题: {question}")
+            await human_type(page, input_selector, question)
+            await page.keyboard.press("Enter")
+            
+            print("⏳ 正在研判生成内容 (基于官方稳定轮询)...")
+            last_text = ""
+            stable_count = 0
+            
+            for i in range(45): # 约 90 秒
+                await asyncio.sleep(2)
+                
+                # 思考中检查
+                thinking = await page.query_selector(THINKING_SELECTOR)
+                if thinking and await thinking.is_visible():
+                    print("  [Thinking...]")
+                    stable_count = 0
+                    continue
+                
+                found_current = ""
+                for selector in RESPONSE_SELECTORS:
+                    msgs = await page.query_selector_all(selector)
+                    if msgs:
+                        found_current = await msgs[-1].inner_text()
+                        found_current = found_current.strip()
+                        if found_current: break
+                
+                if found_current:
+                    # 打印摘要
+                    print(f"  [Polling] Content length: {len(found_current)}")
+                    if found_current == last_text and len(found_current) > 20:
+                        stable_count += 1
+                        if stable_count >= 3: 
+                            answer = found_current
+                            break
+                    else:
+                        stable_count = 0
+                        last_text = found_current
+                else:
+                    print("  [Waiting for response start...]")
+            
+            if answer:
+                print(f"\n✅ 溯源结果:\n{'-'*50}\n{answer}\n{'-'*50}")
+            else:
+                print("⚠️ 抓取超时。可能是由于网络延迟或复杂的公式/表格生成中。")
+                
+        except Exception as e:
+            print(f"❌ 运行异常: {e}")
+        finally:
+            await context.close()
+    
+    return answer
+
+def main():
+    parser = argparse.ArgumentParser(description="Agentic OS: NotebookLM (Official Repo Flow)")
+    subparsers = parser.add_subparsers(dest="command")
+    subparsers.add_parser("auth", help="认证流程")
+    subparsers.add_parser("clean", help="重置")
+    query_parser = subparsers.add_parser("query", help="执行查询")
+    query_parser.add_argument("--url", required=True)
+    query_parser.add_argument("--q", required=True)
+    
+    args = parser.parse_args()
+    if args.command == "auth": asyncio.run(authenticate())
+    elif args.command == "clean": asyncio.run(clean_auth())
+    elif args.command == "query": asyncio.run(query_notebook(args.url, args.q))
+    else: parser.print_help()
+
+if __name__ == "__main__": main()

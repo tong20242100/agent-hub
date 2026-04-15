@@ -1,0 +1,72 @@
+{
+  "name": "agency-bin-notebook-ops",
+  "version": "2.1.0",
+  "protocol": "nexus-2.0",
+  "description": "NotebookLM 自动化工具 - 认证、查询、重置",
+  "tools": {
+    "notebook_auth": {
+      "description": "启动 Google 登录认证流程，保存 NotebookLM 登录状态。",
+      "command": "bin/notebook-ops auth",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    },
+    "notebook_query": {
+      "description": "查询 NotebookLM 笔记本内容。",
+      "command": "bin/notebook-ops query --url {notebook_url} --q {question}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "notebook_url": {
+            "type": "string",
+            "description": "NotebookLM 笔记本 URL"
+          },
+          "question": {
+            "type": "string",
+            "description": "问题内容"
+          }
+        },
+        "required": [
+          "notebook_url",
+          "question"
+        ]
+      }
+    },
+    "notebook_clean": {
+      "description": "清除 NotebookLM 认证状态，重新登录时使用。",
+      "command": "bin/notebook-ops clean",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要使用 NotebookLM 自动化工具 - 认证、查询、重置 启动 Google 登录认证流程，保存 No... 相关功能时",
+    "examples": [],
+    "avoid": "请参考工具描述了解正确用法"
+  },
+  "requires": {
+    "bins": [
+      "notebook-ops"
+    ]
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [
+    {
+      "name": "patchright",
+      "type": "pip"
+    },
+    {
+      "name": "playwright-stealth",
+      "type": "pip"
+    }
+  ],
+  "type": "bin-wrapper",
+  "bin_path": "bin/notebook-ops"
+}

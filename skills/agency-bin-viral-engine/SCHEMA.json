@@ -1,0 +1,45 @@
+{
+  "name": "agency-bin-viral-engine",
+  "version": "2.0.2",
+  "protocol": "nexus-2.0",
+  "description": "内容裂变引擎，将深度报告自动转化为高互动的 X Thread 矩阵。",
+  "tools": {
+    "transform": {
+      "description": "将长篇研报转化为 X 爆款多推文 Thread。例如: transform(report='report.md')",
+      "command": "bin/viral-engine {report}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "string",
+            "description": "输入研报的文件路径"
+          }
+        },
+        "required": [
+          "report"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "when_to_use": "当用户需要生成病毒式传播内容、社交媒体文案时",
+    "examples": [
+      {
+        "topic": "AI 趋势"
+      }
+    ],
+    "avoid": "生成的内容需要人工审核"
+  },
+  "source": {
+    "type": "local_script"
+  },
+  "dependencies": [],
+  "type": "bin-wrapper",
+  "bin_path": "bin/viral-engine",
+  "requires": {
+    "bins": [
+      "python3"
+    ],
+    "env": []
+  }
+}
