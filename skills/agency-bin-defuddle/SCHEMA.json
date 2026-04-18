@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-defuddle",
   "version": "0.14.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "Defuddle - Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markdown",
   "tools": {
     "defuddle_parse": {
@@ -115,7 +115,11 @@
   "ai_hints": {
     "when_to_use": "当用户需要使用 Defuddle - Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markd... 相关功能时",
     "examples": [],
-    "avoid": "请参考工具描述了解正确用法"
+    "avoid": "请参考工具描述了解正确用法",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "source": {
     "type": "npm",

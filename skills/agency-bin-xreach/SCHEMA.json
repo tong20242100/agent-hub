@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-xreach",
   "version": "1.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "X/Twitter 数据采集 CLI - 搜索/用户/推文/线程/关注关系",
   "tools": {
     "x_search": {
@@ -171,20 +171,10 @@
       "thread"
     ],
     "intent": "X/Twitter 数据采集",
-    "conditions": {
-      "use_this": [
-        "需要搜索 Twitter 内容",
-        "需要获取用户信息",
-        "需要获取推文或线程"
-      ],
-      "use_alternative": {
-        "x_article": "需要获取 X Article 长文内容",
-        "search": "全网搜索（不限于 Twitter）"
-      }
-    },
+    "when_to_use": "用户需要搜索或获取 X/Twitter 平台内容时：搜索推文、查看用户资料、获取推文/线程、分析关注关系。例如'搜一下 X 上关于 AI Agent 的讨论'、'看看 elonmusk 最近发了什么'",
     "examples": [
       {
-        "query": "AI Agent"
+        "query": "AI Agent framework 2026"
       },
       {
         "handle": "elonmusk"
@@ -192,6 +182,17 @@
       {
         "url_or_id": "https://x.com/user/status/123456"
       }
+    ],
+    "avoid": "搜索全网信息（不限 Twitter）用 web_search；获取 X Article 长文用 x_article；需要特定平台内容用对应工具（opencli/bb-browser）",
+    "conditions": {
+      "use_alternative": {
+        "x_article": "需要获取 X Article 长文内容",
+        "web_search": "全网搜索（不限于 Twitter）"
+      }
+    },
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
     ]
   },
   "requires": {

@@ -1,0 +1,68 @@
+{
+  "palettes": {
+    "沉思": {
+      "background": "#F5F2ED",
+      "structure": "#C4B5A0",
+      "bounce": "#8B5E3C",
+      "scenarios": ["哲学", "认知", "本质"]
+    },
+    "锐利": {
+      "background": "#EDEDF0",
+      "structure": "#6E6E80",
+      "bounce": "#D93025",
+      "scenarios": ["批判", "解构", "争议"]
+    },
+    "温暖": {
+      "background": "#F7F4EF",
+      "structure": "#C8B898",
+      "bounce": "#C17F4E",
+      "scenarios": ["人文", "情感", "故事"]
+    },
+    "技术": {
+      "background": "#F0F3F7",
+      "structure": "#8EAAB8",
+      "bounce": "#1A936F",
+      "scenarios": ["架构", "系统", "代码"]
+    },
+    "科研": {
+      "background": "#F2F6F4",
+      "structure": "#7DAE96",
+      "bounce": "#D68C45",
+      "scenarios": ["论文", "实验", "研究"]
+    },
+    "创意": {
+      "background": "#F6F3F2",
+      "structure": "#C0A89C",
+      "bounce": "#B8432F",
+      "scenarios": ["艺术", "设计", "美学"]
+    },
+    "商业": {
+      "background": "#F4F3F0",
+      "structure": "#A8A498",
+      "bounce": "#2D6A4F",
+      "scenarios": ["商业", "金融", "战略"]
+    },
+    "默认": {
+      "background": "#F2F2F2",
+      "structure": "#B8D8BE",
+      "bounce": "#E91E63",
+      "scenarios": ["无法归类时"]
+    }
+  },
+  "rules": {
+    "color": {
+      "neutral_percent": 90,
+      "structure_percent": 8,
+      "bounce_percent": 2,
+      "max_accent_colors": 1,
+      "max_bounce_points": 2,
+      "no_pure_black": true
+    },
+    "layout": {
+      "min_ratio": "10:1",
+      "min_font_px": 36,
+      "no_centered_hero": true,
+      "no_equal_thirds": true
+    }
+  }
+}

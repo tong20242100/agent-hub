@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-x-article",
   "version": "1.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "X/Twitter Article 长文获取工具 - 标题、正文、摘要、图片、统计数据",
   "tools": {
     "x_article": {
@@ -17,48 +17,61 @@
           "format": {
             "type": "string",
             "default": "json",
-            "enum": ["json", "text"],
+            "enum": [
+              "json",
+              "text"
+            ],
             "description": "输出格式: json (结构化数据) 或 text (纯文本阅读)"
           }
         },
-        "required": ["url_or_id"]
+        "required": [
+          "url_or_id"
+        ]
       }
     }
   },
   "ai_hints": {
-    "triggers": ["X Article", "X 文章", "推特长文", "X 长文", "Twitter Article", "i/article"],
+    "triggers": [
+      "X Article",
+      "X 文章",
+      "推特长文",
+      "X 长文",
+      "Twitter Article",
+      "i/article"
+    ],
     "intent": "获取 X 平台的长文内容",
+    "when_to_use": "用户需要获取 X/Twitter 平台发布的 Article 长篇文章时。URL 通常包含 `/i/article/` 或为推文链接。例如'帮我读这篇 X Article'、'提取这篇文章的所有图片'",
+    "examples": [
+      {
+        "url_or_id": "https://x.com/i/article/2033941492633362432",
+        "format": "json"
+      },
+      {
+        "url_or_id": "https://x.com/GoogleCloudTech/status/2033953579824758855",
+        "format": "json"
+      },
+      {
+        "url_or_id": "2033941492633362432",
+        "format": "text"
+      }
+    ],
+    "avoid": "普通推文（非 Article 格式）用 x_tweet 或 x_thread；无 X 登录态时用 stealth_get 作为备选",
     "conditions": {
-      "use_this": [
-        "URL 包含 /i/article/",
-        "需要获取 X 平台发布的长篇文章",
-        "需要文章的所有图片 URL"
-      ],
       "use_alternative": {
         "x_tweet": "普通推文（非 Article 格式）",
         "x_thread": "推文线程",
         "stealth_get": "无登录态时的备选方案"
       }
     },
-    "examples": [
-      {"url_or_id": "https://x.com/i/article/2033941492633362432"},
-      {"url_or_id": "https://x.com/GoogleCloudTech/status/2033953579824758855"},
-      {"url_or_id": "2033941492633362432", "format": "text"}
-    ],
-    "output_fields": {
-      "id": "文章 ID",
-      "title": "文章标题",
-      "plain_text": "纯文本正文",
-      "summary_text": "Grok AI 生成的摘要",
-      "cover_image": "封面图片 URL 和尺寸",
-      "images": "文章内所有图片 URL 列表",
-      "author": "作者信息 (screen_name, name)",
-      "published_at": "发布时间 (ISO 8601)",
-      "stats": "互动统计 (likes, retweets, replies)"
-    }
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "requires": {
-    "bins": ["xreach"],
+    "bins": [
+      "xreach"
+    ],
     "env": []
   },
   "dependencies": [

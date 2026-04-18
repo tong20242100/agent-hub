@@ -94,27 +94,55 @@ def load_all_schemas() -> Dict[str, Dict]:
     return schemas
 
 
-def build_tool_description(tool_name: str, tool_def: Dict, schema: Dict) -> str:
-    """构建工具描述，包含 ai_hints 让 LLM 能精准选择"""
+def build_tool_description(tool_name: str, tool_def: Dict, schema: Dict, skill_dir: str = "") -> str:
+    """构建工具描述，包含 ai_hints 让 LLM 能精准选择
+    
+    设计原则（原则 3 - 渐进式披露）：
+    - 如果技能目录下存在 SKILL.md，告知 AI 去深度读取
+    - 避免一次性加载所有内容，按需披露
+    """
     parts = []
     
     base_desc = tool_def.get("description", "")
     if base_desc:
         parts.append(base_desc)
     
-    ai_hints = tool_def.get("ai_hints", {})
+    # 合并 ai_hints (tool-level 优先于 root-level)
+    root_hints = schema.get("ai_hints", {})
+    tool_hints = tool_def.get("ai_hints", {})
+    ai_hints = {**root_hints, **tool_hints}
     
+    # 1. 自检逻辑 (Self-Check)
+    if ai_hints.get("self_check"):
+        check_list = ai_hints["self_check"]
+        if isinstance(check_list, list):
+            parts.append("\n[Self-Check / 调用前自检]:")
+            for item in check_list:
+                parts.append(f"\n- {item}")
+    
+    # 2. 使用场景
     if ai_hints.get("when_to_use"):
-        parts.append(f"\n使用场景: {ai_hints['when_to_use']}")
+        parts.append(f"\n[Usage Scenarios / 使用场景]:\n{ai_hints['when_to_use']}")
     
+    # 3. 示例
     if ai_hints.get("examples"):
         examples = ai_hints["examples"]
         if examples:
-            example_str = json.dumps(examples[0], ensure_ascii=False)
-            parts.append(f"\n示例: {example_str}")
+            # 获取第一个示例
+            example_data = examples[0]
+            # 如果示例是字典且包含 tool_name 对应的参数
+            example_str = json.dumps(example_data, ensure_ascii=False)
+            parts.append(f"\n[Example / 示例]:\n{example_str}")
     
+    # 4. 禁止场景 / 注意事项
     if ai_hints.get("avoid"):
-        parts.append(f"\n注意: {ai_hints['avoid']}")
+        parts.append(f"\n[Notice / 注意]:\n{ai_hints['avoid']}")
+    
+    # 5. 渐进式披露：如果存在 SKILL.md，引导 AI 深度读取
+    if skill_dir:
+        skill_md_path = Path(skill_dir) / "SKILL.md"
+        if skill_md_path.exists():
+            parts.append(f"\n\n[Deep Guide / 深度指南]: 此工具拥有详细的任务指令和决策逻辑。如需高级指南或处理复杂场景，请务必调用 read_file 工具读取: {skill_md_path}")
     
     return "".join(parts)
 
@@ -137,7 +165,7 @@ def get_all_tools() -> List[Dict]:
                 "tool_name": tool_name,
                 "skill_name": skill_name,
                 "skill_dir": skill_dir,
-                "description": build_tool_description(tool_name, tool_def, schema),
+                "description": build_tool_description(tool_name, tool_def, schema, skill_dir),
                 "parameters": tool_def.get("parameters", {
                     "type": "object",
                     "properties": {},

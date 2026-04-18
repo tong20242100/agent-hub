@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-update",
   "version": "2.1.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "技能更新检测与安装 - 检测 GitHub/npm/依赖更新，交互式安装",
   "tools": {
     "update_check": {
@@ -69,7 +69,11 @@
   "ai_hints": {
     "when_to_use": "当用户需要使用 技能更新检测与安装 - 检测 GitHub/npm/依赖更新，交互式安装 检测所有技能和工具的更新状... 相关功能时",
     "examples": [],
-    "avoid": "请参考工具描述了解正确用法"
+    "avoid": "请参考工具描述了解正确用法",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "requires": {
     "bins": [],

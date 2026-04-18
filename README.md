@@ -40,6 +40,17 @@ graph LR
 
 所有 Agent 连接同一个 MCP Server，共享同一套工具。
 
+### 模块化设计
+
+```
+bin/
+├── ah.py              # CLI 入口
+└── core/              # 核心逻辑
+    ├── auditor.py     # 合规审计
+    ├── discovery.py   # 跨平台探测
+    └── manager.py     # 技能管理
+```
+
 ---
 
 ## 核心价值
@@ -51,15 +62,18 @@ graph LR
 ```json
 {
   "ai_hints": {
-    "when_to_use": "用户需要获取最新网页信息",
+    "self_check": [
+      "你有原生搜索能力吗？有 → 优先用自己的",
+      "需要 JSON 结构化输出？是 → 用此工具"
+    ],
+    "when_to_use": "你没有原生搜索能力时，或需要 Tavily 结构化输出时",
     "examples": [{"query": "AI Agent 最新进展"}],
-    "avoid": "不要用于已知的静态页面，直接用 scrape_url",
-    "alternatives": "如果已知具体 URL，用 scrape_url 更快"
+    "avoid": "你有原生能力时不要用；已知 URL 用 scrape_url"
   }
 }
 ```
 
-工具不只是"能用"，而是主动告诉 AI 何时用、何时不用、有什么替代方案。
+`self_check` 让 AI 在调用工具前**强制自检**，避免滥用外部工具。
 
 AI 自己选择工具，不需要路由器、不需要向量检索。
 
@@ -68,8 +82,11 @@ AI 自己选择工具，不需要路由器、不需要向量检索。
 ```bash
 ah scan           # 扫描本地所有工具（包括各 Agent 安装的）
 ah list           # 查看工具列表和分布
+ah status [name]  # 查看技能分布状态
 ah update         # 检测哪些工具需要更新
 ah update -i      # 一键更新所有工具
+ah check --fix    # 合规性审计（检查 SCHEMA 格式、语气等）
+ah discover       # 全域探测其他 Agent 的技能
 ah remove <name>  # 卸载工具
 ```
 
@@ -102,11 +119,11 @@ MCP Server 自动发现、自动暴露。
 
 | 功能域 | 工具 |
 |--------|------|
-| 搜索与抓取 | web_search, scrape_url, stealth_get |
+| 搜索与抓取 | web_search, scrape_url, stealth_get, lightpanda |
 | 浏览器控制 | chrome-devtools, bb-browser |
 | 社交媒体 | xiaohongshu-mcp, x-article, xreach |
 | 开发工具 | gh, deep-researcher, mcp-server |
-| 研究与情报 | nvidia-scout, cross-verify |
+| 研究与情报 | nvidia, cross-verify |
 | 记忆与通知 | memory, notify |
 
 详见 [完整工具清单](docs/skills.md)

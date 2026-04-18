@@ -1,7 +1,7 @@
 {
   "name": "agency-github-researcher",
   "version": "1.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "GitHub 仓库深度研究员 - L1 级实证研究：README 分析、目录树、关键配置及核心代码逻辑。",
   "tools": {
     "analyze_repo": {
@@ -42,7 +42,11 @@
         "depth": "deep"
       }
     ],
-    "avoid": "快速查看仓库信息用 agent-reach/gh_view；下载源码用 agency-bin-gh"
+    "avoid": "快速查看仓库信息用 agent-reach/gh_view；下载源码用 agency-bin-gh",
+    "self_check": [
+      "本地是否已配置 gh CLI？否 -> 告知用户或尝试用 lightpanda 抓取 repo 页面",
+      "需要对仓库进行深度 L1 实证分析？是 -> 调此工具"
+    ]
   },
   "requires": {
     "bins": [

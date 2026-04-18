@@ -1,0 +1,33 @@
+{
+  "report_template": {
+    "title": "[仓库名] 分析报告",
+    "sections": [
+      {
+        "name": "核心发现",
+        "required": true,
+        "fields": ["解决的问题", "技术栈", "核心依赖"]
+      },
+      {
+        "name": "目录结构",
+        "required": true,
+        "fields": ["根目录结构", "核心目录说明"]
+      },
+      {
+        "name": "工程成熟度",
+        "required": true,
+        "levels": {
+          "L1": "有文档 + 测试覆盖",
+          "L2": "有文档但测试覆盖不足",
+          "L3": "有基本文档",
+          "L4": "文档缺失或不完整"
+        }
+      }
+    ]
+  },
+  "evidence_rules": {
+    "l1_required": true,
+    "must_quote_path": true,
+    "must_quote_line": true,
+    "forbidden_words": ["大概是", "可能是", "应该是", "差不多"]
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-xiaohongshu-mcp",
   "version": "2.1.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "小红书 MCP 标准化工具服务器，支持搜索、自动发布与评论管理。",
   "tools": {
     "login": {
@@ -78,7 +78,11 @@
         "query": "Python 学习笔记"
       }
     ],
-    "avoid": "需要先登录才能搜索"
+    "avoid": "需要先登录才能搜索",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "source": {
     "type": "github_release",

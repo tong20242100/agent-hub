@@ -1,0 +1,60 @@
+{
+  "phases": {
+    "phase1_exploration": {
+      "required_sources": ["web_search", "gh_search", "x_search", "reddit_search"],
+      "optional_sources": ["memory_query"],
+      "min_search_queries": 3,
+      "checklist": [
+        "原生搜索已执行（≥3 个不同角度的查询）",
+        "GitHub 搜索已执行（必须）",
+        "Twitter/X 搜索已执行（必须）",
+        "Reddit 搜索已执行（必须）",
+        "本地知识库已查询（如适用）"
+      ]
+    },
+    "phase2_deep_dive": {
+      "required_sources": ["web_search", "gh_search_code", "x_search", "reddit_search"],
+      "checklist": [
+        "原生搜索+抓取已执行",
+        "GitHub 代码搜索已执行（必须）",
+        "Twitter/X 专家观点已搜索（必须）",
+        "Reddit 使用经验已搜索（必须）"
+      ]
+    },
+    "phase3_validation": {
+      "required_sources": ["web_search", "gh_search", "x_search", "reddit_search"],
+      "coverage_types": ["事实与数据", "案例与实例", "专家观点", "趋势预测", "对比分析", "挑战批评"],
+      "checklist": [
+        "数据统计已搜索",
+        "挑战限制已搜索",
+        "专家观点已搜索",
+        "GitHub 案例搜索已执行（必须）",
+        "Reddit 真实反馈已搜索（必须）",
+        "Twitter/X 最新动态已搜索（必须）"
+      ]
+    },
+    "phase4_synthesis": {
+      "validation_questions": [
+        "关键事实和数据点是什么？",
+        "有哪些 2-3 个具体实际案例？",
+        "专家怎么说？",
+        "当前趋势和未来方向？",
+        "有哪些挑战或限制？",
+        "为什么这个话题现在相关/重要？"
+      ],
+      "min_angle_count": 3,
+      "platform_minimums": {
+        "web_search": 1,
+        "gh_search": 1,
+        "x_search": 1,
+        "reddit_search": 1
+      }
+    }
+  },
+  "evidence_levels": {
+    "L1": {"name": "实证", "source": "官方文档/GitHub 源码/物理运行日志"},
+    "L2": {"name": "共识", "source": "3 个以上独立专业来源的交叉验证"},
+    "L3": {"name": "推断", "source": "基于现有事实的逻辑闭环推演"},
+    "L4": {"name": "假说", "source": "尚未验证的猜测，必须标注需进一步验证"}
+  }
+}

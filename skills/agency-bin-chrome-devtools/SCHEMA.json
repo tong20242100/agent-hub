@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-chrome-devtools",
   "version": "0.20.1",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "Chrome DevTools MCP - Google 官方 MCP 服务器，让 AI Agent 控制和检查 Chrome 浏览器",
   "tools": {
     "click": {
@@ -19,14 +19,25 @@
             "description": "元素描述（供 AI 识别）"
           }
         },
-        "required": ["selector"]
+        "required": [
+          "selector"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要在浏览器中点击按钮、链接或其他可交互元素时",
         "examples": [
-          {"selector": "button#submit", "element": "提交按钮"},
-          {"selector": "a.more-link", "element": "查看更多链接"},
-          {"selector": "[data-testid='accept-cookies']", "element": "Cookie 同意按钮"}
+          {
+            "selector": "button#submit",
+            "element": "提交按钮"
+          },
+          {
+            "selector": "a.more-link",
+            "element": "查看更多链接"
+          },
+          {
+            "selector": "[data-testid='accept-cookies']",
+            "element": "Cookie 同意按钮"
+          }
         ],
         "avoid": "静态页面抓取不需要交互，用 scrape_url 更快"
       }
@@ -46,13 +57,22 @@
             "description": "要填充的值"
           }
         },
-        "required": ["selector", "value"]
+        "required": [
+          "selector",
+          "value"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要在浏览器中填充单个输入框时",
         "examples": [
-          {"selector": "input[name='q']", "value": "AI agents"},
-          {"selector": "#username", "value": "user@example.com"}
+          {
+            "selector": "input[name='q']",
+            "value": "AI agents"
+          },
+          {
+            "selector": "#username",
+            "value": "user@example.com"
+          }
         ],
         "avoid": "多个字段用 fill_form 一次性填充更高效"
       }
@@ -68,13 +88,19 @@
             "description": "要输入的文本"
           }
         },
-        "required": ["text"]
+        "required": [
+          "text"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要在当前焦点元素中输入文本时（模拟键盘输入）",
         "examples": [
-          {"text": "Hello, world!"},
-          {"text": "搜索关键词"}
+          {
+            "text": "Hello, world!"
+          },
+          {
+            "text": "搜索关键词"
+          }
         ],
         "avoid": "如果知道具体输入框选择器，用 fill 更精确"
       }
@@ -90,13 +116,19 @@
             "description": "目标 URL"
           }
         },
-        "required": ["url"]
+        "required": [
+          "url"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要打开新网页或跳转到特定 URL 时",
         "examples": [
-          {"url": "https://github.com"},
-          {"url": "https://example.com/product/123"}
+          {
+            "url": "https://github.com"
+          },
+          {
+            "url": "https://example.com/product/123"
+          }
         ],
         "avoid": "如果只是抓取静态内容，用 scrape_url 不需要启动浏览器"
       }
@@ -110,7 +142,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要查看当前浏览器中打开了哪些标签页时",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "单页面操作不需要调用"
       }
     },
@@ -125,12 +159,16 @@
             "description": "页面 ID"
           }
         },
-        "required": ["pageId"]
+        "required": [
+          "pageId"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要在多个标签页之间切换时",
         "examples": [
-          {"pageId": "page-123"}
+          {
+            "pageId": "page-123"
+          }
         ],
         "avoid": "先用 list_pages 获取 pageId"
       }
@@ -151,7 +189,9 @@
       "ai_hints": {
         "when_to_use": "当用户需要打开新标签页，同时保持当前页面不关闭时",
         "examples": [
-          {"url": "https://example.com"},
+          {
+            "url": "https://example.com"
+          },
           {}
         ],
         "avoid": "如果只是导航，用 navigate_page 更简单"
@@ -173,7 +213,9 @@
       "ai_hints": {
         "when_to_use": "当用户需要关闭特定标签页时",
         "examples": [
-          {"pageId": "page-456"},
+          {
+            "pageId": "page-456"
+          },
           {}
         ],
         "avoid": "关闭最后一个页面会结束会话"
@@ -196,7 +238,9 @@
         "when_to_use": "当用户需要可视化当前页面状态，或调试页面渲染问题时",
         "examples": [
           {},
-          {"selector": ".product-card"}
+          {
+            "selector": ".product-card"
+          }
         ],
         "avoid": "如果只需要文本内容，用 take_snapshot 更高效"
       }
@@ -210,7 +254,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要了解页面结构、找到可交互元素时",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "这是探索页面的第一步，先调用这个再决定后续操作"
       }
     },
@@ -225,14 +271,22 @@
             "description": "JavaScript 代码"
           }
         },
-        "required": ["script"]
+        "required": [
+          "script"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要获取动态生成的数据、执行复杂页面操作时",
         "examples": [
-          {"script": "document.title"},
-          {"script": "document.querySelector('.price').textContent"},
-          {"script": "Array.from(document.querySelectorAll('.item')).map(e => e.textContent)"}
+          {
+            "script": "document.title"
+          },
+          {
+            "script": "document.querySelector('.price').textContent"
+          },
+          {
+            "script": "Array.from(document.querySelectorAll('.item')).map(e => e.textContent)"
+          }
         ],
         "avoid": "简单元素操作用 click/fill 更直观"
       }
@@ -248,13 +302,19 @@
             "description": "CSS 选择器"
           }
         },
-        "required": ["selector"]
+        "required": [
+          "selector"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要触发下拉菜单、工具提示等悬停效果时",
         "examples": [
-          {"selector": ".dropdown-toggle"},
-          {"selector": "[data-tooltip]"}
+          {
+            "selector": ".dropdown-toggle"
+          },
+          {
+            "selector": "[data-tooltip]"
+          }
         ],
         "avoid": "大多数操作不需要悬停"
       }
@@ -270,14 +330,22 @@
             "description": "按键名称（如 Enter, Tab, Escape）"
           }
         },
-        "required": ["key"]
+        "required": [
+          "key"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要发送键盘事件，如提交表单、导航等",
         "examples": [
-          {"key": "Enter"},
-          {"key": "Escape"},
-          {"key": "Tab"}
+          {
+            "key": "Enter"
+          },
+          {
+            "key": "Escape"
+          },
+          {
+            "key": "Tab"
+          }
         ],
         "avoid": "表单提交通常用 click 点击提交按钮更可靠"
       }
@@ -306,9 +374,16 @@
       "ai_hints": {
         "when_to_use": "当页面需要时间加载内容，用户需要等待特定元素出现时",
         "examples": [
-          {"selector": ".results-loaded"},
-          {"text": "加载完成"},
-          {"selector": "table.data", "timeout": 5000}
+          {
+            "selector": ".results-loaded"
+          },
+          {
+            "text": "加载完成"
+          },
+          {
+            "selector": "table.data",
+            "timeout": 5000
+          }
         ],
         "avoid": "过度等待会拖慢操作，设置合理的 timeout"
       }
@@ -322,7 +397,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要分析页面性能问题时，开始录制性能数据",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "常规操作不需要性能追踪"
       }
     },
@@ -335,7 +412,9 @@
       },
       "ai_hints": {
         "when_to_use": "结束性能录制，准备分析数据",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "必须先调用 performance_start_trace"
       }
     },
@@ -348,7 +427,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要获取性能分析报告和优化建议时",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "需要先执行性能追踪"
       }
     },
@@ -361,7 +442,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要查看页面加载过程中的网络请求，调试 API 调用时",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "如果知道具体请求 ID，直接用 get_network_request"
       }
     },
@@ -376,12 +459,16 @@
             "description": "请求 ID"
           }
         },
-        "required": ["requestId"]
+        "required": [
+          "requestId"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要查看特定请求的详细信息（请求头、响应体等）",
         "examples": [
-          {"requestId": "request-123"}
+          {
+            "requestId": "request-123"
+          }
         ],
         "avoid": "先用 list_network_requests 获取 requestId"
       }
@@ -395,7 +482,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要查看页面的控制台输出，调试 JavaScript 错误时",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "正常操作不需要查看控制台"
       }
     },
@@ -410,12 +499,16 @@
             "description": "消息 ID"
           }
         },
-        "required": ["messageId"]
+        "required": [
+          "messageId"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要查看特定控制台消息的详细信息",
         "examples": [
-          {"messageId": "msg-456"}
+          {
+            "messageId": "msg-456"
+          }
         ],
         "avoid": "先用 list_console_messages 获取 messageId"
       }
@@ -435,13 +528,23 @@
             "description": "审计类别（performance, accessibility, seo 等）"
           }
         },
-        "required": ["url"]
+        "required": [
+          "url"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要全面评估网页性能、可访问性、SEO 等指标时",
         "examples": [
-          {"url": "https://example.com"},
-          {"url": "https://example.com", "categories": ["performance", "accessibility"]}
+          {
+            "url": "https://example.com"
+          },
+          {
+            "url": "https://example.com",
+            "categories": [
+              "performance",
+              "accessibility"
+            ]
+          }
         ],
         "avoid": "审计耗时较长，只在需要完整报告时使用"
       }
@@ -457,14 +560,22 @@
             "description": "设备名称"
           }
         },
-        "required": ["device"]
+        "required": [
+          "device"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要测试移动端体验，模拟不同设备时",
         "examples": [
-          {"device": "iPhone 13"},
-          {"device": "iPad Pro"},
-          {"device": "Pixel 5"}
+          {
+            "device": "iPhone 13"
+          },
+          {
+            "device": "iPad Pro"
+          },
+          {
+            "device": "Pixel 5"
+          }
         ],
         "avoid": "桌面端测试不需要模拟设备"
       }
@@ -484,13 +595,22 @@
             "description": "高度（像素）"
           }
         },
-        "required": ["width", "height"]
+        "required": [
+          "width",
+          "height"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要测试响应式布局，自定义视口大小时",
         "examples": [
-          {"width": 1920, "height": 1080},
-          {"width": 375, "height": 667}
+          {
+            "width": 1920,
+            "height": 1080
+          },
+          {
+            "width": 375,
+            "height": 667
+          }
         ],
         "avoid": "常见设备用 emulate 更方便"
       }
@@ -506,12 +626,25 @@
             "description": "表单字段数组"
           }
         },
-        "required": ["fields"]
+        "required": [
+          "fields"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要一次性填充多个表单字段时",
         "examples": [
-          {"fields": [{"selector": "#name", "value": "John"}, {"selector": "#email", "value": "john@example.com"}]}
+          {
+            "fields": [
+              {
+                "selector": "#name",
+                "value": "John"
+              },
+              {
+                "selector": "#email",
+                "value": "john@example.com"
+              }
+            ]
+          }
         ],
         "avoid": "单字段用 fill 更简单"
       }
@@ -536,9 +669,16 @@
       "ai_hints": {
         "when_to_use": "当页面弹出 alert/confirm/prompt 对话框需要处理时",
         "examples": [
-          {"accept": true},
-          {"accept": false},
-          {"accept": true, "text": "我的回答"}
+          {
+            "accept": true
+          },
+          {
+            "accept": false
+          },
+          {
+            "accept": true,
+            "text": "我的回答"
+          }
         ],
         "avoid": "现代网站很少使用原生对话框"
       }
@@ -558,13 +698,22 @@
             "description": "目标元素选择器"
           }
         },
-        "required": ["fromSelector", "toSelector"]
+        "required": [
+          "fromSelector",
+          "toSelector"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要执行拖拽操作，如排序、移动文件等",
         "examples": [
-          {"fromSelector": ".item-1", "toSelector": ".drop-zone"},
-          {"fromSelector": "[draggable='true']", "toSelector": ".folder"}
+          {
+            "fromSelector": ".item-1",
+            "toSelector": ".drop-zone"
+          },
+          {
+            "fromSelector": "[draggable='true']",
+            "toSelector": ".folder"
+          }
         ],
         "avoid": "大多数操作不需要拖拽"
       }
@@ -584,13 +733,22 @@
             "description": "文件路径"
           }
         },
-        "required": ["selector", "filePath"]
+        "required": [
+          "selector",
+          "filePath"
+        ]
       },
       "ai_hints": {
         "when_to_use": "当用户需要上传文件到网页时",
         "examples": [
-          {"selector": "input[type='file']", "filePath": "~/Documents/report.pdf"},
-          {"selector": "#avatar-upload", "filePath": "~/Pictures/avatar.png"}
+          {
+            "selector": "input[type='file']",
+            "filePath": "~/Documents/report.pdf"
+          },
+          {
+            "selector": "#avatar-upload",
+            "filePath": "~/Pictures/avatar.png"
+          }
         ],
         "avoid": "确保文件路径存在且可访问"
       }
@@ -604,7 +762,9 @@
       },
       "ai_hints": {
         "when_to_use": "当用户需要分析页面内存使用情况，排查内存泄漏时",
-        "examples": [{}],
+        "examples": [
+          {}
+        ],
         "avoid": "常规操作不需要内存快照"
       }
     }
@@ -612,9 +772,15 @@
   "ai_hints": {
     "when_to_use": "当用户需要在浏览器中进行复杂交互（点击、填表、等待加载、调试）时",
     "examples": [
-      {"workflow": "navigate → take_snapshot → click → wait_for → take_screenshot"}
+      {
+        "workflow": "navigate → take_snapshot → click → wait_for → take_screenshot"
+      }
     ],
-    "avoid": "静态内容抓取用 scrape_url 或 stealth_get，不需要浏览器交互"
+    "avoid": "静态内容抓取用 scrape_url 或 stealth_get，不需要浏览器交互",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "source": {
     "type": "npm",
@@ -625,7 +791,9 @@
     "update_command": "npm update -g chrome-devtools-mcp"
   },
   "requires": {
-    "bins": ["npx"],
+    "bins": [
+      "npx"
+    ],
     "env": []
   }
 }

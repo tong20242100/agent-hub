@@ -1,0 +1,33 @@
+{
+  "name": "agency-bin-read-file",
+  "version": "1.0.0",
+  "protocol": "1.0",
+  "description": "物理文件读取工具 - 允许 Agent 通过 MCP 获取本地文件内容（作为物理证据）",
+  "tools": {
+    "read_file": {
+      "description": "读取本地文本文件内容。例如: read_file(path='README.md')",
+      "command": "cat {path}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "文件相对或绝对路径"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  },
+  "ai_hints": {
+    "self_check": [
+      "你能通过原生 File System 能力访问此文件吗？能 -> 优先用自己的",
+      "你需要将其作为 MCP 协议下的标准输出处理吗？是 -> 调此工具"
+    ],
+    "when_to_use": "当你在 MCP 环境下需要获取本地文件内容作为上下文时",
+    "avoid": "不要读取过大的二进制文件"
+  },
+  "type": "bin-wrapper"
+}

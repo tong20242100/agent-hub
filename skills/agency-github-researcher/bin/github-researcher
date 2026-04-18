@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# --- Physical Path Hardening (Nexus 2.0) ---
+# --- Physical Path Hardening ---
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 WORKSPACE_ROOT="$( cd "$SCRIPT_DIR/../../.." && pwd )"
 

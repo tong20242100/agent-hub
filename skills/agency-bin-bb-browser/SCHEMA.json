@@ -1,8 +1,8 @@
 {
   "name": "agency-bin-bb-browser",
   "version": "0.8.3",
-  "protocol": "nexus-2.0",
-  "description": "bb-browser - Your browser is the API. CLI + MCP server for AI agents to control Chrome with your login state.",
+  "protocol": "1.0",
+  "description": "bb-browser - 浏览器控制端。提供 CLI 与 MCP 接口，支持复用 Chrome 登录状态进行自动化操作。",
   "tools": {
     "bb_site": {
       "description": "执行站点命令。例如: bb_site(command='twitter/search', args=['AI agent'])",
@@ -176,9 +176,14 @@
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要使用 bb-browser - Your browser is the API. CLI + MCP se... 相关功能时",
+    "when_to_use": "用于在 MCP 环境下通过 Chrome 浏览器执行站点自动化、截图或数据提取任务。",
     "examples": [],
-    "avoid": "请参考工具描述了解正确用法"
+    "avoid": "GitHub 研究场景请用 gh_view（效率高 10 倍）。简单网页抓取用 scrape_url。仅在需要真实浏览器环境或活跃登录态时使用本工具。",
+    "self_check": [
+      "任务涉及 GitHub 仓库？是 -> 用 gh_view，不用浏览器",
+      "任务仅为简单网页读取？是 -> 用 scrape_url",
+      "需要操作用户登录态下的特定页面？是 -> 用本工具"
+    ]
   },
   "source": {
     "type": "npm",

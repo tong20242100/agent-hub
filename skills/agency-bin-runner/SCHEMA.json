@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-runner",
   "version": "2.0.2",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "物理代码执行器，负责在真实环境中运行脚本并捕获物理日志。",
   "tools": {
     "run_code": {
@@ -22,9 +22,20 @@
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要使用 物理代码执行器，负责在真实环境中运行脚本并捕获物理日志。 物理执行 Python 脚本并捕获日志。例... 相关功能时",
-    "examples": [],
-    "avoid": "请参考工具描述了解正确用法"
+    "when_to_use": "用户需要运行 Python 脚本或验证代码行为时。例如'运行这个脚本看看输出'、'帮我测试这段代码'、'执行 test.py'",
+    "examples": [
+      {
+        "file": "test.py"
+      },
+      {
+        "file": "scripts/validate.py"
+      }
+    ],
+    "avoid": "不要运行不可信代码；复杂任务用专用工具",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "source": {
     "type": "local_script"

@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-nvidia",
   "version": "1.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "NVIDIA GPU 模型情报站 - 搜索/探测/推荐/评测一体化",
   "tools": {
     "nvidia_scout": {
@@ -87,26 +87,29 @@
       "推理",
       "inference"
     ],
-    "intent": "NVIDIA 模型搜索与评测",
-    "conditions": {
-      "use_this": [
-        "需要查找 NVIDIA 可用模型",
-        "需要评测模型能力",
-        "需要推荐适合的模型"
-      ],
-      "use_alternative": {}
-    },
+    "intent": "NVIDIA 模型的搜索、评测与推荐",
+    "when_to_use": "用户需要搜索、评测或推荐 NVIDIA NIM 平台上的 AI 模型时。例如'有哪些可用的 NVIDIA 模型'、'Llama 3 的推理能力怎么样'、'帮我选一个适合写代码的模型'",
     "examples": [
       {
-        "type": "stable"
+        "action": "查看推荐模型",
+        "command": "nvidia_scout(type='stable')"
       },
       {
-        "model_id": "meta/llama-3.3-70b-instruct",
-        "scan": true
+        "action": "评测模型",
+        "command": "nvidia_probe(model_id='meta/llama-3.3-70b-instruct', scan=true)"
       },
       {
-        "query": "code"
+        "action": "按需求推荐",
+        "command": "nvidia_advise(query='code')"
       }
+    ],
+    "avoid": "评测本地模型或开源模型用其他 评测工具；需要 NVIDIA API Key 才能使用",
+    "conditions": {
+      "use_alternative": {}
+    },
+    "self_check": [
+      "需要获取 NVIDIA NIM 平台的最新模型参数或科学评测？是 -> 调此工具",
+      "任务仅为常规代码询问？是 -> 优先用原生知识"
     ]
   },
   "requires": {

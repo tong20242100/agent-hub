@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-search",
   "version": "3.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "全网搜索工具 - Tavily API 驱动，支持人类可读和 JSON 输出",
   "tools": {
     "web_search": {
@@ -65,36 +65,30 @@
       "搜索",
       "search",
       "查找",
-      "查找",
       "检索",
       "query",
       "找"
     ],
     "intent": "全网搜索获取信息",
+    "self_check": [
+      "你有原生搜索/联网能力吗？有 -> 优先用自己的，不调此工具",
+      "需要 JSON 结构化输出以便自动化处理？是 -> 调此工具",
+      "需要 Tavily 特有的深度搜索聚合结果？是 -> 调此工具"
+    ],
+    "when_to_use": "你没有原生搜索能力时，或需要深度搜索及结构化输出时",
+    "avoid": "简单事实查询且你有原生能力时禁用；已知 URL 用 scrape_url；本地知识库用 memory_query；Twitter 搜索用 xreach",
+    "examples": [
+      {"query": "AI Agent 最新进展"},
+      {"query": "Python 异步编程最佳实践", "max_results": 10},
+      {"query": "Claude Code 使用教程", "json_output": true}
+    ],
     "conditions": {
-      "use_this": [
-        "需要搜索网页信息",
-        "需要查找资料",
-        "需要检索内容"
-      ],
       "use_alternative": {
         "scrape_url": "已知具体 URL，需要抓取内容",
-        "memory_query": "搜索本地知识库"
+        "memory_query": "搜索本地知识库",
+        "xreach": "搜索 X/Twitter 内容"
       }
-    },
-    "examples": [
-      {
-        "query": "AI Agent 最新进展"
-      },
-      {
-        "query": "Python 异步编程最佳实践",
-        "max_results": 10
-      },
-      {
-        "query": "Claude Code 使用教程",
-        "json_output": true
-      }
-    ]
+    }
   },
   "requires": {
     "bins": [

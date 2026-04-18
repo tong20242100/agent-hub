@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #F0F3F7;
+    --green: #8EAAB8;
+    --pink: #1A936F;
+    --ink: #2D2926;
+    --ink-light: #5C5350;
+    --white: #FFFFFF;
+    --sans: 'DM Sans', -apple-system, 'PingFang SC', system-ui, sans-serif;
+    --mono: 'SF Mono', 'Menlo', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; background: var(--bg); }
+
+  .page {
+    width: 1080px;
+    min-height: 800px;
+    background: var(--bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page > .grain {
+    position: absolute;
+    inset: 0;
+    filter: url(#noise);
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .ref-code {
+    position: absolute;
+    top: 36px;
+    right: 48px;
+    font: 400 22px/1 var(--mono);
+    color: var(--ink-light);
+  }
+
+  .header {
+    padding: 60px 60px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .header .title {
+    font: 700 64px/1 var(--sans);
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .header .count {
+    font: 400 24px/1 var(--mono);
+    color: var(--ink-light);
+  }
+
+  .header .count span {
+    font-size: 48px;
+    color: var(--pink);
+  }
+
+  .grid {
+    padding: 20px 60px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .category {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .category:nth-child(1) { border-top: 4px solid var(--pink); }
+  .category:nth-child(2) { border-top: 4px solid var(--green); }
+  .category:nth-child(3) { border-top: 4px solid #D68C45; }
+  .category:nth-child(4) { border-top: 4px solid #B8432F; }
+  .category:nth-child(5) { border-top: 4px solid #2D6A4F; }
+  .category:nth-child(6) { border-top: 4px solid #5C5350; }
+
+  .category .name {
+    font: 600 28px/1 var(--sans);
+    color: var(--ink);
+  }
+
+  .category .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .category .tool {
+    background: var(--bg);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font: 400 22px/1 var(--mono);
+    color: var(--ink-light);
+  }
+
+  .colophon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 60px 36px;
+    border-top: 1px solid rgba(45,41,38,0.08);
+    margin-top: auto;
+  }
+
+  .colophon .who {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .colophon .who img {
+    width: 40px; height: 40px;
+    border-radius: 50%; object-fit: cover;
+  }
+
+  .colophon .who span {
+    font: 400 24px/1 var(--sans);
+    color: var(--ink-light);
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="noise">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</svg>
+<div class="page">
+  <div class="grain"></div>
+  <div class="ref-code">REF—架构 / 内置工具</div>
+  
+  <div class="header">
+    <div class="title">内置工具矩阵</div>
+    <div class="count"><span>15+</span> 工具</div>
+  </div>
+  
+  <div class="grid">
+    <div class="category">
+      <div class="name">搜索与抓取</div>
+      <div class="tools">
+        <span class="tool">web_search</span>
+        <span class="tool">scrape_url</span>
+        <span class="tool">stealth_get</span>
+      </div>
+    </div>
+    <div class="category">
+      <div class="name">浏览器控制</div>
+      <div class="tools">
+        <span class="tool">chrome-devtools</span>
+        <span class="tool">bb-browser</span>
+      </div>
+    </div>
+    <div class="category">
+      <div class="name">社交媒体</div>
+      <div class="tools">
+        <span class="tool">xiaohongshu-mcp</span>
+        <span class="tool">x-article</span>
+        <span class="tool">xreach</span>
+      </div>
+    </div>
+    <div class="category">
+      <div class="name">开发工具</div>
+      <div class="tools">
+        <span class="tool">gh</span>
+        <span class="tool">deep-researcher</span>
+        <span class="tool">mcp-server</span>
+      </div>
+    </div>
+    <div class="category">
+      <div class="name">研究与情报</div>
+      <div class="tools">
+        <span class="tool">nvidia-scout</span>
+        <span class="tool">cross-verify</span>
+      </div>
+    </div>
+    <div class="category">
+      <div class="name">记忆与通知</div>
+      <div class="tools">
+        <span class="tool">memory</span>
+        <span class="tool">notify</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="colophon">
+    <div class="who">
+      <img src="assets/logo.png" alt="">
+      <span>李继刚</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

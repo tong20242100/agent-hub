@@ -19,11 +19,8 @@
         "required": []
       },
       "ai_hints": {
-        "when_to_use": "需要全面扫描本地所有Agent技能目录，包括嵌套目录和符号链接",
+        "when_to_use": "需要全面扫描本地所有 Agent 技能目录，包括嵌套目录和符号链接。例如'深度扫描所有技能，包括嵌套的'",
         "examples": [
-          {
-            "args": ""
-          },
           {
             "args": "--follow-links"
           },
@@ -31,17 +28,27 @@
             "args": "--max-depth 5"
           }
         ],
-        "avoid": "只需要快速查看顶层技能时使用 scan 命令"
+        "avoid": "只需要快速查看顶层技能时用 scan 命令（ah scan）"
       }
     }
   },
   "dependencies": [],
   "ai_hints": {
-    "when_to_use": "需要全面了解本地Agent技能分布情况",
+    "when_to_use": "用户需要全面了解本地 Agent 技能分布，进行深度分析时。例如'帮我扫描一下所有技能看看有什么'、'全面检测一下本地技能目录'",
     "examples": [
       {
-        "query": "扫描所有技能"
+        "args": ""
+      },
+      {
+        "args": "--follow-links"
+      },
+      {
+        "args": "--max-depth 5"
       }
+    ],
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
     ]
   },
   "source": {

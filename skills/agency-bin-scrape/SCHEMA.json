@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-scrape",
   "version": "3.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "网页抓取工具 - 静态抓取 + 递归追踪外部链接",
   "tools": {
     "scrape_url": {
@@ -42,28 +42,25 @@
       "fetch",
       "url"
     ],
-    "intent": "快速抓取静态网页",
-    "conditions": {
-      "use_this": [
-        "静态页面",
-        "无反爬保护",
-        "无 JS 渲染需求"
-      ],
-      "use_alternative": {
-        "stealth_get": "有 Cloudflare/小红书/知乎保护",
-        "fetch": "需要 JS 渲染（lightpanda）",
-        "click": "需要点击/填写等交互（chrome-devtools）"
-      }
-    },
+    "intent": "快速抓取静态网页内容为 Markdown",
+    "self_check": [
+      "你有原生抓取/访问 URL 的能力吗？有 -> 优先用自己的，不调此工具",
+      "页面是否需要递归追踪外部链接（--recursive）？是 -> 调此工具",
+      "如果是动态 JS 页面或有反爬？是 -> 考虑用 lightpanda 或 stealth_get"
+    ],
+    "when_to_use": "你需要抓取网页内容为 Markdown，且你没有原生能力，或需要递归追踪功能时",
+    "avoid": "简单页面且你有原生访问能力时禁用；有反爬保护用 stealth_get；需 JS 渲染用 lightpanda；需交互用 chrome-devtools",
     "examples": [
-      {
-        "url": "https://example.com"
-      },
-      {
-        "url": "https://blog.example.com/article",
-        "recursive": true
+      {"url": "https://docs.python.org/3/tutorial/index.html"},
+      {"url": "https://blog.example.com/article", "recursive": true}
+    ],
+    "conditions": {
+      "use_alternative": {
+        "stealth_get": "跳过 Cloudflare/WAF 保护（如知乎/小红书/Medium）",
+        "lightpanda": "超快速 JS 渲染抓取",
+        "click": "需要点击/填写等复杂交互 (chrome-devtools)"
       }
-    ]
+    }
   },
   "requires": {
     "bins": [

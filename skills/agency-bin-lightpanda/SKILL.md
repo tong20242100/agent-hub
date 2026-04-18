@@ -1,58 +1,61 @@
 ---
 name: Lightpanda
-description: Zig 编写的无头浏览器，内存占用 1/9 Chrome，速度 11x。专为 AI Agent 和自动化设计。
+description: Zig 编写的无头浏览器。fetch 模式快速抓取，serve 模式提供 CDP 服务器，mcp 模式供 AI Agent 调用。内存占用 1/9 Chrome，速度 11x。
 version: "1.0.0"
-emoji: 🐼
+protocol: nexus-2.0
 ---
 
-# Lightpanda 使用指南
+# Lightpanda — 轻量无头浏览器
 
-## 核心优势
-- **内存**: 215MB vs Chrome 2GB (9x 节省)
-- **速度**: 11x faster than Chrome
-- **兼容**: Puppeteer / Playwright / chromedp (CDP 协议)
+## 核心指令
 
-## 三种模式
+Zig 编写的无头浏览器，适用于三种场景：
+1. 快速抓取（fetch 模式）
+2. CDP 服务器（serve 模式）
+3. AI Agent 调用（mcp 模式）
 
-### 1. fetch - 快速抓取
-```bash
-# Markdown 输出
-bin/lightpanda fetch --dump markdown https://example.com
+## 模式选择
 
-# HTML 输出
-bin/lightpanda fetch --dump html https://example.com
+### fetch — 快速抓取
 
-# 遵守 robots.txt
-bin/lightpanda fetch --dump markdown --obey_robots https://example.com
+适用于需要 JS 渲染但无交互的页面。
+
+```
+bin/lightpanda fetch --dump markdown {url}
+bin/lightpanda fetch --dump html {url}
+bin/lightpanda fetch --dump markdown --obey_robots {url}
 ```
 
-### 2. serve - CDP 服务器
-```bash
-# 启动服务
-bin/lightpanda serve --host 127.0.0.1 --port 9222
+### serve — CDP 服务器
 
-# Puppeteer 连接
+适用于 Puppeteer/Playwright 连接。
+
+```
+bin/lightpanda serve --host 127.0.0.1 --port 9222
+```
+
+连接示例：
+```javascript
 const browser = await puppeteer.connect({
   browserWSEndpoint: "ws://127.0.0.1:9222"
 });
 ```
 
-### 3. mcp - AI Agent 调用
-```bash
-# MCP stdio 模式
+### mcp — AI Agent 调用
+
+```
 bin/lightpanda mcp
 ```
 
-## 与现有工具对比
+## 对比参考
 
-| 场景 | 推荐工具 |
-|------|----------|
-| 快速抓取，零依赖 | `agency-bin-scrape` (Jina Reader) |
-| JS 渲染、反爬 | `agency-bin-lightpanda` |
-| AI Agent 自动化 | `agency-bin-lightpanda` (MCP 模式) |
-| 大规模爬取 | `agency-bin-lightpanda` (serve 模式) |
+- 静态页面（无 JS 渲染）→ 用 `scrape_url`，更快
+- 需要 JS 渲染 → 用 `lightpanda` fetch 模式
+- 需要交互 → 用 `chrome-devtools`
+- 有反爬保护 → 用 `stealth_get`
 
-## 注意事项
-- Beta 阶段，部分网站可能不兼容
-- Web API 覆盖不完整（无 WebGL）
-- 遇到问题提 issue: https://github.com/lightpanda-io/browser/issues
+## 限制
+
+- Beta 阶段，部分网站不兼容
+- 无 WebGL 支持
+- Web API 覆盖不完整

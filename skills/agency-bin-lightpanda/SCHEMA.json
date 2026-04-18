@@ -1,8 +1,8 @@
 {
   "name": "agency-bin-lightpanda",
   "version": "1.0.0",
-  "protocol": "nexus-2.0",
-  "description": "Lightpanda 无头浏览器。Zig 编写，内存占用 1/9 Chrome，速度 11x。支持 fetch/serve/mcp 三种模式。",
+  "protocol": "1.0",
+  "description": "Lightpanda 无头浏览器。高性能 Zig 引擎，支持 JS 渲染页面的快速抓取与分析（fetch/serve/mcp 模式）。",
   "tools": {
     "fetch": {
       "description": "抓取网页内容。支持 html/markdown/semantic_tree 输出。例如: fetch(url='https://example.com', dump='markdown')",
@@ -71,12 +71,19 @@
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要渲染 JS 动态页面，且对内存/速度有要求时",
-    "examples": [
-      {"url": "https://spa-example.com", "dump": "markdown"},
-      {"url": "https://react-app.com", "dump": "semantic_tree"}
+    "intent": "高性能无头浏览器，用于抓取 JS 渲染页面",
+    "self_check": [
+      "环境是否支持原生 JS 渲染？支持 -> 优先用原生的",
+      "目标页面是否为简单静态页面？是 -> 优先用 scrape_url",
+      "是否需要深度分析页面语义结构（semantic_tree）？是 -> 调此工具"
     ],
-    "avoid": "静态页面用 scrape_url 更快；需要交互用 chrome-devtools；有防护用 stealth_get"
+    "when_to_use": "用于抓取/分析需要 JS 渲染的 SPA 应用页面，在缺乏原生渲染能力时。",
+    "avoid": "静态页面用 scrape_url；交互任务（点击/输入）用 chrome-devtools；绕过反爬用 stealth_get",
+    "examples": [
+      {"url": "https://nextjs.org/docs", "dump": "markdown"},
+      {"url": "https://react.dev/reference", "dump": "semantic_tree"},
+      {"url": "https://docs.angular.dev/guide", "dump": "markdown"}
+    ]
   },
   "source": {
     "type": "github_release",

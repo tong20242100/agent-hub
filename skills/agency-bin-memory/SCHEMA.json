@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-memory",
   "version": "1.0.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "跨工具共享知识层 - 语义检索与用户偏好管理",
   "tools": {
     "memory_query": {
@@ -96,7 +96,11 @@
   "ai_hints": {
     "when_to_use": "当用户需要使用 跨工具共享知识层 - 语义检索与用户偏好管理 语义搜索知识库。输入自然语言查询，返回最相关的知识片段... 相关功能时",
     "examples": [],
-    "avoid": "请参考工具描述了解正确用法"
+    "avoid": "请参考工具描述了解正确用法",
+    "self_check": [
+      "任务是否涉及跨工具的长效记忆存储？是 -> 调此工具",
+      "仅为单次对话内的临时变量？是 -> 使用原生上下文"
+    ]
   },
   "requires": {
     "bins": [

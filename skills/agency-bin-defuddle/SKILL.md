@@ -1,107 +1,55 @@
 ---
 name: defuddle
-description: "Defuddle — Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markdown"
-version: 0.13.0
-author: kepano (Obsidian Team)
-tags: [content-extraction, markdown, readability, obsidian, web-clipper, html]
+description: 网页内容提取器。从任意 URL 或 HTML 提取主要内容并转换为 Markdown。Obsidian 团队开发，Mozilla Readability 的现代替代。
+version: "0.13.0"
+protocol: nexus-2.0
 ---
 
-# Defuddle
+# Defuddle — 内容提取
 
-> de·​fud·dle /diˈfʌdl/ *transitive verb*  
-> to remove unnecessary elements from a web page, and make it easily readable.
+## 核心指令
 
-Obsidian 团队开发的内容提取工具，**5,136 ⭐**，Mozilla Readability 的现代替代方案。
+从 URL 或 HTML 文件中提取主要内容，输出 Markdown 格式。适用于：
+- 抓取文章、博客、文档的正文内容
+- 去除导航、广告、侧边栏等噪音
+- 提取标题、作者、发布日期等元数据
 
-## 安装
+## 执行命令
 
-```bash
-npm install -g defuddle
+```
+defuddle parse {url} --markdown
 ```
 
-## CLI 使用
+### 可选参数
 
-```bash
-# 解析 URL 并输出 Markdown
-defuddle parse https://example.com/article --markdown
+| 参数 | 用途 |
+|------|------|
+| `--markdown` / `-m` | 输出 Markdown（默认） |
+| `--json` / `-j` | 输出 JSON（含元数据） |
+| `--property {name}` | 提取特定属性（title/author/description） |
+| `--output {file}` / `-o` | 保存到文件 |
+| `--debug` | 调试模式 |
 
-# 解析本地 HTML 文件
-defuddle parse page.html --markdown
-
-# 输出 JSON（含元数据）
-defuddle parse https://example.com --json
-
-# 提取特定属性
-defuddle parse https://example.com --property title
-defuddle parse https://example.com --property author
-defuddle parse https://example.com --property description
-
-# 保存到文件
-defuddle parse https://example.com --markdown -o article.md
-
-# 调试模式
-defuddle parse https://example.com --debug
-```
-
-## CLI 选项
-
-| 选项 | 别名 | 说明 |
-|---|---|---|
-| `--output <file>` | `-o` | 输出到文件 |
-| `--markdown` | `-m` | Markdown 格式 |
-| `--json` | `-j` | JSON 格式（含元数据） |
-| `--property <name>` | `-p` | 提取特定属性 |
-| `--debug` | | 调试模式 |
-
-## Node.js API
-
-```javascript
-import { parseHTML } from 'linkedom';
-import { Defuddle } from 'defuddle/node';
-
-const { document } = parseHTML(html);
-const result = await Defuddle(document, 'https://example.com/article', {
-  markdown: true
-});
-
-console.log(result.content);      // Markdown 内容
-console.log(result.title);        // 标题
-console.log(result.author);       // 作者
-console.log(result.published);    // 发布日期
-console.log(result.schemaOrgData);// schema.org 数据
-```
-
-## 返回数据
+## 返回值属性
 
 | 属性 | 类型 | 说明 |
-|---|---|---|
+|------|------|------|
 | `title` | string | 文章标题 |
 | `author` | string | 作者 |
-| `content` | string | 清理后的内容 |
+| `content` | string | 清理后的正文 |
 | `description` | string | 摘要 |
-| `domain` | string | 域名 |
-| `image` | string | 主图 URL |
 | `published` | string | 发布日期 |
-| `site` | string | 网站名称 |
+| `image` | string | 主图 URL |
 | `language` | string | 语言代码 |
 | `wordCount` | number | 字数 |
-| `schemaOrgData` | object | schema.org 数据 |
 
-## 与 Mozilla Readability 对比
+## 使用场景
 
-| 维度 | Readability | Defuddle |
-|---|---|---|
-| 策略 | 激进删除 | **更宽容** |
-| 脚注标准化 | ❌ | ✅ |
-| 数学公式 | ❌ | ✅ |
-| 代码块标准化 | ❌ | ✅ |
-| schema.org | ❌ | ✅ |
-| CLI | ❌ | ✅ |
+- 用户要求"提取这篇文章的正文" → 使用 defuddle
+- 用户要求"把网页转成 Markdown" → 使用 defuddle
+- 已知具体 URL，不需要 JS 渲染 → 使用 defuddle（比 lightpanda 更快）
 
-## 典型用途
+## 注意事项
 
-- Web Clipper / 网页剪藏
-- 内容聚合 / RSS
-- AI 训练数据准备
-- 网页转 Markdown
-- 文章阅读模式
+- 需要 JS 渲染的页面先用 `lightpanda` 获取 HTML，再传给 defuddle
+- 有反爬保护的页面用 `stealth_get` 获取 HTML，再传给 defuddle

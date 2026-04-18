@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-mcp-server",
   "version": "2.1.0",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "MCP 协议适配器 - 将本地 bin/ 工具暴露给外部 AI 客户端 (Gemini CLI, iFlow, VS Code)",
   "tools": {
     "mcp_list_tools": {
@@ -41,7 +41,11 @@
         "server": "context7"
       }
     ],
-    "avoid": "确保 MCP 服务器已正确配置"
+    "avoid": "确保 MCP 服务器已正确配置",
+    "self_check": [
+      "当前是否已处于目标 MCP 环境中？是 -> 直接调用工具，不通过此服务器转发",
+      "需要将本地工具暴露给外部环境？是 -> 调此工具"
+    ]
   },
   "source": {
     "type": "local_script"

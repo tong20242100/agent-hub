@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-scrapling-stealth",
   "version": "2.0.2",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "隐身爬虫工具，专治小红书、知乎等重度防爬盾牌网页。",
   "tools": {
     "stealth_get": {
@@ -26,13 +26,26 @@
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要抓取有防护的网页（小红书、知乎、Cloudflare 盾牌）时",
+    "when_to_use": "用户需要抓取有反爬保护的网站（小红书、知乎、Cloudflare 拦截页）时。例如'抓取小红书上的这篇笔记'、'把这个知乎回答内容提取出来'",
     "examples": [
       {
-        "url": "https://xiaohongshu.com/..."
+        "url": "https://www.xiaohongshu.com/explore/67a1b2c3d4e5f6",
+        "click_target": ""
+      },
+      {
+        "url": "https://zhuanlan.zhihu.com/p/123456",
+        "click_target": ""
+      },
+      {
+        "url": "https://cloudflare-challenge.example.com",
+        "click_target": "同意,接受"
       }
     ],
-    "avoid": "普通网页不需要用这个，用 scrape_url 即可"
+    "avoid": "普通静态网页用 scrape_url 更快；需要完整浏览器交互用 chrome-devtools",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "requires": {
     "bins": [

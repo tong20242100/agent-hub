@@ -40,6 +40,17 @@ graph LR
 
 All Agents connect to the same MCP Server, sharing the same tools.
 
+### Modular Design
+
+```
+bin/
+├── ah.py              # CLI entry
+└── core/              # Core logic
+    ├── auditor.py     # Compliance audit
+    ├── discovery.py   # Cross-platform discovery
+    └── manager.py     # Skill management
+```
+
 ---
 
 ## Core Values
@@ -51,15 +62,18 @@ Every tool has `ai_hints` for precise AI selection:
 ```json
 {
   "ai_hints": {
-    "when_to_use": "User needs latest web information",
+    "self_check": [
+      "Do you have native search capability? Yes → Use your own first",
+      "Need JSON structured output? Yes → Use this tool"
+    ],
+    "when_to_use": "When you don't have native search, or need Tavily structured output",
     "examples": [{"query": "AI Agent latest progress"}],
-    "avoid": "Don't use for known static pages, use scrape_url instead",
-    "alternatives": "If URL is known, scrape_url is faster"
+    "avoid": "Don't use if you have native capability; use scrape_url for known URLs"
   }
 }
 ```
 
-Tools don't just "work" - they actively tell AI when to use, when not to use, and what alternatives exist.
+`self_check` forces AI to **self-verify** before calling tools, avoiding abuse of external tools.
 
 AI selects tools by itself. No router, no vector retrieval needed.
 
@@ -68,8 +82,11 @@ AI selects tools by itself. No router, no vector retrieval needed.
 ```bash
 ah scan           # Scan all local tools (including those installed by other Agents)
 ah list           # View tool list and distribution
+ah status [name]  # View skill distribution status
 ah update         # Check which tools need updates
 ah update -i      # One-click update all tools
+ah check --fix    # Compliance audit (check SCHEMA format, tone, etc.)
+ah discover       # Global discovery of other Agent skills
 ah remove <name>  # Remove tool
 ```
 
@@ -102,11 +119,11 @@ Covers search, social media, browser, development and more:
 
 | Domain | Tools |
 |--------|-------|
-| Search & Scraping | web_search, scrape_url, stealth_get |
+| Search & Scraping | web_search, scrape_url, stealth_get, lightpanda |
 | Browser Control | chrome-devtools, bb-browser |
 | Social Media | xiaohongshu-mcp, x-article, xreach |
 | Development | gh, deep-researcher, mcp-server |
-| Research & Intel | nvidia-scout, cross-verify |
+| Research & Intel | nvidia, cross-verify |
 | Memory & Notify | memory, notify |
 
 See [Full Tool List](docs/skills.md)

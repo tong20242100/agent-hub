@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-media-extract",
   "version": "2.0.2",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "音视频与 YouTube 提取器，支持字幕获取及 Whisper 转写降级机制。",
   "tools": {
     "extract": {
@@ -22,13 +22,20 @@
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要提取视频、音频、字幕时",
+    "when_to_use": "用户需要从视频/音频 URL 提取媒体内容或字幕时。例如'提取这个 YouTube 视频的字幕'、'下载 B 站这个视频'、'把这段音频转成文字'",
     "examples": [
       {
-        "url": "https://youtube.com/..."
+        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      },
+      {
+        "url": "https://www.bilibili.com/video/BV1GJ411x7h7"
       }
     ],
-    "avoid": "确保视频 URL 是公开可访问的"
+    "avoid": "需要视频封面图片用 media-extract；需要纯网页抓取用 scrape_url。确保 URL 是公开可访问的，不含付费/登录墙",
+    "self_check": [
+      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
+      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+    ]
   },
   "requires": {
     "bins": [

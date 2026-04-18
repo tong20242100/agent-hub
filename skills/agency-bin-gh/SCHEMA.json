@@ -1,7 +1,7 @@
 {
   "name": "agency-bin-gh",
   "version": "2.0.2",
-  "protocol": "nexus-2.0",
+  "protocol": "1.0",
   "description": "GitHub 专用物理工具，通过 API 或 Repo View 深入探测代码库结构。",
   "tools": {
     "gh_view": {
@@ -22,13 +22,22 @@
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要深入分析 GitHub 仓库（文件结构、源码、Release、搜索）时",
+    "when_to_use": "**GitHub 研究的首选工具**。用户提到任何 GitHub 仓库、项目、代码库时，立即使用此工具。比浏览器更高效：直接访问 API、无需渲染页面、支持私有仓库。",
     "examples": [
-      {"repo": "owner/repo", "command": "repo view"},
-      {"repo": "owner/repo", "path": "src/main.rs", "command": "raw"},
-      {"query": "rust web framework", "command": "search"}
+      {
+        "query": "研究下 mgechev/skills-best-practices 项目",
+        "action": "gh_view(repo='mgechev/skills-best-practices')"
+      },
+      {
+        "query": "帮我看看 owner/repo 这个仓库",
+        "action": "gh_view(repo='owner/repo')"
+      }
     ],
-    "avoid": "快速查看用 agent-reach/gh_view 更简单；完整研究报告用 agency-github-researcher"
+    "avoid": "不要用浏览器访问 GitHub 网页。gh CLI 比 web scraping 快 10 倍以上，且不会触发反爬限制。",
+    "self_check": [
+      "任务涉及 GitHub 仓库？是 -> 立即使用 gh_view",
+      "需要查看 PR、Issues、代码结构？是 -> 使用 gh_view"
+    ]
   },
   "requires": {
     "bins": [
