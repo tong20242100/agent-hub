@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import click, sys, json, os
+import click, sys, json, os, subprocess, shutil
 from pathlib import Path
 
 # 路径管理与核心导入
