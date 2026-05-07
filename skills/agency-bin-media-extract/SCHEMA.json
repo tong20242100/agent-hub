@@ -1,59 +1,22 @@
 {
   "name": "agency-bin-media-extract",
-  "version": "2.0.2",
-  "protocol": "1.0",
-  "description": "音视频与 YouTube 提取器，支持字幕获取及 Whisper 转写降级机制。",
-  "tools": {
-    "extract": {
-      "description": "提取 YouTube/B站 等媒体的字幕与元数据。例如: extract(url='https://youtube.com/...')",
-      "command": "bin/media-extract {url}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "视频 URL"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      }
-    }
-  },
+  "version": "2.1.0",
+  "description": "多媒体提取器 - 支持 YouTube、B站及音视频元数据提取与字幕获取。",
   "ai_hints": {
-    "when_to_use": "用户需要从视频/音频 URL 提取媒体内容或字幕时。例如'提取这个 YouTube 视频的字幕'、'下载 B 站这个视频'、'把这段音频转成文字'",
-    "examples": [
-      {
-        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-      },
-      {
-        "url": "https://www.bilibili.com/video/BV1GJ411x7h7"
-      }
+    "intent": "通过多媒体探测协议实现对视频/音频内容的元数据及文本层提取",
+    "triggers": ["YouTube提取", "B站字幕", "视频转文字", "音视频元数据"],
+    "when_to_use": "需要从视频 URL 中提取字幕、元数据（时长、描述、封面）或将媒体转为文字分析时。",
+    "avoid": [
+      "普通网页的文章内容抓取（使用 defuddle 或 scrape_url）",
+      "非公开、需要付费或登录墙保护的媒体内容",
+      "纯图片抓取（使用通用 scrape 工具）"
     ],
-    "avoid": "需要视频封面图片用 media-extract；需要纯网页抓取用 scrape_url。确保 URL 是公开可访问的，不含付费/登录墙",
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "目标 URL 是否属于已适配的媒体平台（YouTube/Bilibili/TikTok 等）？",
+      "任务是否需要获取视频内的文本层（字幕/转写）信息？"
     ]
   },
-  "requires": {
-    "bins": [
-      "yt-dlp"
-    ]
-  },
-  "source": {
-    "type": "local_script"
-  },
-  "dependencies": [
-    {
-      "name": "yt-dlp",
-      "type": "pip",
-      "description": "YouTube and media downloader",
-      "check_command": "yt-dlp --version",
-      "update_command": "pip install --upgrade yt-dlp"
-    }
-  ],
-  "type": "bin-wrapper",
-  "bin_path": "bin/media-extract"
+  "tools": {
+    "extract": { "description": "提取媒体平台的字幕、元数据或音视频流", "command": "bin/media-extract {url}" }
+  }
 }

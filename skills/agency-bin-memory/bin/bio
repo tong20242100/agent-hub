@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import sys
+import os
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: bio <natural_language_memory_instruction>")
+        sys.exit(1)
+    
+    memory_content = " ".join(sys.argv[1:])
+    
+    # 强制验证：禁止 JSON 格式（GPT-5 核心约束）
+    if "{" in memory_content or "}" in memory_content:
+        print("ERROR: bio tool must ONLY receive plain text. JSON is strictly forbidden.")
+        sys.exit(1)
+        
+    # 强制验证：必须以 User 或 Forget 开头（GPT-5 核心约束）
+    if not (memory_content.startswith("User") or memory_content.startswith("Forget")):
+        print("ERROR: Memory must start with 'User' or 'Forget'.")
+        sys.exit(1)
+
+    # 此处对接本项目原有的 memory_save 逻辑，但以自然语言段落形式存储
+    os.system(f"python3 skills/agency-bin-memory/bin/memory_save '{memory_content}' --memory_type preference")
+    print(f"Bio updated: {memory_content}")
+
+if __name__ == "__main__":
+    main()

@@ -1,33 +1,22 @@
 {
   "name": "agency-bin-read-file",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "protocol": "1.0",
-  "description": "物理文件读取工具 - 允许 Agent 通过 MCP 获取本地文件内容（作为物理证据）",
-  "tools": {
-    "read_file": {
-      "description": "读取本地文本文件内容。例如: read_file(path='README.md')",
-      "command": "cat {path}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string",
-            "description": "文件相对或绝对路径"
-          }
-        },
-        "required": [
-          "path"
-        ]
-      }
-    }
-  },
+  "description": "物理文件读取工具 - 允许通过 MCP 获取本地文件原始内容作为物理证据。",
   "ai_hints": {
-    "self_check": [
-      "你能通过原生 File System 能力访问此文件吗？能 -> 优先用自己的",
-      "你需要将其作为 MCP 协议下的标准输出处理吗？是 -> 调此工具"
+    "intent": "通过 MCP 协议实现对本地文件系统的原始内容探测与证据采集",
+    "triggers": ["读文件", "查看内容", "Cat"],
+    "when_to_use": "需要获取本地代码、日志或配置文件的原始内容作为后续分析的唯一事实依据时。",
+    "avoid": [
+      "读取大型二进制文件（图片、视频、编译产物）",
+      "单次文件读取量超过上下文限制的巨型文件"
     ],
-    "when_to_use": "当你在 MCP 环境下需要获取本地文件内容作为上下文时",
-    "avoid": "不要读取过大的二进制文件"
+    "self_check": [
+      "任务是否需要获取文件级的原始字符流而非结构化摘要？",
+      "目标文件路径是否在允许的物理访问权限范围内？"
+    ]
   },
-  "type": "bin-wrapper"
+  "tools": {
+    "read_file": { "description": "读取本地文本文件内容。例如: read_file(path='README.md')", "command": "cat {path}" }
+  }
 }

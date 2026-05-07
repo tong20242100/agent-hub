@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Stripe",
+    "prestige": 98,
+    "dna": "vibrant-financial-trust",
+    "vibe": "高信用、高级渐变、极其精密的排版",
+    "best_for": "金融、支付、高端 SaaS、需要传达'钱'和'安全'的场景",
+    "url": "https://stripe.com/design"
+  },
+  {
+    "name": "Linear",
+    "prestige": 95,
+    "dna": "ultra-precise-dark",
+    "vibe": "极致的生产力工具感、硬核、单色美学",
+    "best_for": "开发者工具、项目管理、追求效率和极简的专业应用",
+    "url": "https://linear.app"
+  },
+  {
+    "name": "Apple",
+    "prestige": 99,
+    "dna": "premium-minimal-whitespace",
+    "vibe": "留白艺术、产品级质感、电影感摄影配合",
+    "best_for": "消费电子、奢侈品、追求'极致生活方式'的品牌界面",
+    "url": "https://developer.apple.com/design"
+  },
+  {
+    "name": "Carbon (IBM)",
+    "prestige": 88,
+    "dna": "technical-data-dense",
+    "vibe": "工业级严谨、多列网格、结构化极强",
+    "best_for": "云计算、后台管理、需要处理海量复杂数据的专业仪表盘",
+    "url": "https://carbondesignsystem.com"
+  },
+  {
+    "name": "Porsche",
+    "prestige": 92,
+    "dna": "engineering-sports-heritage",
+    "vibe": "工程美学、力量感、动感线条",
+    "best_for": "汽车、运动、强调历史底蕴与性能的品牌",
+    "url": "https://designsystem.porsche.com"
+  }
+]

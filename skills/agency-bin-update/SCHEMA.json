@@ -1,91 +1,24 @@
 {
   "name": "agency-bin-update",
   "version": "2.1.0",
-  "protocol": "1.0",
-  "description": "技能更新检测与安装 - 检测 GitHub/npm/依赖更新，交互式安装",
-  "tools": {
-    "update_check": {
-      "description": "检测所有技能和工具的更新状态，返回需要更新的列表。",
-      "command": "bin/skill_update_check",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    },
-    "update_check_json": {
-      "description": "检测更新状态，JSON 格式输出（适合程序解析）。",
-      "command": "bin/skill_update_check --json",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    },
-    "update_install": {
-      "description": "交互式安装更新，显示可更新列表并等待用户选择。",
-      "command": "bin/skill_update_install",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    },
-    "update_install_skill": {
-      "description": "安装指定技能的更新。",
-      "command": "bin/skill_update_install ${skill}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "skill": {
-            "type": "string",
-            "description": "技能名称"
-          }
-        },
-        "required": [
-          "skill"
-        ]
-      }
-    },
-    "update_install_all": {
-      "description": "更新所有可更新的技能。",
-      "command": "bin/skill_update_install --all",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    },
-    "update_deps": {
-      "description": "只更新本地脚本的依赖（brew/pip/npm）。",
-      "command": "bin/skill_update_install --deps",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    }
-  },
+  "description": "技能更新管理器 - 检测 GitHub/npm 依赖更新并执行安全安装。",
   "ai_hints": {
-    "when_to_use": "当用户需要使用 技能更新检测与安装 - 检测 GitHub/npm/依赖更新，交互式安装 检测所有技能和工具的更新状... 相关功能时",
-    "examples": [],
-    "avoid": "请参考工具描述了解正确用法",
+    "intent": "通过自动化审计与安全安装流程维持本地技能矩阵的最新状态",
+    "triggers": ["更新技能", "版本检测", "安装升级", "修复环境"],
+    "when_to_use": "需要系统性扫描本地所有技能的版本、安装安全修复包、或同步远程仓库的功能更新时。",
+    "avoid": [
+      "通用的全网软件搜索",
+      "非 Agent Hub 体系内的系统补丁安装",
+      "正在执行关键生产任务时的环境变动"
+    ],
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "当前是否处于系统维护时段，允许执行具有破坏性的环境变更？",
+      "是否需要通过 update_check 预判升级带来的潜在兼容性风险？"
     ]
   },
-  "requires": {
-    "bins": [],
-    "env": []
-  },
-  "dependencies": [
-    {
-      "name": "requests",
-      "type": "pip",
-      "description": "HTTP library",
-      "check_command": "pip show requests",
-      "update_cmd": "pip install --upgrade requests"
-    }
-  ]
+  "tools": {
+    "update_check": { "description": "检测所有技能和工具的更新状态", "command": "bin/skill_update_check" },
+    "update_install": { "description": "交互式安装指定技能或全部更新", "command": "bin/skill_update_install" },
+    "update_deps": { "description": "仅更新本地脚本的底层依赖环境（brew/pip/npm）", "command": "bin/skill_update_install --deps" }
+  }
 }

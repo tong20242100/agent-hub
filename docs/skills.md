@@ -2,6 +2,9 @@
 
 34 个技能，按功能域组织。
 
+> **💡 MCP 聚合模式说明**
+> 为了兼容 Antigravity/Cursor 等客户端的 100 个工具数量限制，部分复杂技能在 MCP 环境下会聚合为一个“元工具”，采用 `action/payload` 模式调用。详情请见下表中的 **MCP:** 标识。
+
 ## 搜索与抓取
 
 | 技能 | 版本 | 描述 | 工具 |
@@ -16,8 +19,8 @@
 
 | 技能 | 版本 | 描述 | 工具 |
 |------|------|------|------|
-| agency-bin-chrome-devtools | 0.20.1 | Google 官方 Chrome DevTools MCP | click, fill, navigate 等 28 个操作 |
-| agency-bin-bb-browser | 0.8.3 | 浏览器即 API，AI 控制 Chrome | bb_site, bb_list, bb_click 等 13 个操作 |
+| agency-bin-chrome-devtools | 0.20.1 | Google 官方 Chrome DevTools MCP | **MCP: chrome_devtools** (聚合 28 个操作) |
+| agency-bin-bb-browser | 0.8.3 | 浏览器即 API，AI 控制 Chrome | **MCP: bb_browser** (聚合 13 个操作) |
 
 ## 社交媒体
 
@@ -25,7 +28,7 @@
 |------|------|------|------|
 | agency-bin-xiaohongshu-mcp | 2.1.0 | 小红书 MCP 标准化工具 | login, search, publish_image |
 | agency-bin-x-article | 1.0.0 | X/Twitter 长文获取 | x_article |
-| agency-bin-xreach | 1.0.0 | X/Twitter 数据采集 | x_search, x_user, x_thread 等 7 个 |
+| agency-bin-xreach | 1.0.0 | X/Twitter 数据采集 | **MCP: x_twitter_ops** (聚合 7 个操作) |
 | agency-bin-opencli | 0.6.2 | 17 个网站一键 API 化 | 23 个站点 |
 
 ## 开发工具
@@ -67,3 +70,13 @@
 ## 致谢
 
 感谢所有开源项目的开发者：Lightpanda、Chrome DevTools MCP、bb-browser、Defuddle、OpenCLI、xiaohongshu-mcp 等。
+
+## 🎨 AI-Native Design & UI
+
+| Skill | Tool | Role |
+|-------|------|------|
+| **Design Advisor** | `recommend_design_dna` | 审美决策顾问，根据内容匹配最佳品牌基因。 |
+| **Design System MD** | `get_brand_design` | 跨品牌视觉规范库，内置 Apple, Stripe 等 69+ 品牌指南。 |
+| **Huashu Design** | `design_prototype` | 高保真工程引擎，生成可点击 HTML 原型与发布动画。 |
+| **Guizang PPT** | `generate_magazine_ppt` | 演示专家，生成电子杂志美学的 HTML 幻灯片。 |
+

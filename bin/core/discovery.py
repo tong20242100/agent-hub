@@ -105,6 +105,32 @@ class LocalFileScanner(BaseScanner):
             except: pass
         return found
 
+class AgentSkillsScanner(BaseScanner):
+    """扫描 ~/.agents/skills/ 下的 Anthropic/Google 格式技能"""
+    def scan(self) -> List[Dict[str, Any]]:
+        base = Path.home() / ".agents" / "skills"
+        if not base.exists(): return []
+        found = []
+        # 查找所有包含 SKILL.md 的目录
+        for skill_file in base.rglob("SKILL.md"):
+            try:
+                # 简单解析 frontmatter 获取名称
+                content = skill_file.read_text()
+                name = skill_file.parent.name
+                if "name:" in content:
+                    import re
+                    match = re.search(r"name:\s*(.*)", content)
+                    if match: name = match.group(1).strip()
+                
+                found.append({
+                    "name": name,
+                    "platform": "AgentSkills",
+                    "path": str(skill_file.parent),
+                    "type": "knowledge"
+                })
+            except: pass
+        return found
+
 def run_global_discovery():
     """全域雷达启动"""
     scanners = [
@@ -112,7 +138,8 @@ def run_global_discovery():
         HermesScanner("Hermes"), 
         CursorScanner("Cursor"),
         GeminiScanner("Gemini"),
-        OpenClawScanner("OpenClaw")
+        OpenClawScanner("OpenClaw"),
+        AgentSkillsScanner("AgentSkills")
     ]
     results = {}
     for scanner in scanners:

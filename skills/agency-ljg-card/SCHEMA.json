@@ -1,111 +1,33 @@
 {
   "name": "agency-ljg-card",
-  "version": "1.0.0",
-  "protocol": "1.0",
-  "description": "内容铸卡 - 将内容转为 PNG 视觉卡片。支持长图(-l)、信息图(-i)、多卡(-m)、视觉笔记(-v)、漫画(-c)、白板(-w)六种模具。",
-  "type": "cognitive",
-  "skill_file": "SKILL.md",
+  "version": "1.1.0",
+  "description": "内容铸卡 - 将内容转换为多模具视觉 PNG 卡片。",
+  "ai_hints": {
+    "intent": "将结构化文本或 URL 内容持久化为视觉冲击力强的 PNG 图像",
+    "triggers": ["铸卡", "做成图", "信息图", "海报", "视觉笔记"],
+    "when_to_use": "需要将长文、概念或 URL 转化为易于分享的视觉长图、信息图、漫画或白板风格图像时。",
+    "avoid": [
+      "简单的网页截图任务（使用 chrome-devtools）",
+      "需要交互功能的 HTML 原型（使用 huashu-design）",
+      "包含大量隐私或敏感信息的本地文本内容"
+    ],
+    "self_check": [
+      "任务是否需要将抽象概念转化为具象的视觉模具（如信息图、漫画）？",
+      "生成的结果是否用于社交媒体分发或非代码类的视觉存档？"
+    ]
+  },
   "tools": {
     "ljg_card": {
-      "description": "将内容铸成 PNG 视觉卡片。默认长图模式，-i 信息图、-m 多卡、-v 视觉笔记、-c 漫画、-w 白板。",
+      "description": "将内容铸成视觉卡片。-l 长图、-i 信息图、-m 多卡、-v 视觉笔记、-c 漫画、-w 白板。",
       "command": "skills/agency-ljg-card/bin/ljg-card {mode} {content}",
       "parameters": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "enum": [
-              "-l",
-              "-i",
-              "-m",
-              "-v",
-              "-c",
-              "-w"
-            ],
-            "default": "-l",
-            "description": "模具类型：-l 长图、-i 信息图、-m 多卡、-v 视觉笔记、-c 漫画、-w 白板"
-          },
-          "content": {
-            "type": "string",
-            "description": "要转换的内容（文本、URL 或文件路径）"
-          },
-          "output_dir": {
-            "type": "string",
-            "default": "~/Downloads/",
-            "description": "输出目录"
-          }
+          "mode": { "type": "string", "enum": ["-l", "-i", "-m", "-v", "-c", "-w"], "default": "-l" },
+          "content": { "type": "string", "description": "要转换的内容或 URL" }
         },
-        "required": [
-          "content"
-        ]
-      },
-      "ai_hints": {
-        "when_to_use": "用户要求将内容转为 PNG 视觉卡片时。触发词：'铸'、'做成图'、'做成卡片'、'做成信息图'、'做成海报'、'视觉笔记'、'漫画'、'白板'。例如'把这段内容铸成卡片'、'做成一张信息图'",
-        "examples": [
-          {
-            "mode": "-i",
-            "content": "概念：熵 - 系统混乱度的度量"
-          },
-          {
-            "mode": "-l",
-            "content": "https://docs.example.com/article"
-          },
-          {
-            "mode": "-c",
-            "content": "一段故事文本"
-          }
-        ],
-        "avoid": "只需要普通截图用 chrome-devtools；需要网页抓取用 scrape_url。内容必须是非敏感信息"
+        "required": ["content"]
       }
     }
-  },
-  "ai_hints": {
-    "triggers": [
-      "铸",
-      "cast",
-      "做成图",
-      "做成卡片",
-      "做成信息图",
-      "做成海报",
-      "视觉笔记",
-      "sketchnote",
-      "漫画",
-      "comic",
-      "manga",
-      "白板",
-      "whiteboard"
-    ],
-    "intent": "将文字内容转换为视觉 PNG 卡片",
-    "when_to_use": "用户要求将内容转为 PNG 视觉卡片时。触发词：'铸'、'做成图'、'做成卡片'、'做成信息图'、'视觉笔记'、'漫画'、'白板'",
-    "modes": {
-      "-l": "长图阅读卡，适合深度文章",
-      "-i": "信息图，适合概念解释、数据展示",
-      "-m": "多卡，自动切分为多张卡片",
-      "-v": "视觉笔记，手绘风格",
-      "-c": "漫画，日式黑白风格",
-      "-w": "白板，马克笔风格"
-    },
-    "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
-    ]
-  },
-  "requires": {
-    "bins": [
-      "node",
-      "npx"
-    ],
-    "npm": [
-      "playwright"
-    ]
-  },
-  "dependencies": [
-    {
-      "name": "playwright",
-      "type": "npm",
-      "description": "浏览器自动化，用于截图",
-      "check_command": "npm list playwright",
-      "install_cmd": "npm install playwright && npx playwright install chromium"
-    }
-  ]
+  }
 }

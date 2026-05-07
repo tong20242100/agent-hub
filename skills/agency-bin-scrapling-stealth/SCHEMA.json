@@ -1,69 +1,32 @@
 {
   "name": "agency-bin-scrapling-stealth",
-  "version": "2.0.2",
-  "protocol": "1.0",
-  "description": "隐身爬虫工具，专治小红书、知乎等重度防爬盾牌网页。",
+  "version": "1.0.0",
+  "description": "Scrapling Stealth - 隐身采集引擎。专治重度防爬盾牌与指纹识别。",
   "tools": {
     "stealth_get": {
-      "description": "绕过 Cloudflare 盾牌提取网页。支持主动交互（点击、滚动等）。",
+      "description": "绕过 Cloudflare 盾牌提取网页。支持主动点击挑战按钮。",
       "command": "bin/scrapling-stealth {url} --click {click_target}",
       "parameters": {
         "type": "object",
         "properties": {
-          "url": {
-            "type": "string",
-            "description": "目标 URL"
-          },
-          "click_target": {
-            "type": "string",
-            "description": "可选：指定要点击的按钮文本或 CSS 选择器 (如 'CC,字幕')"
-          }
+          "url": {"type": "string", "description": "目标 URL"},
+          "click_target": {"type": "string", "description": "可选：挑战页点击目标"}
         },
-        "required": [
-          "url"
-        ]
+        "required": ["url"]
       }
     }
   },
   "ai_hints": {
-    "when_to_use": "用户需要抓取有反爬保护的网站（小红书、知乎、Cloudflare 拦截页）时。例如'抓取小红书上的这篇笔记'、'把这个知乎回答内容提取出来'",
-    "examples": [
-      {
-        "url": "https://www.xiaohongshu.com/explore/67a1b2c3d4e5f6",
-        "click_target": ""
-      },
-      {
-        "url": "https://zhuanlan.zhihu.com/p/123456",
-        "click_target": ""
-      },
-      {
-        "url": "https://cloudflare-challenge.example.com",
-        "click_target": "同意,接受"
-      }
+    "intent": "突破站点防御盾牌（如 Cloudflare, WAF），实现隐身化的内容采集",
+    "triggers": ["绕过反爬", "盾牌验证", "知乎采集", "小红书抓取"],
+    "when_to_use": "当普通 HTTP 客户端被拒绝访问，或面对明确部署了反爬策略的知名站点时。",
+    "avoid": [
+      "公开可直接访问的静态网页（使用 scrape_url 更快）",
+      "需要复用 Cookie 登录态的垂直社交应用（使用 bb-browser）"
     ],
-    "avoid": "普通静态网页用 scrape_url 更快；需要完整浏览器交互用 chrome-devtools",
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "普通采集工具是否触发了 403 Forbidden 或验证码挑战？",
+      "目标站点是否属于重度防御型站点？"
     ]
-  },
-  "requires": {
-    "bins": [
-      "scrapling"
-    ]
-  },
-  "source": {
-    "type": "local_script"
-  },
-  "dependencies": [
-    {
-      "name": "scrapling",
-      "type": "pip",
-      "description": "Web scraping with anti-bot bypass",
-      "check_command": "pip show scrapling",
-      "update_command": "pip install --upgrade scrapling[fetchers]"
-    }
-  ],
-  "type": "bin-wrapper",
-  "bin_path": "bin/scrapling-stealth"
+  }
 }

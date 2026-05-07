@@ -1,25 +1,6 @@
 #!/usr/bin/env python3
 """
-Agent-Hub MCP Server - Expose skills to Claude Desktop / Gemini CLI / Cursor
-
-设计原则（Linus 式）：
-1. 数据驱动：从 SCHEMA.json 自动发现，不硬编码
-2. 信任 Agent：让 LLM 自己选择工具，不预判断
-3. 消除特殊情况：统一的加载逻辑
-
-架构：
-  MCP 客户端 → mcp_server.py → SCHEMA.json → 执行工具
-
-Usage:
-    # Claude Desktop config:
-    {
-      "mcpServers": {
-        "agent-hub": {
-          "command": "python3",
-          "args": ["/path/to/agent-hub/bin/mcp_server.py"]
-        }
-      }
-    }
+Agent-Hub MCP Server - Minimalist, Intent-Driven & Priority-Truncated
 """
 import json
 import asyncio
@@ -29,6 +10,9 @@ import shlex
 import shutil
 import re
 import os
+import time
+import platform
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -36,341 +20,198 @@ from typing import Any, Dict, List, Optional
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import Tool, TextContent
+    from mcp.types import Tool, TextContent, Prompt, PromptMessage, PromptArgument
 except ImportError:
     print("Error: mcp package not installed. Run: pip install mcp", file=sys.stderr)
     sys.exit(1)
 
 # Paths
 WORKSPACE_ROOT = Path(__file__).parent.parent
-SKILLS_DIRS = [
-    WORKSPACE_ROOT / "skills",
-    WORKSPACE_ROOT / "skills-cognitive",
-]
+LOG_DIR = WORKSPACE_ROOT / "knowledge" / "logs"
+MANIFEST_PATH = WORKSPACE_ROOT / "knowledge" / "tools_manifest.json"
+SKILLS_DIRS = [WORKSPACE_ROOT / "skills", WORKSPACE_ROOT / "skills-cognitive"]
 
+EXCLUDED_TOOLS = {
+    "performance_start_trace", "performance_stop_trace", "performance_analyze_insight",
+    "take_memory_snapshot", "bb_daemon", "bb_network", "update_check_json", "update_deps",
+    "defuddle_extract_title", "defuddle_extract_author", "defuddle_extract_metadata",
+}
 
-def find_all_skill_dirs() -> list[Path]:
-    """返回所有技能目录（含 cognitive）"""
-    dirs = []
-    for d in SKILLS_DIRS:
-        if d.exists():
-            dirs.extend(sorted(d.iterdir()))
-    return [d for d in dirs if d.is_dir()]
-
-# Initialize MCP server
 server = Server("agent-hub")
 
+def find_all_skill_dirs() -> List[Path]:
+    dirs = []
+    for b in SKILLS_DIRS:
+        if b.exists(): dirs.extend([i for i in b.iterdir() if i.is_dir() and not i.name.startswith(".")])
+    return dirs
 
-def load_all_schemas() -> Dict[str, Dict]:
-    """
-    加载所有 skills 的 SCHEMA.json（含 skills-cognitive）
-    """
+def load_all_schemas(skill_filter: Optional[List[str]] = None) -> Dict[str, Dict]:
     schemas = {}
-
-    for skill_dir in find_all_skill_dirs():
-        if not skill_dir.is_dir():
-            continue
-        
-        schema_path = skill_dir / "SCHEMA.json"
-        if not schema_path.exists():
-            continue
-        
+    if MANIFEST_PATH.exists():
         try:
-            with open(schema_path, 'r', encoding='utf-8') as f:
-                schema = json.load(f)
-            
-            # 跳过认知型技能（思维框架，不是可执行工具）
-            if schema.get("type") == "cognitive":
-                continue
-            
-            skill_name = schema.get("name", skill_dir.name)
-            schemas[skill_name] = {
-                "schema": schema,
-                "skill_dir": str(skill_dir),
-            }
-        except Exception as e:
-            print(f"Warning: Failed to load {schema_path}: {e}", file=sys.stderr)
-    
+            with open(MANIFEST_PATH, 'r', encoding='utf-8') as f:
+                for t in json.load(f).get("tools", []):
+                    sk = t.get("skill")
+                    if not sk or (skill_filter and sk not in skill_filter): continue
+                    if sk not in schemas:
+                        sdp = WORKSPACE_ROOT / "skills" / t.get("skill_dir", sk)
+                        m_s, m_n, v, sp = None, None, "0.0.1", sdp / "SCHEMA.json"
+                        if sp.exists():
+                            try:
+                                with open(sp) as f: ps = json.load(f); m_s, m_n, v = ps.get("mcp_strategy"), ps.get("merged_name"), ps.get("version", v)
+                            except: pass
+                        schemas[sk] = {"schema": {"name": sk, "version": v, "tools": {}, "mcp_strategy": m_s, "merged_name": m_n}, "skill_dir": str(sdp)}
+                    schemas[sk]["schema"]["tools"][t["name"]] = {"description": t.get("description", ""), "parameters": t.get("parameters", {}), "ai_hints": t.get("ai_hints", {}), "command": t.get("command", "")}
+            if schemas: return schemas
+        except: pass
+    for sd in find_all_skill_dirs():
+        if not sd.is_dir() or (skill_filter and sd.name not in skill_filter): continue
+        sp = sd / "SCHEMA.json"
+        if sp.exists():
+            try:
+                with open(sp) as f:
+                    s = json.load(f)
+                    if s.get("type") != "cognitive": schemas[s.get("name", sd.name)] = {"schema": s, "skill_dir": str(sd)}
+            except: pass
     return schemas
 
+def load_all_prompts() -> Dict[str, Dict]:
+    pm = {}
+    for sd in find_all_skill_dirs():
+        sp = sd / "SCHEMA.json"
+        if sp.exists():
+            try:
+                with open(sp) as f:
+                    s = json.load(f)
+                    if "prompts" in s:
+                        for p in s["prompts"]: pm[p["name"]] = {"instructions": p["instructions"], "description": p.get("description", "")}
+            except: pass
+    return pm
 
-def build_tool_description(tool_name: str, tool_def: Dict, schema: Dict, skill_dir: str = "") -> str:
-    """构建工具描述，包含 ai_hints 让 LLM 能精准选择
+def build_tool_description(tool_name: str, tool_def: Dict, schema: Dict) -> str:
+    """Priority Truncation: Metadata over Raw Description"""
+    base_desc = tool_def.get("description", "").strip()
+    tool_hints, root_hints = tool_def.get("ai_hints", {}), schema.get("ai_hints", {})
+    intent = tool_hints.get("intent") or root_hints.get("intent") or ""
+    checks = tool_hints.get("self_check") or root_hints.get("self_check") or []
+    check_str = f" [Check]: {'; '.join(checks)}." if checks else ""
+    prompt_ref = f" (Ref: {', '.join([p['name'] for p in schema['prompts']])})" if "prompts" in schema else ""
     
-    设计原则（原则 3 - 渐进式披露）：
-    - 如果技能目录下存在 SKILL.md，告知 AI 去深度读取
-    - 避免一次性加载所有内容，按需披露
-    """
-    parts = []
-    
-    base_desc = tool_def.get("description", "")
-    if base_desc:
-        parts.append(base_desc)
-    
-    # 合并 ai_hints (tool-level 优先于 root-level)
-    root_hints = schema.get("ai_hints", {})
-    tool_hints = tool_def.get("ai_hints", {})
-    ai_hints = {**root_hints, **tool_hints}
-    
-    # 1. 自检逻辑 (Self-Check)
-    if ai_hints.get("self_check"):
-        check_list = ai_hints["self_check"]
-        if isinstance(check_list, list):
-            parts.append("\n[Self-Check / 调用前自检]:")
-            for item in check_list:
-                parts.append(f"\n- {item}")
-    
-    # 2. 使用场景
-    if ai_hints.get("when_to_use"):
-        parts.append(f"\n[Usage Scenarios / 使用场景]:\n{ai_hints['when_to_use']}")
-    
-    # 3. 示例
-    if ai_hints.get("examples"):
-        examples = ai_hints["examples"]
-        if examples:
-            # 获取第一个示例
-            example_data = examples[0]
-            # 如果示例是字典且包含 tool_name 对应的参数
-            example_str = json.dumps(example_data, ensure_ascii=False)
-            parts.append(f"\n[Example / 示例]:\n{example_str}")
-    
-    # 4. 禁止场景 / 注意事项
-    if ai_hints.get("avoid"):
-        parts.append(f"\n[Notice / 注意]:\n{ai_hints['avoid']}")
-    
-    # 5. 渐进式披露：如果存在 SKILL.md，引导 AI 深度读取
-    if skill_dir:
-        skill_md_path = Path(skill_dir) / "SKILL.md"
-        if skill_md_path.exists():
-            parts.append(f"\n\n[Deep Guide / 深度指南]: 此工具拥有详细的任务指令和决策逻辑。如需高级指南或处理复杂场景，请务必调用 read_file 工具读取: {skill_md_path}")
-    
-    return "".join(parts)
+    core = f"| {intent}{check_str}{prompt_ref}"
+    limit = 500
+    budget = limit - len(core) - 1
+    if len(base_desc) > budget: base_desc = f"{base_desc[:budget-3]}..."
+    return f"{base_desc} {core}".strip()
 
-
-def get_all_tools() -> List[Dict]:
-    """从 SCHEMA.json 自动发现所有可执行工具"""
+def get_all_tools(skill_filter: Optional[List[str]] = None) -> List[Dict]:
     tools = []
-    schemas = load_all_schemas()
-    
-    for skill_name, skill_data in schemas.items():
-        schema = skill_data["schema"]
-        skill_dir = skill_data["skill_dir"]
-        
-        for tool_name, tool_def in schema.get("tools", {}).items():
-            # 跳过委托型工具（delegate_to 是说明，不是实现）
-            if tool_def.get("delegate_to"):
-                continue
-            
+    schemas = load_all_schemas(skill_filter)
+    for sn, sd in schemas.items():
+        s, sdir, v = sd["schema"], sd["skill_dir"], sd["schema"].get("version", "unknown")
+        if s.get("mcp_strategy") == "merge":
+            mn = s.get("merged_name", sn.replace("agency-bin-", ""))
+            acts = [tn for tn, td in s.get("tools", {}).items() if not td.get("delegate_to") and tn not in EXCLUDED_TOOLS]
+            desc = f"Merged capabilities for {sn}. Actions: {', '.join(acts)}. Refer to prompts for SOP."
+            if len(desc) > 500: desc = desc[:497] + "..."
             tools.append({
-                "tool_name": tool_name,
-                "skill_name": skill_name,
-                "skill_dir": skill_dir,
-                "description": build_tool_description(tool_name, tool_def, schema, skill_dir),
-                "parameters": tool_def.get("parameters", {
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }),
-                "command": tool_def.get("command", ""),
-                "requires": schema.get("requires", {}),
+                "tool_name": mn, "skill_name": sn, "skill_version": v, "skill_dir": sdir, "description": desc,
+                "parameters": {"type": "object", "properties": {"action": {"type": "string", "enum": acts}, "payload": {"type": "object"}}, "required": ["action"]},
+                "is_merged": True, "requires": s.get("requires", {}), "sub_tools": s.get("tools", {})
             })
-    
+        else:
+            for tn, td in s.get("tools", {}).items():
+                if not td.get("delegate_to") and tn not in EXCLUDED_TOOLS:
+                    tools.append({"tool_name": tn, "skill_name": sn, "skill_version": v, "skill_dir": sdir, "description": build_tool_description(tn, td, s), "parameters": td.get("parameters", {"type": "object", "properties": {}}), "command": td.get("command", ""), "requires": s.get("requires", {})})
     return tools
 
-
-def check_requires(requires: Dict) -> tuple[bool, List[str]]:
-    """检查工具依赖是否满足"""
-    missing = []
-    
-    for bin_name in requires.get("bins", []):
-        if not shutil.which(bin_name):
-            missing.append(f"bin:{bin_name}")
-    
-    for env_name in requires.get("env", []):
-        if not os.environ.get(env_name):
-            missing.append(f"env:{env_name}")
-    
-    return len(missing) == 0, missing
-
-
-def build_command(template: str, params: Dict[str, Any]) -> str:
-    """构建命令，支持条件参数语法"""
-    result = template
-    
-    # Handle boolean flags: {param?--flag}
-    for match in re.finditer(r'\{(\w+)\?\s*([^\}]+)\}', result):
-        param_name, flag = match.groups()
-        if params.get(param_name):
-            result = result.replace(match.group(0), flag)
-        else:
-            result = result.replace(match.group(0), '')
-    
-    # Handle --option {param} patterns
-    for match in re.finditer(r'--[\w-]+\s+\{(\w+)\}', result):
-        param_name = match.group(1)
-        if param_name not in params:
-            result = result.replace(match.group(0), '')
-    
-    # Handle value placeholders: {param}
-    for match in re.finditer(r'\{(\w+)\}', result):
-        param_name = match.group(1)
-        if param_name in params:
-            value = params[param_name]
-            if isinstance(value, bool):
-                replacement = f'--{param_name.replace("_", "-")}' if value else ''
-            else:
-                replacement = shlex.quote(str(value))
-            result = result.replace(match.group(0), replacement)
-        else:
-            result = result.replace(match.group(0), '')
-    
-    result = re.sub(r'\s+', ' ', result).strip()
-    return result
-
+def build_command(template: str, params: Dict[str, Any], skill_path: str = "") -> str:
+    r, ap = template, {**params, "skill_path": skill_path}
+    for m in re.finditer(r'\{(\w+)\?\s*([^\}]+)\}', r): r = r.replace(m.group(0), m.group(2) if ap.get(m.group(1)) else '')
+    for m in re.finditer(r'--[\w-]+\s+\{(\w+)\}', r):
+        if m.group(1) not in ap: r = r.replace(m.group(0), '')
+    for m in re.finditer(r'\{(\w+)\}', r):
+        p = m.group(1)
+        if p in ap:
+            v = ap[p]
+            r = r.replace(m.group(0), shlex.quote(str(v)) if not isinstance(v, bool) else (f'--{p.replace("_", "-")}' if v else ''))
+        else: r = r.replace(m.group(0), '')
+    return re.sub(r'\s+', ' ', r).strip()
 
 def validate_result(result: Dict) -> Dict:
-    """快速验证执行结果（内联 reality check）"""
-    checks = []
-    stdout = result.get("stdout", "")
-    stderr = result.get("stderr", "")
-    exit_code = result.get("exit_code", -1)
-    
-    # Check 1: 输出长度
-    if not stdout or len(stdout.strip()) < 50:
-        checks.append({"check": "output_length", "result": "FAIL", "concern": "输出过短"})
-    else:
-        checks.append({"check": "output_length", "result": "PASS"})
-    
-    # Check 2: 退出码
-    if exit_code != 0:
-        checks.append({"check": "exit_code", "result": "FAIL", "concern": f"Exit code: {exit_code}"})
-    else:
-        checks.append({"check": "exit_code", "result": "PASS"})
-    
-    # Check 3: 无错误关键词
-    error_patterns = ["error:", "exception:", "traceback", "undefined", "null"]
-    stdout_lower = stdout.lower()
-    found = [p for p in error_patterns if p in stdout_lower]
-    if found:
-        checks.append({"check": "no_errors", "result": "FAIL", "concern": f"发现错误关键词: {found[:2]}"})
-    else:
-        checks.append({"check": "no_errors", "result": "PASS"})
-    
-    passed = sum(1 for c in checks if c["result"] == "PASS")
-    return {"checks": checks, "passed": passed, "total": len(checks), "ok": passed == len(checks)}
+    o, c = result.get("stdout", ""), result.get("exit_code", -1)
+    checks = [{"check": "exit_code", "passed": c == 0}, {"check": "output_exists", "passed": len(o.strip()) > 10}]
+    errs = [p for p in ["error:", "exception:", "traceback", "failed"] if p in o.lower()]
+    checks.append({"check": "no_errors", "passed": not errs, "found": errs})
+    return {"ok": all(c["passed"] for c in checks), "report": checks}
 
-
-def execute_tool(tool_info: Dict, arguments: Dict) -> Dict:
-    """执行工具"""
-    skill_dir = tool_info["skill_dir"]
-    command_template = tool_info["command"]
-    
-    formatted_cmd = build_command(command_template, arguments)
-    
-    cmd_list = shlex.split(formatted_cmd)
-    if not cmd_list:
-        return {"status": "error", "message": "Failed to build a valid command from template"}
-        
-    if cmd_list[0].startswith("bin/"):
-        cmd_list[0] = str(WORKSPACE_ROOT / cmd_list[0])
-    
+def record_action(ti: Dict, args: Dict, res: Dict, d: float, cmd: str = ""):
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    le = {"timestamp": datetime.now().isoformat(), "tool": ti.get("tool_name"), "skill": ti.get("skill_name"), "version": ti.get("skill_version"), "arguments": args, "command_run": cmd, "duration_ms": round(d * 1000, 2), "status": res.get("status"), "exit_code": res.get("exit_code"), "audit": res.get("validation", {}), "system": {"os": platform.system(), "python": platform.python_version()}, "output_preview": {"stdout": (res.get("stdout") or "")[:500], "stderr": (res.get("stderr") or "")[:500]}}
     try:
-        result = subprocess.run(
-            cmd_list,
-            shell=False,
-            cwd=str(WORKSPACE_ROOT),
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
-        
-        cmd_str = " ".join(cmd_list[:5]) + ("..." if len(cmd_list) > 5 else "")
-        output = {
-            "status": "success" if result.returncode == 0 else "failure",
-            "exit_code": result.returncode,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "context": {
-                "command": cmd_str[:200],
-                "tool": tool_info["tool_name"],
-            }
-        }
-        # 自动验证
+        with open(LOG_DIR / f"evolution_{datetime.now().strftime('%Y%m%d')}.jsonl", "a", encoding="utf-8") as f: f.write(json.dumps(le, ensure_ascii=False) + "\n")
+    except: pass
+
+def execute_tool(ti: Dict, args: Dict) -> Dict:
+    st, sd = time.time(), ti.get("skill_dir", "")
+    fc = build_command(ti.get("command", ""), args, sd)
+    cl = shlex.split(fc)
+    if not cl: return {"status": "error", "message": "Empty command"}
+    if cl[0].startswith("bin/"): cl[0] = str(WORKSPACE_ROOT / cl[0])
+    elif "{skill_path}" not in ti.get("command", "") and "/" in cl[0] and not cl[0].startswith("/"):
+        lp = Path(sd) / cl[0]
+        if lp.exists(): cl[0] = str(lp)
+    try:
+        r = subprocess.run(cl, shell=False, cwd=str(WORKSPACE_ROOT), capture_output=True, text=True, timeout=120)
+        output = {"status": "success" if r.returncode == 0 else "failure", "exit_code": r.returncode, "stdout": r.stdout, "stderr": r.stderr}
         output["validation"] = validate_result(output)
-        return output
-    except subprocess.TimeoutExpired:
-        return {"status": "error", "message": "Timeout (120s)"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except Exception as e: output = {"status": "error", "message": str(e)}
+    record_action(ti, args, output, time.time() - st, " ".join(cl))
+    return output
 
-
-# ============ MCP Handlers ============
-
-_tools_cache: Optional[List[Dict]] = None
-
+_tc, _pc, _sf = None, None, None
 
 @server.list_tools()
 async def list_tools() -> list[Tool]:
-    """返回所有可用工具给 MCP 客户端"""
-    global _tools_cache
-    
-    if _tools_cache is None:
-        _tools_cache = get_all_tools()
-    
-    tools = []
-    for tool_info in _tools_cache:
-        tool = Tool(
-            name=tool_info["tool_name"],
-            description=tool_info["description"],
-            inputSchema=tool_info["parameters"]
-        )
-        tools.append(tool)
-    
-    return tools
-
+    global _tc
+    if _tc is None: _tc = get_all_tools(_sf)
+    return [Tool(name=t["tool_name"], description=t["description"], inputSchema=t["parameters"]) for t in _tc]
 
 @server.call_tool()
-async def call_tool(name: str, arguments: dict) -> list[TextContent]:
-    """执行工具"""
-    global _tools_cache
-    
-    try:
-        if _tools_cache is None:
-            _tools_cache = get_all_tools()
-        
-        tool_info = None
-        for t in _tools_cache:
-            if t["tool_name"] == name:
-                tool_info = t
-                break
-        
-        if not tool_info:
-            return [TextContent(type="text", text=f"Error: Tool '{name}' not found")]
-        
-        # 检查依赖
-        requires = tool_info.get("requires", {})
-        if requires:
-            satisfied, missing = check_requires(requires)
-            if not satisfied:
-                return [TextContent(
-                    type="text",
-                    text=f"Error: Missing dependencies: {', '.join(missing)}"
-                )]
-        
-        result = execute_tool(tool_info, arguments)
-        return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
-        
-    except Exception as e:
-        return [TextContent(type="text", text=f"Error: {str(e)}")]
+async def call_tool(n: str, args: dict) -> list[TextContent]:
+    global _tc
+    if _tc is None: _tc = get_all_tools(_sf)
+    ti = next((t for t in _tc if t["tool_name"] == n), None)
+    if not ti: return [TextContent(type="text", text=f"Error: Tool {n} not found")]
+    if ti.get("is_merged"):
+        a, p = args.get("action"), args.get("payload", {})
+        sd = ti.get("sub_tools", {}).get(a)
+        if not sd: return [TextContent(type="text", text=f"Invalid action {a}")]
+        res = execute_tool({"tool_name": f"{n}:{a}", "skill_name": ti["skill_name"], "skill_version": ti["skill_version"], "skill_dir": ti["skill_dir"], "command": sd.get("command", "")}, p)
+    else: res = execute_tool(ti, args)
+    return [TextContent(type="text", text=json.dumps(res, ensure_ascii=False, indent=2))]
 
+@server.list_prompts()
+async def list_prompts() -> list[Prompt]:
+    global _pc
+    if _pc is None: _pc = load_all_prompts()
+    return [Prompt(name=n, description=p["description"]) for n, p in _pc.items()]
 
-# ============ 入口 ============
+@server.get_prompt()
+async def get_prompt(n: str, args: Optional[dict] = None) -> PromptMessage:
+    global _pc
+    if _pc is None: _pc = load_all_prompts()
+    if n not in _pc: raise ValueError(f"Prompt {n} not found")
+    return PromptMessage(role="assistant", content=TextContent(type="text", text=_pc[n]["instructions"]))
 
 async def main():
-    """Run MCP server over stdio"""
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(read_stream, write_stream, server.create_initialization_options())
+    import argparse
+    p = argparse.ArgumentParser(); p.add_argument("--skills"); p.add_argument("--list-skills", action="store_true")
+    args, _ = p.parse_known_args()
+    if args.list_skills:
+        for s in sorted(load_all_schemas().keys()): print(f"- {s}")
+        return
+    global _sf
+    if args.skills: _sf = [s.strip() for s in args.skills.split(",")]
+    async with stdio_server() as (r, w): await server.run(r, w, server.create_initialization_options())
 
-
-if __name__ == "__main__":
-    asyncio.run(main())
+if __name__ == "__main__": asyncio.run(main())

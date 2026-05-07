@@ -13,16 +13,18 @@ Thank you for your interest in contributing to Agent-Hub!
 
 ## 🧠 Core Principles
 
-1. **Schema-Driven**: Avoid Python `if/else` wrappers. Define tools via `SCHEMA.json` with `{param?--flag}` conditional syntax.
-2. **Skill Equals Binary**: Write standalone binaries (Go, Rust, Node, etc.). Agent-Hub orchestrates them via standardized schema.
-3. **Fast Execution**: Never add heavy imports (`torch`, `transformers`) at global level. Everything must be lazy-loaded.
+See [docs/principles.md](docs/principles.md) for our AI-Native manifesto.
+
+1. **Schema-Driven**: Avoid Python `if/else` wrappers. Define tools via `SCHEMA.json`.
+2. **Brain First**: Design tools for AI to call, not for humans to type. Use precise `ai_hints`.
+3. **Solidified Registry**: Every skill MUST be onboarded via `ah onboard`.
 
 ## 📝 Adding New Skills
 
 1. Create directory: `skills/agency-YOUR-SKILL-NAME/`
-2. Add `SCHEMA.json` with tool definitions
-3. (Optional) Add `SKILL.md` with AI guidance
-4. If your skill has binaries, place in `skills/agency-YOUR-SKILL-NAME/bin/`
+2. Add `SCHEMA.json` (The Muscle) and `SKILL.md` (The Soul).
+3. Place binaries in `skills/agency-YOUR-SKILL-NAME/bin/`.
+4. **MANDATORY**: Run `python3 bin/ah.py onboard skills/agency-YOUR-SKILL-NAME` to register with the registry, sync docs, and refresh MCP cache.
 
 ### SCHEMA.json Example
 

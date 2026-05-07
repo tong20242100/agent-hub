@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+import sys
+import json
+from pathlib import Path
+
+def main():
+    vault_path = Path(__file__).resolve().parent.parent / "data" / "prestige_vault.json"
+    with open(vault_path) as f:
+        vault = json.load(f)
+    
+    if len(sys.argv) < 2:
+        print("Error: content_brief required")
+        sys.exit(1)
+    
+    brief = " ".join(sys.argv[1:]).lower()
+    
+    # 模拟 AI 的决策逻辑：基于关键词的权重适配
+    results = []
+    for s in vault:
+        match_score = 0
+        if any(word in brief for word in s['best_for'].lower().split()): match_score += 30
+        if any(word in brief for word in s['dna'].lower().split('-')): match_score += 20
+        if any(word in brief for word in s['vibe'].lower().split()): match_score += 10
+        
+        if match_score > 0:
+            results.append((s, match_score + s['prestige'])) # 综合评分：适配度 + 系统本身的高级程度
+
+    # 按综合评分排序
+    results.sort(key=lambda x: x[1], reverse=True)
+    
+    if not results:
+        # 如果没有匹配，返回最高级的系统作为默认建议 (Apple)
+        results = [(vault[2], 99)]
+
+    best_match = results[0][0]
+    print(f"### AI Design Recommendation: {best_match['name']} ###")
+    print(f"Reasoning: 根据您的内容描述，{best_match['name']} 的 '{best_match['dna']}' 基因最能体现任务所需的 '{best_match['vibe']}'。")
+    print(f"Design Token URL: {best_match['url']}")
+    print(f"Style Constraints: {best_match['best_for']}")
+
+if __name__ == "__main__":
+    main()

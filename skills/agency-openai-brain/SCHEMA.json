@@ -1,0 +1,34 @@
+{
+  "name": "agency-openai-brain",
+  "version": "1.1.0",
+  "description": "基于大模型协议的长期记忆引擎。实现自然语言级的用户画像刻画与偏好对齐。",
+  "ai_hints": {
+    "intent": "自然语言驱动的用户画像刻画与偏好持久化",
+    "triggers": ["memory:bio", "memory:persona", "preference:user"],
+    "when_to_use": "需要持久化存储用户工程习惯、安全性红线或特定的项目偏好时。",
+    "avoid": [
+      "临时性、琐碎的对话上下文存储",
+      "结构化的 JSON 数据对象直接存储（该引擎优化为自然语言索引）"
+    ],
+    "self_check": [
+      "该信息是否对未来对话具有持续的参考价值？",
+      "任务是否要求在底层逻辑上与用户的工程习惯保持对齐？"
+    ]
+  },
+  "tools": {
+    "bio": {
+      "description": "持久化用户信息或偏好。输入必须是纯文本，建议以 'User' 或 'Forget' 开头。",
+      "command": "python3 {skill_path}/bin/bio {memory_instruction}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "memory_instruction": {
+            "type": "string",
+            "description": "要记忆或遗忘的内容"
+          }
+        },
+        "required": ["memory_instruction"]
+      }
+    }
+  }
+}

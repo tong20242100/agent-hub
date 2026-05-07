@@ -47,9 +47,28 @@ def audit_skill(skill_dir: Path, fix: bool = False):
                         json.dump(data, f, ensure_ascii=False, indent=2)
                     warnings.append("已尝试自动修复语气")
 
-        # 3. 结构检查
-        if "self_check" not in ai_hints:
-            warnings.append("缺失 self_check 逻辑")
+        # 3. 结构检查与 Hint 质量守卫 (合并审计策略)
+        tool_defs = data.get("tools", {})
+        root_hints = data.get("ai_hints", {})
+        
+        for t_name, t_def in tool_defs.items():
+            # 合并逻辑：tool 级别覆盖 root 级别
+            merged_hints = {**root_hints, **t_def.get("ai_hints", {})}
+            
+            if not merged_hints:
+                errors.append(f"工具 '{t_name}' 完全缺失 ai_hints")
+                continue
+                
+            # 验证合并后的质量
+            wtu = merged_hints.get("when_to_use", "")
+            if len(wtu) < 20:
+                errors.append(f"工具 '{t_name}' Hint 质量低：when_to_use 过短或缺失")
+            
+            if not merged_hints.get("examples"):
+                errors.append(f"工具 '{t_name}' 缺失 examples")
+                
+            if "avoid" not in merged_hints:
+                warnings.append(f"工具 '{t_name}' 建议加入 avoid 逻辑")
         
         # 4. 物理依赖检查 (核心：确保二进制可用)
         requires = data.get("requires", {})

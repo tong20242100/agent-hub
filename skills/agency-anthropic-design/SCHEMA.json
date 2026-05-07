@@ -1,0 +1,39 @@
+{
+  "name": "Anthropic Design",
+  "version": "1.1.0",
+  "description": "Anthropic 官方设计实验室。提供极致的 HTML Artifacts 生成能力，遵循 Claude 4.7 级视觉与交互标准。",
+  "ai_hints": {
+    "intent": "生成生产级前端架构，强制 OKLCH 语义化颜色系统。",
+    "triggers": ["design:frontend", "design:protocol", "design:audit", "design:oklch", "code:refactor", "ui:artifact"],
+    "when_to_use": "构建高阶 React 架构、重塑组件底层设计协议、或实施基于 OKLCH 的动态设计系统。",
+    "examples": [
+      {"query": "按照 Anthropic 协议标准，将此 React 组件重构为基于 Token 的分层架构。"},
+      {"query": "利用 OKLCH 函数为控制面板设计一套支持暗黑模式的动态调色盘。"}
+    ],
+    "avoid": [
+      "简单静态页面或纯展示型 UI（无交互逻辑）",
+      "需要物理外壳（如 iPhone/MacBook）的样机展示任务",
+      "特定品牌视觉的像素级（Pixel-perfect）还原需求",
+      "仅包含 CSS 样式调整而无架构重塑的任务"
+    ],
+    "self_check": [
+      "任务是否要求生产级前端架构（分层 Logic/View/Theme）？",
+      "是否需要语义化颜色系统（OKLCH）而非硬编码色值？",
+      "任务是否需要具备交互逻辑而非纯静态 UI？",
+      "该任务是否涉及底层设计协议（Protocol）的修改？"
+    ]
+  },
+  "tools": {
+    "design_artifact": {
+      "description": "生成高保真、架构化的 Anthropic 风格构件。强制遵循 OKLCH 规范与语义化命名。",
+      "command": "python3 {skill_path}/bin/artifact {concept}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "concept": {"type": "string", "description": "构件的设计概念 or 业务逻辑"}
+        },
+        "required": ["concept"]
+      }
+    }
+  }
+}

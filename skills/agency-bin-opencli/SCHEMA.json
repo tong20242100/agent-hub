@@ -28,6 +28,24 @@
           "site",
           "command"
         ]
+      },
+      "ai_hints": {
+        "triggers": [
+          "站点 CLI",
+          "bilibili search",
+          "zhihu user"
+        ],
+        "when_to_use": "利用复用的浏览器登录态，通过统一的 CLI 接口操作 bilibili/zhihu/reddit 等 18 个站点时调用。",
+        "examples": [
+          {
+            "site": "bilibili",
+            "command": "hot"
+          }
+        ],
+        "avoid": "目标站点不在支持列表中时优先用 scrape_url。",
+        "self_check": [
+          "目标站点是否在 OpenCLI 支持列表中？"
+        ]
       }
     }
   },
@@ -193,9 +211,10 @@
       ]
     },
     "self_check": [
-      "目标站点是否在支持列表中？否 -> 优先用 scrape_url",
-      "需要复用浏览器登录态以绕过频率限制？是 -> 调此工具"
-    ]
+      "任务是否涉及目标站点是否在支持列表中？否 ->？",
+      "任务是否需要复用浏览器登录态以绕过频率限制？"
+    ],
+    "avoid": []
   },
   "requires": {
     "bins": [

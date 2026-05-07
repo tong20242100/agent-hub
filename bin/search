@@ -255,6 +255,7 @@ def main():
     parser.add_argument("query", nargs="?", help="搜索关键词")
     parser.add_argument("--max", "-n", type=int, default=5, help="最大结果数 (默认: 5)")
     parser.add_argument("--json", "-j", action="store_true", help="JSON 格式输出")
+    parser.add_argument("--debug", action="store_true", help="显示调试信息")
     parser.add_argument("--source", "-s", choices=["tavily", "duckduckgo", "auto"], 
                         default="auto", help="指定搜索来源")
     
@@ -264,15 +265,14 @@ def main():
         parser.print_help()
         sys.exit(1)
     
-    # 打印 key 池状态
+    # 仅在调试模式下打印 key 池状态到 stderr
     keys = get_tavily_keys()
-    if keys:
-        print(f"🔑 Tavily Key 池: {len(keys)} keys loaded", file=sys.stderr)
-    else:
-        vault_paths_str = " or ".join(VAULT_PATHS)
-        print(f"⚠️ No Tavily keys found. Configure via:", file=sys.stderr)
-        print(f"   - Env: TAVILY_API_KEYS or TAVILY_API_KEY", file=sys.stderr)
-        print(f"   - File: {vault_paths_str}", file=sys.stderr)
+    if args.debug:
+        if keys:
+            print(f"🔑 [DEBUG] Tavily Key 池: {len(keys)} keys loaded", file=sys.stderr)
+        else:
+            vault_paths_str = " or ".join(VAULT_PATHS)
+            print(f"⚠️ [DEBUG] No Tavily keys found in env or {vault_paths_str}", file=sys.stderr)
     
     # 搜索
     results = {}

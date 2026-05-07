@@ -1,0 +1,18 @@
+[
+  {
+    "vendor": "ANTHROPIC",
+    "domain": "Visual & UI Design",
+    "file_pattern": "Claude.*Design.*",
+    "latest_version": "4.5",
+    "last_updated": "2025-09-29",
+    "why": "包含最新的 V2 级组件复用协议。"
+  },
+  {
+    "vendor": "OPENAI",
+    "domain": "Safety & Reasoning",
+    "file_pattern": "ChatGPT-4o.*",
+    "latest_version": "o3",
+    "last_updated": "2025-09-27",
+    "why": "包含最新的政策执行工具定义。"
+  }
+]

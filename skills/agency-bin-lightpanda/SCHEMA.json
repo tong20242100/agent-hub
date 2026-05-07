@@ -1,103 +1,32 @@
 {
   "name": "agency-bin-lightpanda",
-  "version": "1.0.0",
-  "protocol": "1.0",
-  "description": "Lightpanda 无头浏览器。高性能 Zig 引擎，支持 JS 渲染页面的快速抓取与分析（fetch/serve/mcp 模式）。",
+  "version": "1.1.0",
+  "description": "Lightpanda - 轻量级 JS 渲染抓取引擎。基于 Zig 的超高性能无头浏览器，专为数据抓取优化。",
   "tools": {
     "fetch": {
-      "description": "抓取网页内容。支持 html/markdown/semantic_tree 输出。例如: fetch(url='https://example.com', dump='markdown')",
-      "command": "bin/lightpanda fetch --dump {dump} --log_level warn {url}",
+      "description": "抓取渲染后的网页内容。支持 markdown 和语义树输出。",
+      "command": "bin/lightpanda fetch --dump {dump} {url}",
       "parameters": {
         "type": "object",
         "properties": {
-          "url": {
-            "type": "string",
-            "description": "目标 URL"
-          },
-          "dump": {
-            "type": "string",
-            "description": "输出格式: html, markdown, semantic_tree, semantic_tree_text",
-            "default": "markdown",
-            "enum": [
-              "html",
-              "markdown",
-              "semantic_tree",
-              "semantic_tree_text"
-            ]
-          },
-          "strip_mode": {
-            "type": "string",
-            "description": "移除内容: js, css, ui, full (逗号分隔)"
-          },
-          "obey_robots": {
-            "type": "boolean",
-            "description": "遵守 robots.txt",
-            "default": false
-          }
+          "url": {"type": "string", "description": "目标 URL"},
+          "dump": {"type": "string", "default": "markdown", "enum": ["html", "markdown", "semantic_tree"]}
         },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "serve": {
-      "description": "启动 CDP 服务器。供 Puppeteer/Playwright 连接。例如: serve(host='127.0.0.1', port=9222)",
-      "command": "bin/lightpanda serve --host {host} --port {port} --log_level warn",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "string",
-            "description": "监听地址",
-            "default": "127.0.0.1"
-          },
-          "port": {
-            "type": "integer",
-            "description": "监听端口",
-            "default": 9222
-          }
-        },
-        "required": []
-      }
-    },
-    "mcp": {
-      "description": "启动 MCP 服务器 (stdio 模式)。供 AI Agent 直接调用。",
-      "command": "bin/lightpanda mcp",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
+        "required": ["url"]
       }
     }
   },
   "ai_hints": {
-    "intent": "高性能无头浏览器，用于抓取 JS 渲染页面",
+    "intent": "对依赖 JavaScript 渲染的复杂 SPA 页面进行极速内容提取",
+    "triggers": ["SPA 抓取", "React 页面提取", "动态网页采集"],
+    "when_to_use": "当目标页面是 React/Vue 等前端框架构建、且 scrape_url 无法直接获取正文时。",
+    "avoid": [
+      "简单的静态 HTML 页面（使用 scrape_url）",
+      "需要点击、填表等复杂中间交互的任务（使用 chrome-devtools）"
+    ],
     "self_check": [
-      "环境是否支持原生 JS 渲染？支持 -> 优先用原生的",
-      "目标页面是否为简单静态页面？是 -> 优先用 scrape_url",
-      "是否需要深度分析页面语义结构（semantic_tree）？是 -> 调此工具"
-    ],
-    "when_to_use": "用于抓取/分析需要 JS 渲染的 SPA 应用页面，在缺乏原生渲染能力时。",
-    "avoid": "静态页面用 scrape_url；交互任务（点击/输入）用 chrome-devtools；绕过反爬用 stealth_get",
-    "examples": [
-      {"url": "https://nextjs.org/docs", "dump": "markdown"},
-      {"url": "https://react.dev/reference", "dump": "semantic_tree"},
-      {"url": "https://docs.angular.dev/guide", "dump": "markdown"}
+      "目标页面是否显著依赖前端异步渲染？",
+      "任务是否追求比完整 Chrome 渲染更快的执行效率？"
     ]
-  },
-  "source": {
-    "type": "github_release",
-    "repo": "lightpanda-io/browser",
-    "asset_pattern": "lightpanda-macos-arm64",
-    "installed_version": "nightly-20260315",
-    "installed_at": "2026-03-16",
-    "download_url": "https://github.com/lightpanda-io/browser/releases"
-  },
-  "requires": {
-    "bins": [
-      "python3",
-      "lightpanda"
-    ],
-    "env": []
   }
 }

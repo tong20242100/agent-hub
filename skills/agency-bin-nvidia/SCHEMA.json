@@ -1,135 +1,26 @@
 {
   "name": "agency-bin-nvidia",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "protocol": "1.0",
-  "description": "NVIDIA GPU 模型情报站 - 搜索/探测/推荐/评测一体化",
-  "tools": {
-    "nvidia_scout": {
-      "description": "搜索可用模型。latest=最新模型，stable=推荐模型",
-      "command": "bin/nvidia scout {type}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "latest",
-              "stable"
-            ],
-            "default": "stable",
-            "description": "latest=最新上传，stable=推荐稳定"
-          }
-        },
-        "required": []
-      }
-    },
-    "nvidia_probe": {
-      "description": "探测模型能力。--scan 执行科学评测套件",
-      "command": "bin/nvidia probe {model_id}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "model_id": {
-            "type": "string",
-            "description": "模型 ID，如 meta/llama-3.3-70b-instruct"
-          },
-          "scan": {
-            "type": "boolean",
-            "default": false,
-            "description": "是否执行完整能力扫描"
-          }
-        },
-        "required": [
-          "model_id"
-        ]
-      }
-    },
-    "nvidia_advise": {
-      "description": "根据需求推荐模型。query: code/reasoning/fast/all",
-      "command": "bin/nvidia advise {query}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "default": "all",
-            "description": "需求类型: code/reasoning/fast/all"
-          }
-        },
-        "required": []
-      }
-    },
-    "nvidia_rank": {
-      "description": "科学评测模型（GSM8K/HumanEval/MMLU）",
-      "command": "bin/nvidia rank {model_id}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "model_id": {
-            "type": "string",
-            "description": "模型 ID"
-          }
-        },
-        "required": [
-          "model_id"
-        ]
-      }
-    }
-  },
+  "description": "NVIDIA GPU 模型情报站 - 搜索、探测、推荐与科学评测。",
   "ai_hints": {
-    "triggers": [
-      "nvidia",
-      "gpu",
-      "模型",
-      "model",
-      "Llama",
-      "DeepSeek",
-      "推理",
-      "inference"
+    "intent": "获取 NVIDIA NIM 平台模型的科学评测分值与底层推理参数",
+    "triggers": ["NVIDIA模型", "NIM推理", "模型跑分", "Llama能力探测"],
+    "when_to_use": "需要对指定模型执行底层能力探测（如上下文限制）、获取权威排名（MMLU/GSM8K）或选择最优推理模型时。",
+    "avoid": [
+      "通用的 AI 常识咨询",
+      "非 NVIDIA 平台的开源模型权重下载",
+      "本地模型的性能分析"
     ],
-    "intent": "NVIDIA 模型的搜索、评测与推荐",
-    "when_to_use": "用户需要搜索、评测或推荐 NVIDIA NIM 平台上的 AI 模型时。例如'有哪些可用的 NVIDIA 模型'、'Llama 3 的推理能力怎么样'、'帮我选一个适合写代码的模型'",
-    "examples": [
-      {
-        "action": "查看推荐模型",
-        "command": "nvidia_scout(type='stable')"
-      },
-      {
-        "action": "评测模型",
-        "command": "nvidia_probe(model_id='meta/llama-3.3-70b-instruct', scan=true)"
-      },
-      {
-        "action": "按需求推荐",
-        "command": "nvidia_advise(query='code')"
-      }
-    ],
-    "avoid": "评测本地模型或开源模型用其他 评测工具；需要 NVIDIA API Key 才能使用",
-    "conditions": {
-      "use_alternative": {}
-    },
     "self_check": [
-      "需要获取 NVIDIA NIM 平台的最新模型参数或科学评测？是 -> 调此工具",
-      "任务仅为常规代码询问？是 -> 优先用原生知识"
+      "任务是否需要权威的模型跑分（MMLU/HumanEval）数据支持？",
+      "是否需要探测指定模型（如 meta/llama-3.3-70b）的底层推理特征？"
     ]
   },
-  "requires": {
-    "bins": [
-      "python3",
-      "curl"
-    ],
-    "env": [
-      "NVIDIA_API_KEY"
-    ]
-  },
-  "type": "bin-wrapper",
-  "bin_path": "bin/nvidia",
-  "dependencies": [
-    {
-      "name": "requests",
-      "type": "pip",
-      "description": "HTTP library for NVIDIA API",
-      "check_command": "pip show requests",
-      "update_cmd": "pip install --upgrade requests"
-    }
-  ]
+  "tools": {
+    "nvidia_scout": { "description": "搜索 NIM 平台可用模型列表", "command": "bin/nvidia scout {type}" },
+    "nvidia_probe": { "description": "探测模型底层能力与上下文限制", "command": "bin/nvidia probe {model_id} --scan" },
+    "nvidia_advise": { "description": "按 code/reasoning/fast 维度推荐模型", "command": "bin/nvidia advise {query}" },
+    "nvidia_rank": { "description": "获取模型在科学基准测试中的具体排名", "command": "bin/nvidia rank {model_id}" }
+  }
 }

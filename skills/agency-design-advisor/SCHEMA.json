@@ -1,0 +1,43 @@
+{
+  "name": "agency-design-advisor",
+  "version": "1.1.0",
+  "description": "Design Advisor - 视觉决策顾问。根据任务内容自动匹配全球最高级的设计系统与视觉基因。",
+  "ai_hints": {
+    "triggers": [
+      "匹配设计风格",
+      "审美建议",
+      "寻找视觉基因",
+      "推荐设计系统",
+      "设计UI",
+      "好看的界面"
+    ],
+    "intent": "在正式执行 UI 生成任务前进行审美对齐与设计决策",
+    "self_check": [
+      "任务是否需要探测品牌 DNA 或建立视觉规范？",
+      "任务是否缺乏明确的品牌色值、圆角或排版规范？"
+    ],
+    "when_to_use": "作为所有设计任务的前置顾问。当用户指令模糊时，用于探测 DNA 并衔接 get_brand_design 获取色值。",
+    "avoid": [
+      "非视觉表现类的纯逻辑代码任务",
+      "已知具体品牌规范且用户已明确指定设计参数的场景"
+    ]
+  },
+  "tools": {
+    "recommend_design_dna": {
+      "description": "基于内容摘要推荐最佳匹配的设计系统 DNA。",
+      "command": "python3 {skill_path}/bin/advisor {content_brief}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "content_brief": {
+            "type": "string",
+            "description": "任务的内容描述或目标氛围"
+          }
+        },
+        "required": [
+          "content_brief"
+        ]
+      }
+    }
+  }
+}

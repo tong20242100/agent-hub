@@ -1,62 +1,22 @@
 {
   "name": "agency-bin-cross-verify",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "protocol": "1.0",
   "description": "强制扫库验证工具，通过寻找反面证据杜绝模型幻觉。",
-  "tools": {
-    "verify": {
-      "description": "强制扫库验证单边结论，杜绝幻觉。例如: verify(claim='AI 将取代程序员')",
-      "command": "bin/cross-verify {claim}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "claim": {
-            "type": "string",
-            "description": "待验证的断言或结论"
-          }
-        },
-        "required": [
-          "claim"
-        ]
-      }
-    }
-  },
   "ai_hints": {
-    "when_to_use": "用户对某个断言/结论的可靠性有疑问，需要验证时。例如'AI 真的会取代程序员吗'、'这个说法有根据吗'、'交叉验证一下这个结论'",
-    "examples": [
-      {
-        "claim": "AI 将取代所有程序员"
-      },
-      {
-        "claim": "Python 3.12 性能提升了 30%"
-      },
-      {
-        "claim": "Rust 是最安全的编程语言"
-      }
+    "intent": "通过多维交叉验证强制寻找结论的反面证据以杜绝幻觉",
+    "triggers": ["交叉验证", "事实核查", "杜绝幻觉"],
+    "when_to_use": "当用户对某个断言的可靠性有疑问，或结论涉及强主观争议需要法证级核实时。",
+    "avoid": [
+      "公认的客观事实验证（如日期、天气）",
+      "可以通过简单逻辑推导或原生代码计算得出的结论"
     ],
-    "avoid": "不需要验证的客观事实（如'今天是周三'）不需要用；这只是验证工具，不能替代研究流程",
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "该结论是否属于主观性较强或具有显著争议的范畴？",
+      "是否需要强制扫描内外部知识库以寻找逻辑上的对立证据？"
     ]
   },
-  "requires": {
-    "bins": [
-      "gh"
-    ]
-  },
-  "source": {
-    "type": "local_script"
-  },
-  "dependencies": [
-    {
-      "name": "gh",
-      "type": "brew",
-      "description": "GitHub CLI for issue search",
-      "check_command": "gh --version",
-      "update_command": "brew upgrade gh"
-    }
-  ],
-  "type": "bin-wrapper",
-  "bin_path": "bin/cross-verify"
+  "tools": {
+    "verify": { "description": "强制验证单边结论。例如: verify(claim='AI 将取代程序员')", "command": "bin/cross-verify {claim}" }
+  }
 }

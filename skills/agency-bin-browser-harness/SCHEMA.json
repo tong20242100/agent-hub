@@ -1,0 +1,32 @@
+{
+  "name": "agency-bin-browser-harness",
+  "version": "1.0.0",
+  "protocol": "1.0",
+  "description": "browser-harness - 直接通过 CDP 控制浏览器的自愈式框架。",
+  "tools": {
+    "bh": {
+      "description": "运行 Python 代码直接控制浏览器。例如: bh(python_code='new_tab(\"https://google.com\"); wait_for_load(); print(page_info())')",
+      "command": "{skill_path}/bin/bh <<'PY'\n{python_code}\nPY",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "python_code": {"type": "string", "description": "要执行的 Python 代码片段"}
+        },
+        "required": ["python_code"]
+      }
+    }
+  },
+  "ai_hints": {
+    "intent": "通过自愈式 CDP 协议执行底层浏览器自动化任务",
+    "triggers": ["浏览器自动化", "模拟操作", "自愈抓取"],
+    "when_to_use": "需要执行复杂的跨页面自动化工作流，或需要复用已有的领域驱动（Domain-skills）脚本时。",
+    "avoid": [
+      "单次静态页面内容提取任务",
+      "仅需简单点击或截图的无痕调试任务（使用 chrome-devtools）"
+    ],
+    "self_check": [
+      "任务是否涉及复杂的跨站点业务逻辑自动化？",
+      "是否需要复用预设的领域模型或执行自愈式的页面操作？"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "agency-design-system-md",
+  "version": "2.2.0",
+  "description": "Design System MD - 品牌视觉规范库。内置 Apple, Stripe, Linear 等 69 个品牌的设计指南。",
+  "ai_hints": {
+    "intent": "跨品牌的视觉 Token、色值规范与设计原则检索",
+    "triggers": ["设计风格", "品牌色值", "Stripe风格", "Apple设计规范"],
+    "when_to_use": "需要获取特定品牌的设计规范（颜色、字体、阴影、圆角）以指导 UI 实现或建立视觉约束时。",
+    "avoid": [
+      "直接生成视觉图片或原型（使用 huashu-design 或 ljg-card）",
+      "非视觉表现类的纯逻辑代码重构"
+    ],
+    "self_check": [
+      "任务是否需要获取特定品牌的工业级视觉参数？",
+      "是否需要建立与现有大厂设计语言对齐的视觉 Token 系统？"
+    ]
+  },
+  "tools": {
+    "get_brand_design": {
+      "description": "获取指定品牌的设计系统规范。使用 '--list' 查看支持列表。",
+      "command": "python3 {skill_path}/bin/get_design {brand}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "brand": {"type": "string", "description": "品牌名称或 '--list'"}
+        },
+        "required": ["brand"]
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+import sys
+import os
+from pathlib import Path
+
+def main():
+    design_dir = Path(__file__).resolve().parent.parent / "designs"
+    
+    if len(sys.argv) < 2:
+        print("Usage: get_design <brand_name|--list>")
+        sys.exit(1)
+    
+    arg = sys.argv[1].lower()
+    
+    if arg == "--list":
+        brands = sorted([f.stem for f in design_dir.glob("*.DESIGN.md")])
+        print("Available Design Systems (69 Total):")
+        print(", ".join(brands))
+        return
+
+    target = design_dir / f"{arg}.DESIGN.md"
+    if target.exists():
+        print(target.read_text())
+    else:
+        print(f"Error: Design system for '{arg}' not found. Use --list to see all.")
+
+if __name__ == "__main__":
+    main()

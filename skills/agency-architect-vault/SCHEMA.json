@@ -1,0 +1,70 @@
+{
+  "name": "agency-architect-vault",
+  "version": "1.2.1",
+  "description": "Architect Vault - AI 架构师精英库。精选全球顶级厂商的 System Prompt 原始文本，并提供场景化的最佳实践建议。",
+  "ai_hints": {
+    "triggers": [
+      "架构决策",
+      "寻找最佳参考",
+      "Agent设计协议",
+      "提示词优化"
+    ],
+    "intent": "AI 架构师精英库",
+    "when_to_use": "当 AI 需要为当前系统设计新的指令、安全性边界、编码规范或 UI 美学标准时主动调用。",
+    "examples": [
+      {
+        "domain": "coding"
+      },
+      {
+        "domain": "visual design"
+      }
+    ],
+    "avoid": [
+      "未通过 recommend 工具锁定厂商前的盲目遍历",
+      "非通用型架构参考（如纯业务逻辑片段）"
+    ],
+    "self_check": [
+      "任务是否需要获取 OpenAI/Claude 等厂商的原始指令作为参考？",
+      "是否需要通过工业标准来验证或优化当前的 Prompt 架构？"
+    ]
+  },
+  "tools": {
+    "recommend_best_practice": {
+      "description": "基于任务领域（如 UI, Coding, Planning）推荐全球最佳参考厂商与文件。",
+      "command": "python3 {skill_path}/bin/vault_query recommend {domain}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "description": "领域关键词 (如 visual, safety, code)"
+          }
+        },
+        "required": [
+          "domain"
+        ]
+      }
+    },
+    "read_elite_prompt": {
+      "description": "读取特定厂商的原始 1:1 指令。调用前建议先通过 recommend 锁定文件。",
+      "command": "python3 {skill_path}/bin/vault_query read {vendor} {filename}",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "description": "厂商名"
+          },
+          "filename": {
+            "type": "string",
+            "description": "文件名"
+          }
+        },
+        "required": [
+          "vendor",
+          "filename"
+        ]
+      }
+    }
+  }
+}

@@ -2,208 +2,82 @@
 
 # Agent-Hub
 
-**AI-Native Tool Sharing Layer — One MCP, All Agents Share**
+**Agent Skill Management Gateway & Execution Tracing System**
 
 English | [中文](README.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
+[![Observability](https://img.shields.io/badge/Debug-Observability-blue.svg)](https://agent-hub.io)
 
 </div>
 
 ---
 
-## What is this
+## 🏛️ Positioning
 
-Two roles:
+**Agent-Hub** is a production-oriented tool gateway for AI Agents. It addresses "decision paralysis" and "debugging opacity" in complex toolchains through semantic aggregation, standardized lifecycle management, and execution tracing, significantly enhancing system reliability.
 
-1. **MCP Server** - Provides unified tool interface for AI Agents, exposing search, scraping, social media, browser control and more
-2. **Tool Manager** - Manage all local tools with `ah` command (scan, update, remove)
+### Three Technical Pillars
 
-Supports Claude, Gemini, Cursor, Codex, OpenClaw, Hermes and all mainstream Agents.
-
----
-
-## Architecture
-
-```mermaid
-graph LR
-    A[Claude Code] -->|MCP| C(Agent-Hub Server)
-    B[Cursor / Gemini] -->|MCP| C
-    D[OpenClaw / Hermes] -->|MCP| C
-    C --> E[web_search]
-    C --> F[scrape_url]
-    C --> G[chrome-devtools]
-    C --> H[xiaohongshu-mcp]
-    C --> I[Custom Tool...]
-```
-
-All Agents connect to the same MCP Server, sharing the same tools.
-
-### Modular Design
-
-```
-bin/
-├── ah.py              # CLI entry
-└── core/              # Core logic
-    ├── auditor.py     # Compliance audit
-    ├── discovery.py   # Cross-platform discovery
-    └── manager.py     # Skill management
-```
+1.  **Semantic Aggregation**: Clusters atomic APIs into high-level capability modules, reducing LLM decision pressure and eliminating redundant calls.
+2.  **Unified Lifecycle**: Provides a standardized CLI (`ah`) for skill integration, global discovery, automated updates, and safe removal.
+3.  **Execution Observability**: Records real-time snapshots of shell commands, multi-dimensional audit reports, and environment fingerprints for complete execution playback.
 
 ---
 
-## Core Values
+## 🚀 Key Engineering Features
 
-### AI-Native: Tools Tell AI How to Use Them
+### 1. Schema-Driven Plugin Architecture
+Every skill self-describes via `SCHEMA.json`:
+- **Boundary Awareness**: Uses `ai_hints` to define triggers, resource costs, and negative conditions.
+- **Dynamic Merging**: Automatically aggregates complex operations via **Schema-Driven Merging** to stay within the 100-tool limit of MCP clients.
+- **Path Discovery**: Supports `{skill_path}` placeholders for "plug-and-play" deployment without hardcoding absolute paths.
 
-Every tool has `ai_hints` for precise AI selection:
+### 2. Standardized Management CLI
+The `ah` tool transforms fragmented scripts into managed assets:
+- `ah onboard <path>`: Standardized integration of new skill packages.
+- `ah scan`: Automated global discovery and local capability indexing.
+- `ah update -i`: Tracks GitHub/NPM releases to align skill versions.
+- `ah remove <name>`: Clean physical uninstallation.
 
-```json
-{
-  "ai_hints": {
-    "self_check": [
-      "Do you have native search capability? Yes → Use your own first",
-      "Need JSON structured output? Yes → Use this tool"
-    ],
-    "when_to_use": "When you don't have native search, or need Tavily structured output",
-    "examples": [{"query": "AI Agent latest progress"}],
-    "avoid": "Don't use if you have native capability; use scrape_url for known URLs"
-  }
-}
-```
-
-`self_check` forces AI to **self-verify** before calling tools, avoiding abuse of external tools.
-
-AI selects tools by itself. No router, no vector retrieval needed.
-
-### Unified Management: Humans Know What's Local
-
-```bash
-ah scan           # Scan all local tools (including those installed by other Agents)
-ah list           # View tool list and distribution
-ah status [name]  # View skill distribution status
-ah update         # Check which tools need updates
-ah update -i      # One-click update all tools
-ah check --fix    # Compliance audit (check SCHEMA format, tone, etc.)
-ah discover       # Global discovery of other Agent skills
-ah remove <name>  # Remove tool
-```
-
-**Solves**:
-- How many tools installed locally? Which Agents have them?
-- Which tools have updates?
-- How to uninstall uniformly?
-
-Update once, all Agents affected.
-
-### Declarative Definition: Wrap Your Own Tools
-
-Want to wrap your CLI tool? Write a config file at `skills/<your-tool>/SCHEMA.json`:
-
-```
-skills/
-  my-search/
-    SCHEMA.json    ← Tool definition
-    bin/
-      search       ← Your script
-```
-
-MCP Server auto-discovers, auto-exposes.
+### 3. Execution Recorder (Black Box)
+Provides a "diagnostic report" for every single tool call:
+- **Command Snapshot**: Captures the exact shell command run in the background (including escaped parameters).
+- **Multi-Dimensional Audit**: Records exit codes and output quality checks (length, error keyword matching).
+- **Environment Context**: Logs OS version, Python environment, and execution latency.
 
 ---
 
-## Built-in Tools
+## 📦 Built-in Capability Modules
 
-Covers search, social media, browser, development and more:
-
-| Domain | Tools |
-|--------|-------|
-| Search & Scraping | web_search, scrape_url, stealth_get, lightpanda |
-| Browser Control | chrome-devtools, bb-browser |
-| Social Media | xiaohongshu-mcp, x-article, xreach |
-| Development | gh, deep-researcher, mcp-server |
-| Research & Intel | nvidia, cross-verify |
-| Memory & Notify | memory, notify |
-
-See [Full Tool List](docs/skills.md)
+| Module | Core Tool (MCP) | Engineering Value |
+|--------|------|------|
+| **Design Advisor** | `design_advisor` | Visual decision reference to enhance UI consistency. |
+| **Browser Control** | `chrome_devtools` | **[Merged]** Orchestrates complex interactions (fill/click) reliably. |
+| **Social Intelligence** | `x_twitter_ops` | **[Merged]** Structured extraction of X (Twitter) data chains. |
+| **Code Auditing** | `analyze_repo` | Extracts source evidence from GitHub to reduce AI hallucinations. |
+| **Presentation** | `huashu_design` | Automated generation of interactive prototypes and animations. |
 
 ---
 
 ## Quick Start
 
-### Requirements
-
-- Python 3.10+
-- pip
-
-### 1. Install
-
+### 1. Installation
 ```bash
 git clone https://github.com/tong20242100/agent-hub.git
 cd agent-hub
 pip install -e .
 ```
 
-### 2. Start MCP Server
+### 2. Service Management
+- `ah server`: Start the MCP Protocol Gateway.
+- `ah scan`: Verify and view the currently indexed skills.
 
-```bash
-python3 bin/mcp_server.py
-```
-
-Or use command:
-
-```bash
-ah server
-```
-
-### 3. Configure Agent
-
-**Method 1: Let Agent configure itself (Recommended)**
-
-Send this to your Agent:
-
-```
-Please help me configure Agent-Hub MCP server. Project path is /path/to/agent-hub.
-
-You need to:
-1. Determine which Agent you are
-2. Find your config file path
-3. Add MCP server configuration
-4. Restart yourself
-
-After configuration, verify: help me search "MCP protocol"
-```
-
-**Method 2: Manual configuration**
-
-Edit Agent config file, add:
-
-```json
-{
-  "mcpServers": {
-    "agent-hub": {
-      "command": "python3",
-      "args": ["/path/to/agent-hub/bin/mcp_server.py"]
-    }
-  }
-}
-```
-
-### 4. Verify
-
-```
-Help me search "MCP protocol latest news"
-```
+### 3. Development Tip
+For vague tasks like design or research, leverage `design_advisor` for intent alignment and use `evolution_*.jsonl` logs for error diagnosis.
 
 ---
 
-## Configuration Reference
-
-See [Configuration Docs](docs/configuration.md) for complete configuration examples of all Agents.
-
----
-
-## License
-
-MIT
+## 📜 License
+MIT License. Designed with a data-driven and decoupled philosophy.

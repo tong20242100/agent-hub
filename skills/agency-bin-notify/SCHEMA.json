@@ -1,61 +1,22 @@
 {
   "name": "agency-bin-notify",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "protocol": "1.0",
-  "description": "多端消息推送工具，支持将任务里程碑分发至飞书、Bark 等终端。",
-  "tools": {
-    "send": {
-      "description": "推送通知至飞书/Bark 等通讯端。例如: send(message='任务完成')",
-      "command": "bin/notify {message}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "通知消息正文"
-          }
-        },
-        "required": [
-          "message"
-        ]
-      }
-    }
-  },
+  "description": "多端推送工具 - 将任务关键里程碑分发至飞书、Bark 等移动终端。",
   "ai_hints": {
-    "when_to_use": "用户需要发送通知/提醒到飞书、Bark 等终端时。例如'完成后提醒我'、'发个通知说任务完成了'、'把这个进度发给我的手机'",
-    "examples": [
-      {
-        "message": "研究完成，共搜索 12 个来源"
-      },
-      {
-        "message": "部署成功: https://example.com"
-      },
-      {
-        "message": "警告：磁盘空间不足 10%"
-      }
+    "intent": "通过多协议 Webhook 实现长时任务关键状态的远程同步与提醒",
+    "triggers": ["推送提醒", "发手机通知", "飞书同步"],
+    "when_to_use": "在执行长耗时任务（如大规模抓取、系统审计）的关键阶段，需要异步提醒用户结果时。",
+    "avoid": [
+      "过于细碎的中间执行步骤提醒",
+      "包含敏感物理路径或私密数据的通知内容"
     ],
-    "avoid": "长时间任务中的中间步骤不需要通知，只在关键里程碑发送；通知内容应简洁（≤100 字）",
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "当前节点是否属于任务的关键里程碑（如：任务完成、核心预警）？",
+      "通知内容是否已精简至 100 字符以内以确保最佳的移动端展示效果？"
     ]
   },
-  "requires": {
-    "bins": [
-      "notify"
-    ]
-  },
-  "source": {
-    "type": "local_script"
-  },
-  "dependencies": [
-    {
-      "name": "requests",
-      "type": "pip",
-      "description": "Python HTTP library for webhook calls",
-      "check_command": "pip show requests"
-    }
-  ],
-  "type": "bin-wrapper",
-  "bin_path": "bin/notify"
+  "tools": {
+    "send": { "description": "向预设的通讯终端分发推送消息", "command": "bin/notify {message}" }
+  }
 }

@@ -2,208 +2,82 @@
 
 # Agent-Hub
 
-**AI 原生的工具共享层 — 一个 MCP，所有 Agent 共享**
+**Agent 技能管理网关与执行追踪系统 (Agent Skill Management Gateway & Execution Tracing System)**
 
 [English](README_EN.md) | 中文
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io)
+[![Observability](https://img.shields.io/badge/Debug-Observability-blue.svg)](https://agent-hub.io)
 
 </div>
 
 ---
 
-## 这是什么
+## 🏛️ 项目定位
 
-两层角色：
+**Agent-Hub** 是一个面向生产环境的 Agent 工具网关。它通过语义聚合、标准化生命周期管理和执行轨迹追踪，解决 Agent 在复杂工具链下的“决策失准”与“难以调试”问题，提升系统的运行可靠性。
 
-1. **MCP Server** - 为 AI Agent 提供统一的工具接口，暴露搜索、抓取、社媒、浏览器控制等能力
-2. **工具管理器** - 用 `ah` 命令管理本地所有工具（扫描、更新、卸载）
+### 三大技术支柱
 
-支持 Claude、Gemini、Cursor、Codex、OpenClaw、Hermes 等所有主流 Agent。
-
----
-
-## 架构
-
-```mermaid
-graph LR
-    A[Claude Code] -->|MCP| C(Agent-Hub Server)
-    B[Cursor / Gemini] -->|MCP| C
-    D[OpenClaw / Hermes] -->|MCP| C
-    C --> E[web_search]
-    C --> F[scrape_url]
-    C --> G[chrome-devtools]
-    C --> H[xiaohongshu-mcp]
-    C --> I[Custom Tool...]
-```
-
-所有 Agent 连接同一个 MCP Server，共享同一套工具。
-
-### 模块化设计
-
-```
-bin/
-├── ah.py              # CLI 入口
-└── core/              # 核心逻辑
-    ├── auditor.py     # 合规审计
-    ├── discovery.py   # 跨平台探测
-    └── manager.py     # 技能管理
-```
+1.  **能力聚合 (Semantic Aggregation)**：将底层原子 API 聚类为具有语义深度的能力模块。降低 LLM 的决策压力，减少无效调用。
+2.  **生命周期管理 (Unified Lifecycle)**：通过 `ah` CLI 实现技能的标准化集成、全域扫描、自动更新与安全卸载。
+3.  **执行可观测性 (Execution Observability)**：实时记录工具调用的 Shell 指令快照、多维审计报告与环境指纹，实现执行过程的完全回溯。
 
 ---
 
-## 核心价值
+## 🚀 核心工程特性
 
-### AI 原生：工具告诉 AI 怎么用自己
+### 1. 基于 Schema 的插件式架构
+每个技能通过 `SCHEMA.json` 实现自解释：
+- **边界感知**：利用 `ai_hints` 明确工具的触发场景与资源成本。
+- **动态聚合**：通过 **Schema-Driven Merging** 策略自动合并复杂操作，适配 MCP 客户端 100 工具的硬性限制。
+- **路径自发现**：支持 `{skill_path}` 占位符，实现技能包的即插即用，无需手动配置绝对路径。
 
-每个工具都有 `ai_hints`，让 AI 精准选择：
+### 2. 标准化管理工具链 (CLI)
+通过 `ah` 命令行工具，将碎片化的脚本转化为受管技能：
+- `ah onboard <path>`: 标准化集成新的技能包。
+- `ah scan`: 自动化全域发现，建立本地能力索引。
+- `ah update -i`: 追踪 GitHub/NPM 动态，实现技能版本对齐。
+- `ah remove <name>`: 物理级卸载。
 
-```json
-{
-  "ai_hints": {
-    "self_check": [
-      "你有原生搜索能力吗？有 → 优先用自己的",
-      "需要 JSON 结构化输出？是 → 用此工具"
-    ],
-    "when_to_use": "你没有原生搜索能力时，或需要 Tavily 结构化输出时",
-    "examples": [{"query": "AI Agent 最新进展"}],
-    "avoid": "你有原生能力时不要用；已知 URL 用 scrape_url"
-  }
-}
-```
-
-`self_check` 让 AI 在调用工具前**强制自检**，避免滥用外部工具。
-
-AI 自己选择工具，不需要路由器、不需要向量检索。
-
-### 统一管理：人类知道本地有什么
-
-```bash
-ah scan           # 扫描本地所有工具（包括各 Agent 安装的）
-ah list           # 查看工具列表和分布
-ah status [name]  # 查看技能分布状态
-ah update         # 检测哪些工具需要更新
-ah update -i      # 一键更新所有工具
-ah check --fix    # 合规性审计（检查 SCHEMA 格式、语气等）
-ah discover       # 全域探测其他 Agent 的技能
-ah remove <name>  # 卸载工具
-```
-
-**解决问题**：
-- 本地装了多少工具？分布在哪些 Agent？
-- 哪些工具有更新？
-- 如何统一卸载？
-
-一处更新，所有 Agent 生效。
-
-### 声明式定义：封装自己的工具
-
-想封装自己的 CLI 工具？在 `skills/<your-tool>/SCHEMA.json` 写一个配置文件：
-
-```
-skills/
-  my-search/
-    SCHEMA.json    ← 工具定义
-    bin/
-      search       ← 你的脚本
-```
-
-MCP Server 自动发现、自动暴露。
+### 3. 执行轨迹追踪仪 (Execution Recorder)
+为每一次工具调用提供详细的“诊断报告”：
+- **指令快照**：捕捉后台执行的完整绝对路径指令（含参数转义现场）。
+- **多维审计**：记录退出码、输出质量校验（长度、错误词匹配）等结果。
+- **环境快照**：包含 OS 版本、Python 环境及执行耗时。
 
 ---
 
-## 内置工具
+## 📦 内置能力模块
 
-覆盖搜索、社媒、浏览器、开发等场景：
-
-| 功能域 | 工具 |
-|--------|------|
-| 搜索与抓取 | web_search, scrape_url, stealth_get, lightpanda |
-| 浏览器控制 | chrome-devtools, bb-browser |
-| 社交媒体 | xiaohongshu-mcp, x-article, xreach |
-| 开发工具 | gh, deep-researcher, mcp-server |
-| 研究与情报 | nvidia, cross-verify |
-| 记忆与通知 | memory, notify |
-
-详见 [完整工具清单](docs/skills.md)
+| 模块名称 | 核心工具 (MCP) | 技术价值 |
+|--------|------|------|
+| **设计顾问** | `design_advisor` | 提供视觉决策参考，提升 UI 生成的一致性 |
+| **浏览器控制** | `chrome_devtools` | **[聚合模式]** 编排复杂交互，提高填表与截图效率 |
+| **社媒采集** | `x_twitter_ops` | **[深度聚合]** 结构化提取 X (Twitter) 数据链 |
+| **代码审计** | `analyze_repo` | 提取 GitHub 源码证据，降低 AI 幻觉 |
+| **交付表现** | `huashu_design` | 自动化生成交互原型与产品演示动画 |
 
 ---
 
 ## 快速开始
 
-### 前置要求
-
-- Python 3.10+
-- pip
-
-### 1. 安装
-
+### 1. 安装环境
 ```bash
 git clone https://github.com/tong20242100/agent-hub.git
 cd agent-hub
 pip install -e .
 ```
 
-### 2. 启动 MCP Server
+### 2. 服务管理
+- `ah server`: 启动 MCP 协议网关。
+- `ah scan`: 校验并查看当前已就绪的技能索引。
 
-```bash
-python3 bin/mcp_server.py
-```
-
-或使用命令：
-
-```bash
-ah server
-```
-
-### 3. 配置 Agent
-
-**方法 1：让 Agent 自己配置（推荐）**
-
-把下面这段发给你的 Agent：
-
-```
-请帮我配置 Agent-Hub MCP 服务器。项目路径是 /path/to/agent-hub。
-
-你需要：
-1. 确定你是哪个 Agent
-2. 找到你的配置文件路径
-3. 添加 MCP 服务器配置
-4. 重启自己
-
-配置完成后，验证：帮我搜索 "MCP protocol"
-```
-
-**方法 2：手动配置**
-
-编辑 Agent 配置文件，添加：
-
-```json
-{
-  "mcpServers": {
-    "agent-hub": {
-      "command": "python3",
-      "args": ["/path/to/agent-hub/bin/mcp_server.py"]
-    }
-  }
-}
-```
-
-### 4. 验证
-
-```
-帮我搜索 "MCP protocol latest news"
-```
+### 3. 开发建议
+在处理涉及设计、调研等模糊任务时，建议利用 `design_advisor` 等工具先进行意图对齐，利用 `evolution_*.jsonl` 日志进行错误诊断。
 
 ---
 
-## 配置参考
-
-详见 [配置文档](docs/configuration.md)，包含所有 Agent 的完整配置示例。
-
----
-
-## License
-
-MIT
+## 📜 许可证
+遵循 MIT 协议。项目设计坚持数据驱动（Data-Driven）与解耦原则。

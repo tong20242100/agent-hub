@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnglishStudy | Cognitive Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,ital,wght@6..72,0,200..800;6..72,1,200..800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+    <style>
+        :root {
+            --paper: oklch(98.5% 0.005 260);
+            --ink: oklch(18% 0.015 260);
+            --accent: oklch(75% 0.12 150);
+            --subtle: oklch(92% 0.005 260);
+            --transition: cubic-bezier(0.2, 0, 0, 1);
+        }
+        body, html { 
+            margin: 0; padding: 0; 
+            background-color: var(--paper); 
+            color: var(--ink);
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        .scribble-selected {
+            background-color: var(--accent);
+            border-bottom: 2px solid var(--ink);
+            cursor: help;
+        }
+        ::selection {
+            background: var(--accent);
+            color: var(--ink);
+        }
+        .pass-content {
+            transition: all 0.6s var(--transition);
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--subtle); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const theme = {
+            colors: {
+                paper: 'oklch(98.5% 0.005 260)',
+                ink: 'oklch(18% 0.015 260)',
+                accent: 'oklch(75% 0.12 150)',
+                subtle: 'oklch(92% 0.005 260)',
+                anxiety: 'oklch(60% 0.2 30)'
+            },
+            fonts: {
+                serif: '"Newsreader", serif',
+                sans: '"Inter", sans-serif'
+            }
+        };
+
+        const AIRMStudyLab = () => {
+            const [pass, setPass] = useState(0);
+            const [selections, setSelections] = useState([]);
+            const [activeInsight, setActiveInsight] = useState(null);
+
+            const passLabels = ["1. Scanning", "2. Decoding", "3. Mapping", "4. Acquisition", "5. Zen"];
+
+            const content = {
+                title: "Cognitive Scaffolding in Language Acquisition",
+                paragraphs: [
+                    "Neural reorganization during language acquisition requires a high-fidelity input mechanism. The human brain does not merely 'memorize'; it reconstructs semantic networks.",
+                    "Krashen's 'i+1' hypothesis suggests that optimal growth occurs when learners engage with content just beyond their current zone of proximal development.",
+                    "Syntactic complexity acts as a stressor, activating the prefrontal cortex to mediate deep structural integration and lexical retention.",
+                    "By leveraging 120B parameter models, we can now deconstruct these stressors into manageable cognitive chunks, facilitating a state of flow."
+                ]
+            };
+
+            // 监听系统级选择事件 (模拟划词交互)
+            useEffect(() => {
+                const handleSelection = () => {
+                    const sel = window.getSelection().toString().trim();
+                    if (sel && sel.length > 2 && sel.length < 30) {
+                        if (!selections.includes(sel)) {
+                            setSelections(prev => [...prev, sel]);
+                            setActiveInsight(sel);
+                        }
+                    }
+                };
+                document.addEventListener('mouseup', handleSelection);
+                return () => document.removeEventListener('mouseup', handleSelection);
+            }, [selections]);
+
+            const styles = {
+                container: {
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 380px',
+                    height: '100vh',
+                    backgroundColor: theme.colors.paper
+                },
+                reader: {
+                    padding: '80px 10%',
+                    overflowY: 'auto',
+                    borderRight: `1px solid ${theme.colors.subtle}`
+                },
+                aside: {
+                    padding: '40px',
+                    backgroundColor: 'rgba(0,0,0,0.01)',
+                    opacity: pass === 4 ? 0 : 1,
+                    transition: 'opacity 0.5s'
+                },
+                nav: {
+                    position: 'fixed',
+                    top: '40px',
+                    left: '40px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '15px',
+                    zIndex: 100
+                },
+                dot: (active) => ({
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    border: `1px solid ${theme.colors.ink}`,
+                    backgroundColor: active ? theme.colors.ink : 'transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                }),
+                text: {
+                    fontFamily: theme.fonts.serif,
+                    fontSize: pass === 4 ? '1.6rem' : '1.35rem',
+                    lineHeight: '1.8',
+                    textAlign: 'justify',
+                    opacity: pass === 0 ? 0.6 : 1, // Pass 1 依然清晰，但略显宁静
+                    letterSpacing: pass === 0 ? '0.01em' : 'normal',
+                    transition: 'all 0.6s var(--transition)'
+                }
+            };
+
+            return (
+                <div style={styles.container}>
+                    {/* Vertical Navigation */}
+                    <div style={styles.nav}>
+                        {passLabels.map((l, i) => (
+                            <div key={i} onClick={() => setPass(i)} style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+                                <div style={styles.dot(pass === i)} />
+                                <span style={{fontSize: '10px', textTransform: 'uppercase', opacity: pass === i ? 1 : 0.3, letterSpacing: '0.1em'}}>
+                                    {l}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Main Reading Area */}
+                    <main style={styles.reader}>
+                        <header style={{marginBottom: '60px'}}>
+                            <div style={{fontSize: '9px', fontWeight: 600, letterSpacing: '0.3em', textTransform: 'uppercase', color: theme.colors.anxiety, marginBottom: '10px'}}>
+                                [ Cognitive Laboratory / AIRM-05 ]
+                            </div>
+                            <h1 style={{fontFamily: theme.fonts.serif, fontSize: '3rem', fontWeight: 400, margin: 0, lineHeight: 1.1}}>
+                                {content.title}
+                            </h1>
+                        </header>
+
+                        <article style={styles.text}>
+                            {content.paragraphs.map((p, i) => (
+                                <p key={i} style={{marginBottom: '2.5rem', position: 'relative'}}>
+                                    {/* 模拟谓语拆解 Pass 2 */}
+                                    {pass >= 1 ? p.split(' ').map((word, wi) => {
+                                        const isVerb = ["requires", "suggests", "acts", "mediating", "leveraging"].includes(word.replace(/[.,'']/g, ""));
+                                        return (
+                                            <span key={wi} style={{
+                                                borderBottom: (pass === 1 && isVerb) ? `2px solid ${theme.colors.accent}` : 'none',
+                                                color: (pass === 1 && isVerb) ? theme.colors.ink : 'inherit'
+                                            }}>
+                                                {word}{' '}
+                                            </span>
+                                        );
+                                    }) : p}
+                                </p>
+                            ))}
+                        </article>
+                    </main>
+
+                    {/* Right Sidebar: Dynamic Insight */}
+                    <aside style={styles.aside}>
+                        <div style={{marginBottom: '40px'}}>
+                            <h3 style={{fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.5}}>Cognitive Support</h3>
+                        </div>
+
+                        {/* 实时分析模块 */}
+                        <div style={{minHeight: '200px'}}>
+                            {activeInsight ? (
+                                <div style={{animation: 'fadeIn 0.5s forwards'}}>
+                                    <div style={{fontSize: '18px', fontFamily: theme.fonts.serif, borderBottom: `1px solid ${theme.colors.subtle}`, paddingBottom: '10px', marginBottom: '15px'}}>
+                                        {activeInsight}
+                                    </div>
+                                    <div style={{fontSize: '13px', lineHeight: '1.6', opacity: 0.8}}>
+                                        <div style={{marginBottom: '10px', color: theme.colors.anxiety}}># Cognitive Anchor</div>
+                                        AI 识别到这是一个关键的<strong>{activeInsight.length > 15 ? '概念短语' : '核心词汇'}</strong>。在 120B 大模型的解构下，这代表了你当前认知边界的 i+1 节点。
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{opacity: 0.4, fontSize: '13px', fontStyle: 'italic'}}>
+                                    [ 选中任何词汇开始高密度划词诊断 ]
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 5-Pass 指导 */}
+                        <div style={{marginTop: '60px', padding: '20px', border: `1px solid ${theme.colors.subtle}`, borderRadius: '12px'}}>
+                            <div style={{fontSize: '12px', fontWeight: 600, marginBottom: '10px'}}>Current Protocol: {passLabels[pass]}</div>
+                            <div style={{fontSize: '12px', opacity: 0.7, lineHeight: '1.5'}}>
+                                {pass === 0 && "扫读模式：请快速建立文本的视觉索引。文字已调整为清晰，方便你识别关键词。"}
+                                {pass === 1 && "解码模式：AI 已标记出文中的谓语核心。这能帮助你快速抓住长难句的‘脊梁’。"}
+                                {pass === 2 && "映射模式：建立逻辑决策树。文中所有的抽象概念已与你的背景知识建立关联。"}
+                                {pass === 4 && "禅读模式：所有杂项已消失，进入纯粹的母语化心流状态。"}
+                            </div>
+                        </div>
+                        
+                        {/* FSRS 预览 */}
+                        {selections.length > 0 && (
+                            <div style={{marginTop: '30px'}}>
+                                <div style={{fontSize: '10px', opacity: 0.4, marginBottom: '10px'}}>STAGED FOR VAULT ({selections.length})</div>
+                                <div style={{display: 'flex', flexWrap: 'wrap', gap: '5px'}}>
+                                    {selections.map((s, i) => (
+                                        <span key={i} style={{fontSize: '11px', padding: '3px 8px', backgroundColor: theme.colors.subtle, borderRadius: '4px'}}>
+                                            {s}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </aside>
+
+                    <style>{`
+                        @keyframes fadeIn {
+                            from { opacity: 0; transform: translateY(10px); }
+                            to { opacity: 1; transform: translateY(0); }
+                        }
+                    `}</style>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<AIRMStudyLab />);
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 {
   "name": "agency-bin-gh",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "protocol": "1.0",
   "description": "GitHub 专用物理工具，通过 API 或 Repo View 深入探测代码库结构。",
   "tools": {
@@ -15,47 +15,21 @@
             "description": "GitHub 仓库路径 (owner/repo)"
           }
         },
-        "required": [
-          "repo"
-        ]
+        "required": ["repo"]
       }
     }
   },
   "ai_hints": {
-    "when_to_use": "**GitHub 研究的首选工具**。用户提到任何 GitHub 仓库、项目、代码库时，立即使用此工具。比浏览器更高效：直接访问 API、无需渲染页面、支持私有仓库。",
-    "examples": [
-      {
-        "query": "研究下 mgechev/skills-best-practices 项目",
-        "action": "gh_view(repo='mgechev/skills-best-practices')"
-      },
-      {
-        "query": "帮我看看 owner/repo 这个仓库",
-        "action": "gh_view(repo='owner/repo')"
-      }
+    "intent": "GitHub 仓库元数据提取与目录结构探测",
+    "triggers": ["GitHub 仓库", "README", "代码结构"],
+    "when_to_use": "需要获取 GitHub 仓库的 README、Stars、分支状态或顶层目录树时。",
+    "avoid": [
+      "仅需搜索仓库名称（使用 github_search）",
+      "深度代码逻辑审计或架构还原（使用 analyze_repo）"
     ],
-    "avoid": "不要用浏览器访问 GitHub 网页。gh CLI 比 web scraping 快 10 倍以上，且不会触发反爬限制。",
     "self_check": [
-      "任务涉及 GitHub 仓库？是 -> 立即使用 gh_view",
-      "需要查看 PR、Issues、代码结构？是 -> 使用 gh_view"
+      "任务是否涉及 GitHub 仓库的元数据或 README 获取？",
+      "是否需要通过 API 快速验证仓库的活跃度或目录结构？"
     ]
-  },
-  "requires": {
-    "bins": [
-      "gh"
-    ]
-  },
-  "source": {
-    "type": "local_script"
-  },
-  "dependencies": [
-    {
-      "name": "gh",
-      "type": "brew",
-      "description": "GitHub CLI",
-      "check_command": "gh --version",
-      "update_command": "brew upgrade gh"
-    }
-  ],
-  "type": "bin-wrapper",
-  "bin_path": "bin/gh"
+  }
 }

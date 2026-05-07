@@ -1,202 +1,29 @@
 {
   "name": "agency-bin-bb-browser",
-  "version": "0.8.3",
+  "version": "1.0.0",
   "protocol": "1.0",
-  "description": "bb-browser - 浏览器控制端。提供 CLI 与 MCP 接口，支持复用 Chrome 登录状态进行自动化操作。",
-  "tools": {
-    "bb_site": {
-      "description": "执行站点命令。例如: bb_site(command='twitter/search', args=['AI agent'])",
-      "command": "bb-browser site {command} {args}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "command": {
-            "type": "string",
-            "description": "站点命令，格式: platform/action（如 twitter/search, zhihu/hot）"
-          },
-          "args": {
-            "type": "array",
-            "description": "命令参数",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "command"
-        ]
-      }
-    },
-    "bb_list": {
-      "description": "列出所有可用的站点适配器",
-      "command": "bb-browser site list",
-      "parameters": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    "bb_update": {
-      "description": "更新社区适配器",
-      "command": "bb-browser site update",
-      "parameters": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    "bb_recommend": {
-      "description": "查看与浏览习惯匹配的适配器",
-      "command": "bb-browser site recommend",
-      "parameters": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    "bb_open": {
-      "description": "打开 URL。例如: bb_open(url='https://example.com')",
-      "command": "bb-browser open {url}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "目标 URL"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "bb_snapshot": {
-      "description": "获取页面可访问性树快照",
-      "command": "bb-browser snapshot -i",
-      "parameters": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    "bb_click": {
-      "description": "点击元素。例如: bb_click(ref='@3')",
-      "command": "bb-browser click {ref}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "ref": {
-            "type": "string",
-            "description": "元素引用（如 @3）"
-          }
-        },
-        "required": [
-          "ref"
-        ]
-      }
-    },
-    "bb_fill": {
-      "description": "填充输入框。例如: bb_fill(ref='@5', value='hello')",
-      "command": "bb-browser fill {ref} '{value}'",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "ref": {
-            "type": "string",
-            "description": "元素引用"
-          },
-          "value": {
-            "type": "string",
-            "description": "填充的值"
-          }
-        },
-        "required": [
-          "ref",
-          "value"
-        ]
-      }
-    },
-    "bb_eval": {
-      "description": "执行 JavaScript。例如: bb_eval(script='document.title')",
-      "command": "bb-browser eval \"{script}\"",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "script": {
-            "type": "string",
-            "description": "JavaScript 代码"
-          }
-        },
-        "required": [
-          "script"
-        ]
-      }
-    },
-    "bb_fetch": {
-      "description": "带登录态的 fetch。例如: bb_fetch(url='https://api.example.com/data')",
-      "command": "bb-browser fetch {url} --json",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "请求 URL"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "bb_screenshot": {
-      "description": "截取页面截图",
-      "command": "bb-browser screenshot",
-      "parameters": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    "bb_network": {
-      "description": "捕获网络请求",
-      "command": "bb-browser network requests --with-body --json",
-      "parameters": {
-        "type": "object",
-        "properties": {}
-      }
-    },
-    "bb_daemon": {
-      "description": "启动 daemon 服务",
-      "command": "bb-browser daemon {args}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "host": {
-            "type": "string",
-            "description": "绑定主机（默认 localhost:19824）"
-          }
-        },
-        "required": []
-      }
-    }
-  },
+  "description": "bb-browser - 浏览器控制端。支持复用当前 Chrome 登录状态进行站点自动化操作。",
   "ai_hints": {
-    "when_to_use": "用于在 MCP 环境下通过 Chrome 浏览器执行站点自动化、截图或数据提取任务。",
-    "examples": [],
-    "avoid": "GitHub 研究场景请用 gh_view（效率高 10 倍）。简单网页抓取用 scrape_url。仅在需要真实浏览器环境或活跃登录态时使用本工具。",
+    "intent": "在活跃的用户登录会话中执行站点特定的自动化任务",
+    "triggers": ["已登录浏览器", "绕过登录墙", "复用Cookies", "社交媒体操作"],
+    "when_to_use": "需要绕过登录检测、查看私密内容、或操作需要活跃 Session 的社交平台（Twitter/LinkedIn/Amazon 等）时。",
+    "avoid": [
+      "公开静态网页抓取（使用 scrape_url）",
+      "GitHub 仓库探测任务（使用 gh_view）",
+      "无需 Cookie 的无痕调试任务（使用 chrome-devtools）"
+    ],
     "self_check": [
-      "任务涉及 GitHub 仓库？是 -> 用 gh_view，不用浏览器",
-      "任务仅为简单网页读取？是 -> 用 scrape_url",
-      "需要操作用户登录态下的特定页面？是 -> 用本工具"
+      "任务是否必须在当前活跃的用户登录态下执行？",
+      "目标站点是否在已支持的 100+ 自动化适配器列表中？",
+      "是否需要执行特定站点的预设复杂动作（如 twitter/post）？"
     ]
   },
-  "source": {
-    "type": "npm",
-    "package": "bb-browser",
-    "repo": "epiral/bb-browser",
-    "installed_version": "0.8.3",
-    "installed_at": "2026-03-17",
-    "update_command": "npm update -g bb-browser"
-  },
-  "requires": {
-    "bins": [
-      "npx"
-    ],
-    "env": []
+  "tools": {
+    "bb_site": { "description": "执行特定站点的预设命令（如 twitter/search）", "command": "bb-browser site {command} {args}" },
+    "bb_list": { "description": "列出所有已适配的站点列表", "command": "bb-browser site list" },
+    "bb_open": { "description": "在当前浏览器中打开 URL", "command": "bb-browser open {url}" },
+    "bb_snapshot": { "description": "获取当前页面的语义快照", "command": "bb-browser snapshot -i" },
+    "bb_screenshot": { "description": "截取当前带登录态页面的视觉快照", "command": "bb-browser screenshot" },
+    "bb_eval": { "description": "在当前页面上下文中执行 JavaScript", "command": "bb-browser eval \"{script}\"" }
   }
 }

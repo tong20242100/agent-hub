@@ -1,59 +1,21 @@
 {
   "name": "agency-bin-full-scan",
-  "version": "1.0.0",
-  "type": "bin-wrapper",
-  "description": "全量深度扫描所有Agent技能目录，支持递归扫描和符号链接追踪",
-  "tools": {
-    "full_scan": {
-      "description": "全量扫描所有Agent技能目录，检测嵌套技能和符号链接",
-      "command": "python3 bin/ah.py full-scan {args}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "args": {
-            "type": "string",
-            "description": "可选参数: --follow-links (-f) 跟踪符号链接, --max-depth (-d) 设置最大扫描深度",
-            "default": ""
-          }
-        },
-        "required": []
-      },
-      "ai_hints": {
-        "when_to_use": "需要全面扫描本地所有 Agent 技能目录，包括嵌套目录和符号链接。例如'深度扫描所有技能，包括嵌套的'",
-        "examples": [
-          {
-            "args": "--follow-links"
-          },
-          {
-            "args": "--max-depth 5"
-          }
-        ],
-        "avoid": "只需要快速查看顶层技能时用 scan 命令（ah scan）"
-      }
-    }
-  },
-  "dependencies": [],
+  "version": "1.1.0",
+  "description": "全量深度扫描工具 - 支持递归检测嵌套技能与符号链接。",
   "ai_hints": {
-    "when_to_use": "用户需要全面了解本地 Agent 技能分布，进行深度分析时。例如'帮我扫描一下所有技能看看有什么'、'全面检测一下本地技能目录'",
-    "examples": [
-      {
-        "args": ""
-      },
-      {
-        "args": "--follow-links"
-      },
-      {
-        "args": "--max-depth 5"
-      }
+    "intent": "通过递归文件指纹审计建立完整的 Agent 技能拓扑视图",
+    "triggers": ["深度扫描技能", "全量自检", "符号链接检测"],
+    "when_to_use": "需要全面了解本地技能分布、发现隐藏的嵌套工具或修复损坏的符号链接关系时。",
+    "avoid": [
+      "仅需快速列出顶层技能的常规场景（使用 ah scan）",
+      "非 Agent Hub 目录结构的通用磁盘搜索"
     ],
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "任务是否需要探测递归深度超过 3 层的嵌套技能目录？",
+      "是否需要验证符号链接（Symbolic Links）的完整性？"
     ]
   },
-  "source": {
-    "type": "local_script",
-    "installed_version": "1.0.0",
-    "installed_at": "2026-04-15"
+  "tools": {
+    "full_scan": { "description": "全量深度扫描所有技能目录", "command": "python3 bin/ah.py full-scan {args}" }
   }
 }

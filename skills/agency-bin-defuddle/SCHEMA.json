@@ -1,138 +1,32 @@
 {
   "name": "agency-bin-defuddle",
-  "version": "0.14.0",
-  "protocol": "1.0",
-  "description": "Defuddle - Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markdown",
+  "version": "1.0.0",
+  "description": "Defuddle - 网页净化提取专家。基于 Readability 算法剥离广告与侧边栏，提取主体正文。",
   "tools": {
     "defuddle_parse": {
-      "description": "解析网页内容。例如: defuddle_parse(url='https://example.com', format='markdown')",
-      "command": "defuddle parse {url} {args}",
+      "description": "从杂乱网页中提取纯净的主体文章。",
+      "command": "defuddle parse {url} --format {format}",
       "parameters": {
         "type": "object",
         "properties": {
-          "url": {
-            "type": "string",
-            "description": "网页 URL 或本地 HTML 文件路径"
-          },
-          "format": {
-            "type": "string",
-            "description": "输出格式: html, markdown, json",
-            "enum": [
-              "html",
-              "markdown",
-              "json"
-            ],
-            "default": "markdown"
-          },
-          "property": {
-            "type": "string",
-            "description": "提取特定属性: title, author, description, domain, published"
-          },
-          "output": {
-            "type": "string",
-            "description": "输出文件路径"
-          },
-          "debug": {
-            "type": "boolean",
-            "description": "启用调试模式",
-            "default": false
-          }
+          "url": {"type": "string", "description": "目标 URL"},
+          "format": {"type": "string", "default": "markdown", "enum": ["markdown", "html", "json"]}
         },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "defuddle_extract_title": {
-      "description": "提取网页标题。例如: defuddle_extract_title(url='https://example.com')",
-      "command": "defuddle parse {url} --property title",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "网页 URL"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "defuddle_extract_author": {
-      "description": "提取文章作者。例如: defuddle_extract_author(url='https://example.com')",
-      "command": "defuddle parse {url} --property author",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "网页 URL"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "defuddle_extract_metadata": {
-      "description": "提取完整元数据（JSON 格式）。例如: defuddle_extract_metadata(url='https://example.com')",
-      "command": "defuddle parse {url} --json",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "网页 URL"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      }
-    },
-    "defuddle_to_markdown": {
-      "description": "将网页转换为 Markdown。例如: defuddle_to_markdown(url='https://example.com', output='article.md')",
-      "command": "defuddle parse {url} --markdown {output_arg}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "网页 URL"
-          },
-          "output": {
-            "type": "string",
-            "description": "输出文件路径（可选）"
-          }
-        },
-        "required": [
-          "url"
-        ]
+        "required": ["url"]
       }
     }
   },
   "ai_hints": {
-    "when_to_use": "当用户需要使用 Defuddle - Obsidian 官方内容提取工具，从任意网页提取主要内容并转换为 Markd... 相关功能时",
-    "examples": [],
-    "avoid": "请参考工具描述了解正确用法",
-    "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
-    ]
-  },
-  "source": {
-    "type": "npm",
-    "package": "defuddle",
-    "repo": "kepano/defuddle",
-    "installed_version": "0.14.0",
-    "installed_at": "2026-03-17",
-    "update_command": "npm update -g defuddle"
-  },
-  "requires": {
-    "bins": [
-      "npx"
+    "intent": "通过语义化算法剥离网页噪点，提取具有高可读性的主体正文",
+    "triggers": ["网页净化", "文章提取", "去广告抓取"],
+    "when_to_use": "需要将长篇博文、新闻或文档网页转化为干净、无干扰的 Markdown 文本时。",
+    "avoid": [
+      "仅需获取网页原始元数据（Metadata）的场景",
+      "非文章类的仪表盘、控制面板或登录页面"
     ],
-    "env": []
+    "self_check": [
+      "任务是否追求极高的正文纯净度以供模型深度阅读？",
+      "目标网页是否包含大量影响解析的干扰性 UI 元素（如侧边栏、浮窗）？"
+    ]
   }
 }

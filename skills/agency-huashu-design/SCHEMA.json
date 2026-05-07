@@ -1,0 +1,42 @@
+{
+  "name": "agency-huashu-design",
+  "version": "2.1.0",
+  "description": "Huashu Design - 高保真原型生成引擎。将概念转化为可点击的 HTML 原型与产品动效。",
+  "ai_hints": {
+    "intent": "构建具备物理框架、状态跳转与视觉动效的高保真交互原型",
+    "triggers": ["交互原型", "产品动效", "iOS原型", "Apple风格复刻"],
+    "when_to_use": "需要展示具备物理外壳（Bezel）、多屏跳转逻辑或特定品牌高度视觉还原的成品原型时。",
+    "avoid": [
+      "底层代码架构的逻辑重构（使用 anthropic-design）",
+      "不需要视觉外壳的纯组件开发",
+      "简单的静态内容展示（使用 ljg-card）"
+    ],
+    "self_check": [
+      "任务是否要求在浏览器中可直接运行、点击的真实物理外壳原型？",
+      "是否需要通过 Storyboard 生成具备时间轴和插帧的产品发布动画？"
+    ]
+  },
+  "tools": {
+    "design_prototype": {
+      "description": "生成高保真交互原型 (HTML/JS)。包含真实机身框架与跳转逻辑。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "concept": {"type": "string", "description": "原型设计概念"},
+          "platform": {"type": "string", "enum": ["ios", "android", "web", "macos"], "default": "ios"}
+        },
+        "required": ["concept"]
+      }
+    },
+    "design_motion": {
+      "description": "生成 Motion Design 产品动画（MP4/GIF）。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "storyboard": {"type": "string", "description": "分镜脚本描述"},
+          "duration_s": {"type": "integer", "default": 15}
+        }
+      }
+    }
+  }
+}

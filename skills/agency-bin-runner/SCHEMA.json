@@ -1,52 +1,22 @@
 {
   "name": "agency-bin-runner",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "protocol": "1.0",
-  "description": "物理代码执行器，负责在真实环境中运行脚本并捕获物理日志。",
-  "tools": {
-    "run_code": {
-      "description": "物理执行 Python 脚本并捕获日志。例如: run_code(file='test.py')",
-      "command": "bin/runner {file}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "file": {
-            "type": "string",
-            "description": "要运行的脚本文件路径"
-          }
-        },
-        "required": [
-          "file"
-        ]
-      }
-    }
-  },
+  "description": "物理代码执行器 - 在隔离环境中运行脚本并捕获执行日志。",
   "ai_hints": {
-    "when_to_use": "用户需要运行 Python 脚本或验证代码行为时。例如'运行这个脚本看看输出'、'帮我测试这段代码'、'执行 test.py'",
-    "examples": [
-      {
-        "file": "test.py"
-      },
-      {
-        "file": "scripts/validate.py"
-      }
+    "intent": "通过物理执行环境对 Python 脚本进行闭环验证与结果捕获",
+    "triggers": ["运行代码", "脚本执行", "验证逻辑", "运行 test.py"],
+    "when_to_use": "需要通过真实执行来验证代码正确性、产出动态数据或执行复杂的本地自动化逻辑时。",
+    "avoid": [
+      "运行未经安全审计的外部不可信代码",
+      "执行仅通过静态分析即可获得结论的简单语法检查"
     ],
-    "avoid": "不要运行不可信代码；复杂任务用专用工具",
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "任务是否产生了需要在物理沙盒中验证其副作用或输出的代码？",
+      "目标脚本的运行环境依赖是否已通过 update_deps 完成对齐？"
     ]
   },
-  "source": {
-    "type": "local_script"
-  },
-  "dependencies": [],
-  "type": "bin-wrapper",
-  "bin_path": "bin/runner",
-  "requires": {
-    "bins": [
-      "python3"
-    ],
-    "env": []
+  "tools": {
+    "run_code": { "description": "物理执行指定 Python 脚本并捕获 stdout/stderr 日志", "command": "bin/runner {file}" }
   }
 }

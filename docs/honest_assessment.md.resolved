@@ -1,0 +1,131 @@
+# agent-hub × Google Agent Skills：诚实评估与建议
+
+## 一、项目现状：你已经走在前面了
+
+先说结论：**Google 这篇文章描述的大部分"创新"，你在 agent-hub 里已经实现了。**
+
+| Google Skills 的"卖点" | agent-hub 现状 | 差距 |
+|---|---|---|
+| 渐进式披露 (Progressive Disclosure) | ✅ v2.1 已经做了 `references/` 拆分 | 格式略有不同，但原理一致 |
+| 跨平台格式统一 | ✅ `ah discover` 已能扫描 Claude/Cursor/Gemini | 你的格式是 `SCHEMA.json`，不是 `SKILL.md` frontmatter |
+| 语义匹配触发 | ✅ `ai_hints.triggers` + `when_to_use` | 比 Google 的"名称匹配"更精细 |
+| 技能安装/卸载 | ✅ `ah onboard` / `ah remove` 全链路 | Google 只有 `gemini skills install` |
+| 审计与质量检查 | ✅ `ah check` / `ah eval` | Google **完全没有**这个能力 |
+| 执行可观测性 | ✅ `evolution_*.jsonl` 日志 | Google **完全没有** |
+| MCP 集成 | ✅ 原生 MCP Server | Google Skills 是纯文档，没有 MCP |
+
+**你不需要"学习" Google 的方案。你需要做的是想清楚：哪些差异是你该补的，哪些是你的优势。**
+
+---
+
+## 二、真正值得补的差距（3 个）
+
+### 差距 1：格式兼容层 — 让别人的技能进得来
+
+你的技能以 `SCHEMA.json` 为核心（工具定义 + ai_hints），这是你的 **MCP 工具层**的基石，不该改。
+
+但 Google / Anthropic 的技能是 **纯知识层**（SKILL.md + references/），没有工具定义，只有"怎么写代码"的指导。
+
+**建议**：在 `ah discover` 中增加对 `~/.agents/skills/` 目录的扫描能力。目前 `discovery.py` 只扫描各平台的 MCP 配置文件，不扫描 Anthropic 格式的 Skills 目录。
+
+```python
+# discovery.py 中增加
+class AgentSkillsScanner(BaseScanner):
+    """扫描 ~/.agents/skills/ 下的 Anthropic 格式技能"""
+    def scan(self) -> List[Dict[str, Any]]:
+        base = Path.home() / ".agents" / "skills"
+        if not base.exists(): return []
+        found = []
+        for skill_dir in base.rglob("SKILL.md"):
+            # 解析 frontmatter 获取 name/description
+            found.append({
+                "name": skill_dir.parent.name,
+                "platform": "AgentSkills",
+                "path": str(skill_dir.parent),
+                "type": "knowledge"  # 区别于 "tool"
+            })
+        return found
+```
+
+这样 `ah discover` 就能同时看到你的 MCP 工具技能和外部的知识型技能。
+
+### 差距 2：`skills-cognitive` 没有接入 MCP Server
+
+你的项目有两类技能：
+- `skills/`：有 `SCHEMA.json`，有 `command`，被 `mcp_server.py` 加载 → **可执行**
+- `skills-cognitive/`：有 `SCHEMA.json` + `SKILL.md`，但标记为 `type: cognitive` → **被 MCP Server 跳过**
+
+这意味着 `skills-cognitive/` 下的 11 个认知技能（architecture-atlas、engineering-ai-engineer、viral-writer 等）**实际上只在 SKILL.md 被 Agent 阅读时才生效**。它们没有被任何系统性的加载机制管理。
+
+**问题**：这些认知技能的激活完全取决于 Agent 是否"碰巧"读到了对应的 SKILL.md。没有 `ah` 工具链对它们的调度和质量保障。
+
+**建议**：给 `ah scan` 和 `ah list` 增加对 `type: cognitive` 技能的展示，用不同图标区分。不需要把它们暴露为 MCP 工具，但需要让它们在管理视图中可见。
+
+### 差距 3：`ah` CLI 实际无法运行
+
+```
+$ ah scan
+# ah command not found
+```
+
+`pyproject.toml` 定义了 `ah = "bin.ah:cli"`，但项目没有被 `pip install -e .` 安装过，或安装后 venv 没被激活。
+
+这是最基础的问题：**你最引以为豪的管理工具链，在你自己的机器上跑不起来。**
+
+**建议**：在项目根目录加一个 `Makefile` 或 `justfile`：
+
+```makefile
+.PHONY: install
+install:
+	pip install -e ".[dev]"
+	@echo "✅ ah 命令已安装。运行 'ah scan' 验证。"
+```
+
+---
+
+## 三、不建议做的事情（3 个）
+
+### ❌ 不要把 SCHEMA.json 改成 Anthropic 的 frontmatter 格式
+
+你的 `SCHEMA.json` 比 Anthropic 的 YAML frontmatter 功能强得多：
+- 支持工具参数定义（`parameters`）
+- 支持命令模板（`command`）
+- 支持 AI 决策提示（`ai_hints`）
+- 支持合并策略（`mcp_strategy: merge`）
+
+Anthropic 的格式只是一个 `name + description`。你往那个方向改是降级。
+
+### ❌ 不要把 Google 的 13 个技能搬进 agent-hub
+
+你已经装了 Google 的技能到 `~/.agents/skills/google/`。它们已经在那里了。你的 `global-best-practices/SKILL.md` 也已经在工作了。
+
+把它们复制进 `agent-hub/skills/` 会造成：
+1. 版本同步噩梦（Google 更新了你怎么办）
+2. 路径冲突（同一个技能出现在两个地方）
+3. 违背你自己项目的"去重复"原则
+
+### ❌ 不要在 agent-hub 里建"全局链接脚本"
+
+`setup-skills.sh` 的思路是把 agent-hub 的技能软链接到 `~/.agents/skills/`。但这会把你的 **MCP 工具型技能**（需要执行 shell 命令的）暴露到一个 **纯知识型技能** 的目录里。
+
+Gemini CLI 读到 `~/.agents/skills/custom-hub/agency-bin-search/SKILL.md` 后，并不知道怎么执行 `bin/search {query}`——它没有你的 MCP Server。
+
+**正确做法**：只链接 `skills-cognitive/` 中的纯认知技能。
+
+---
+
+## 四、真正有价值的下一步（按优先级）
+
+| 优先级 | 行动 | 预期收益 |
+|---|---|---|
+| **P0** | 确保 `pip install -e .` 能跑通，`ah scan` 可用 | 基础可用性 |
+| **P1** | `ah discover` 增加 `~/.agents/skills/` 扫描 | 统一视图，看到 Google 的 13 个技能 |
+| **P1** | `ah list` 区分 `tool` vs `cognitive` vs `knowledge` 三种类型 | 清晰的能力全景图 |
+| **P2** | 只把 `skills-cognitive/` 链接到 `~/.agents/skills/` | 让认知技能跨平台可用 |
+| **P3** | 在 `agency-engineering-ai-engineer` 中引用 Google WAF 技能路径 | 代码审查时自动调用安全/可靠性指南 |
+
+---
+
+## 五、一句话总结
+
+**你的 agent-hub 解决的是"Agent 怎么执行"（MCP 工具 + 可观测性），Google Skills 解决的是"Agent 怎么思考"（知识注入）。两者不是竞争关系，是互补关系。你不需要改自己的架构去适配 Google，你需要的是在 `ah` 管理工具中增加对知识型技能的感知能力——让它们在你的雷达上可见。**

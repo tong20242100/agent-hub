@@ -1,0 +1,5 @@
+#!/bin/bash
+# Browser Harness Wrapper for Agent-Hub
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+export PYTHONPATH="$SCRIPT_DIR:$PYTHONPATH"
+python3 "$SCRIPT_DIR/run.py" "$@"

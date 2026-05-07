@@ -1,112 +1,25 @@
 {
   "name": "agency-bin-xiaohongshu-mcp",
-  "version": "2.1.0",
-  "protocol": "1.0",
-  "description": "小红书 MCP 标准化工具服务器，支持搜索、自动发布与评论管理。",
-  "tools": {
-    "login": {
-      "description": "【安全禁令：扫码唯一性】启动物理浏览器扫码登录。禁止使用账号密码自动填充。登录后必须确保此账号在其他浏览器页签中已退出，严禁多端网页登录。",
-      "command": "bin/xhs-login",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
-    },
-    "search": {
-      "description": "【频率限制】搜索小红书笔记。单次操作后需随机停顿 5-10 秒，严禁高频并发。",
-      "command": "bin/xhs-mcp tool call search_feeds '{\"keyword\":\"{query}\"}'",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "搜索关键词",
-            "extraction": {
-              "type": "clean_query",
-              "remove_patterns": [
-                "小红书",
-                "搜索",
-                "查找",
-                "笔记"
-              ],
-              "min_length": 2
-            }
-          }
-        },
-        "required": [
-          "query"
-        ]
-      }
-    },
-    "publish_image": {
-      "description": "【安全发布铁律】1.日发布量严禁超过 50 篇；2.图片必须经过 MD5 微调（裁剪或滤镜）；3.文案禁止包含敏感引流词；4.发布动作必须模拟人类作息（凌晨不发帖）。",
-      "command": "bin/xhs-mcp tool call publish_content '{\"title\":\"{title}\", \"content\":\"{content}\", \"images\":[\"{image_path}\"]}'",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "type": "string",
-            "maxLength": 20,
-            "description": "标题限制 20 字以内"
-          },
-          "content": {
-            "type": "string",
-            "maxLength": 1000,
-            "description": "正文限制 1000 字以内"
-          },
-          "image_path": {
-            "type": "string",
-            "description": "本地图片绝对路径。确保图片已通过其它工具微调 MD5。"
-          }
-        },
-        "required": [
-          "title",
-          "content",
-          "image_path"
-        ]
-      }
-    }
-  },
+  "version": "2.2.0",
+  "description": "小红书自动化工具 - 支持搜索、内容发布与社交互动管理。",
   "ai_hints": {
-    "when_to_use": "当用户需要搜索小红书笔记内容时",
-    "examples": [
-      {
-        "query": "AI agent 教程"
-      },
-      {
-        "query": "Python 学习笔记"
-      }
+    "intent": "通过标准 MCP 协议实现对小红书平台内容的检索与分发",
+    "triggers": ["小红书搜索", "发布笔记", "发红书", "红薯趋势"],
+    "when_to_use": "需要获取小红书内的设计灵感、用户评论、或将本地生成的视觉内容发布至该平台时。",
+    "avoid": [
+      "通用的全网信息搜索（使用 web_search）",
+      "非图片/文字类的复杂视频剪辑发布",
+      "极高频并发的自动化请求（受平台频率限制）"
     ],
-    "avoid": "需要先登录才能搜索",
     "self_check": [
-      "你能通过原生能力或代码执行完成此任务吗？能 -> 优先用原生的",
-      "需要调用此特定工具提供的物理环境或 API？是 -> 调此工具"
+      "任务目标是否明确属于小红书平台的内容范畴？",
+      "是否需要通过物理浏览器扫码（login）来恢复会话有效性？",
+      "图片发布前是否已执行 MD5 微调以符合平台原创性要求？"
     ]
   },
-  "source": {
-    "type": "github_release",
-    "repo": "jobbin/xiaohongshu-mcp",
-    "asset_pattern": "xiaohongshu-mcp-darwin-arm64",
-    "installed_version": "v2026.02",
-    "installed_at": "2026-03-12",
-    "download_url": "https://github.com/jobbin/xiaohongshu-mcp/releases"
-  },
-  "type": "bin-wrapper",
-  "bin_path": "bin/xhs-mcp",
-  "requires": {
-    "bins": [
-      "python3"
-    ],
-    "env": []
-  },
-  "dependencies": [
-    {
-      "name": "requests",
-      "type": "pip",
-      "description": "HTTP library",
-      "check_command": "pip show requests",
-      "update_cmd": "pip install --upgrade requests"
-    }
-  ]
+  "tools": {
+    "login": { "description": "启动物理浏览器进行扫码登录以恢复 Session 状态", "command": "bin/xhs-login" },
+    "search": { "description": "根据关键词检索小红书笔记流", "command": "bin/xhs-mcp tool call search_feeds '{\"keyword\":\"{query}\"}'" },
+    "publish_image": { "description": "发布图文笔记至小红书。需提供标题、正文及本地图片路径", "command": "bin/xhs-mcp tool call publish_content '{\"title\":\"{title}\", \"content\":\"{content}\", \"images\":[\"{image_path}\"]}'" }
+  }
 }

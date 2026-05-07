@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+import sys
+import os
+from pathlib import Path
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: artifact <concept>")
+        sys.exit(1)
+    
+    concept = " ".join(sys.argv[1:])
+    print(f"🎨 Anthropic Design Engine Activated.")
+    print(f"Concept: {concept}")
+    print("Strategy: Adhering to oklch colors, 1-indexed slides, and modular JSX (1000-line rule).")
+    
+    # 模拟协议中的环境准备
+    output_dir = Path("output/artifacts")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    print(f"Environment ready at {output_dir}. Please proceed with verbatim design instructions.")
+
+if __name__ == "__main__":
+    main()

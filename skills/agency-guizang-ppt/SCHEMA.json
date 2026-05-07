@@ -1,0 +1,33 @@
+{
+  "name": "agency-guizang-ppt",
+  "version": "1.1.0",
+  "description": "Guizang PPT - 杂志风格 HTML 幻灯片构建专家。追求衬线体美学与横向阅读节奏。",
+  "ai_hints": {
+    "intent": "基于 WebGL 流体背景与衬线体系统构建单文件 HTML 格式的杂志风 PPT",
+    "triggers": ["生成PPT", "杂志风演示", "HTML幻灯片"],
+    "when_to_use": "需要为 Demo Day、线下分享或技术演讲生成具备强烈视觉个性、支持横向滑动交互的幻灯片时。",
+    "avoid": [
+      "展示海量表格数据或密集型培训课件",
+      "需要导出为标准 .pptx 或 .pdf 格式的任务",
+      "仅包含纯文字内容、无排版节奏要求的简单页面"
+    ],
+    "self_check": [
+      "任务是否追求极简、高级的排版风格（如 Monocle 杂志感）？",
+      "演示环境是否支持在浏览器中运行 HTML 单文件？"
+    ]
+  },
+  "tools": {
+    "generate_magazine_ppt": {
+      "description": "基于归藏模版生成单文件 HTML PPT。支持 ink, blue, forest, paper, dune 主题。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "description": "PPT 主标题" },
+          "theme": { "type": "string", "enum": ["ink", "blue", "forest", "paper", "dune"], "default": "ink" },
+          "content_structure": { "type": "string", "description": "L1-L10 布局 ID 内容大纲" }
+        },
+        "required": ["title", "content_structure"]
+      }
+    }
+  }
+}
