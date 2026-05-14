@@ -119,3 +119,4 @@ Test line
 | **agency-design-advisor** | `multiple` | 基于内容摘要推荐最佳匹配的设计系统 DNA。 |
 | **agency-architect-vault** | `multiple` | The Architect Vault - 顶级 AI 架构师原力库。存储全球主流厂商 (OpenAI, Anthropic, Google) 的原始泄露 System Prompts 与工具规范。 |
 | **agency-openai-brain** | `multiple` | 基于大模型协议的长期记忆引擎。实现自然语言级的用户画像刻画与偏好对齐。 |
+| **agency-infograph** | `multiple` | New Skill |

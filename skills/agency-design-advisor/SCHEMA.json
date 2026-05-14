@@ -1,6 +1,6 @@
 {
   "name": "agency-design-advisor",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Design Advisor - 视觉决策顾问。根据任务内容自动匹配全球最高级的设计系统与视觉基因。",
   "ai_hints": {
     "triggers": [
@@ -38,6 +38,37 @@
           "content_brief"
         ]
       }
+    }
+  },
+  "workflows": {
+    "full_design_pipeline": {
+      "description": "完整设计决策流水线：DNA 推荐 → 品牌规范提取 → 最佳实践注入。一次调用完成三步对齐。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "object",
+            "properties": {
+              "content_brief": {
+                "type": "string",
+                "description": "任务的内容描述或目标氛围，例如：'极简风格的 SaaS 仪表盘'"
+              }
+            },
+            "required": ["content_brief"]
+          }
+        }
+      },
+      "steps": [
+        {
+          "tool": "recommend_design_dna",
+          "description": "Step 1: 根据内容摘要推荐品牌 DNA"
+        },
+        {
+          "tool": "recommend_best_practice",
+          "description": "Step 2: 并行获取顶级厂商最佳实践",
+          "parallel": true
+        }
+      ]
     }
   }
 }

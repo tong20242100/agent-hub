@@ -20,9 +20,38 @@ __pycache__/
 .env.local
 .env.*.local
 
-# Personal Data (user-specific)
-knowledge/
-scripts/
+# Personal Data (user-specific, never commit)
+# ── knowledge/ 精细化忽略策略 ──────────────────────────────────────────────
+# 规则：保留项目运行必需的结构文件，忽略所有个人数据和运行时产物
+
+# 个人数据 — 绝对不提交
+knowledge/user_profile.json
+knowledge/watchlist_state.json
+
+# 运行时产物 — 本地生成，不需要同步
+knowledge/logs/*
+knowledge/.chroma_db/
+knowledge/.research_checkpoints/
+knowledge/.router_cache/*
+knowledge/__pycache__/
+knowledge/.sync_hash_cache.json
+knowledge/.update_cache.json
+
+# 个人研究报告 — 私有内容
+knowledge/research/*
+knowledge/distribution/*
+
+# tools_manifest.json 和 KNOWLEDGE_MAP.md 由 `ah onboard` 自动生成
+# 不提交，让每个用户在本地通过 `ah onboard` 重建
+knowledge/tools_manifest.json
+knowledge/KNOWLEDGE_INDEX.json
+knowledge/KNOWLEDGE_MAP.md
+
+# 保留目录占位符（让 clone 后目录结构完整）
+!knowledge/logs/.gitkeep
+!knowledge/.router_cache/.gitkeep
+!knowledge/research/.gitkeep
+!knowledge/distribution/.gitkeep
 
 # Project Specific (Temporary/Analysis Reports)
 Skills全球现状调查报告.md

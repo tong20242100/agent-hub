@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-05-14
+
+### 🚀 智能工作流与链式执行 (Workflow Engine)
+- **原生工作流支持**: `mcp_server.py` 新增 `execute_workflow` 引擎。支持在 `SCHEMA.json` 中定义工具链，支持串行（`input_from: prev`）与并行（`parallel: true`）混合调度。
+- **自动上下文注入**: 步骤间支持自动将上一步的输出注入当前步骤的上下文，大幅提升 Agent 处理复杂长链路任务的成功率。
+
+### 📊 闭环自诊断系统 (Self-Diagnostic System)
+- **`ah analyze` (新增)**: 日志驱动的 Agent 自愈指令。
+  - **健康审计**: 实时计算系统健康度、失败率及异常耗时（Latency Anomalies）。
+  - **重试侦测**: 自动发现 Burst 调用，识别 AI 可能存在的陷入死循环或反复重试行为。
+  - **提示词优化**: 结合执行日志自动生成 `ai_hints` 改进建议，并支持 `--fix` 一键同步到物理 SCHEMA.json。
+- **僵尸工具清理**: 自动识别从未调用（NEVER_CALLED）或低频调用（LOW_FREQUENCY）的工具，辅助开发者精简技能树。
+
+### ⚡ 性能跃迁与稳定性 (Performance & Stability)
+- **多级缓存机制**: MCP Server 引入工具列表与 Prompt 缓存，消除大规模扫描导致的初始化延迟。
+- **核心逻辑重构**: `bin/core/` 模块化演进。`manager.py` 实现更严谨的路径发现与执行环境隔离。
+- **代码分析器**: 引入 `bin/core/analyzer.py` 支持静态语义检查。
+
+### 🛠️ 技能包补完 (Skill Enhancements)
+- **`agency-bin-xreach`**: 完善依赖声明，新增 `xreach-cli` 环境要求。
+- **工具图谱同步**: 全量更新 `tools/TOOL_MAP.md`，确保文档与物理工具定义 100% 映射。
+- **环境隔离**: `.gitignore` 强化，防止 `knowledge/logs` 与二进制残留污染代码库。
+
 ## [2.6.0] - 2026-04-29
 
 ### 🔍 执行可观测性 (Execution Observability)

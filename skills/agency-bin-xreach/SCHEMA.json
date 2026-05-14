@@ -23,5 +23,12 @@
     "x_tweet": { "description": "获取单条推文详情及元数据", "command": "xreach tweet {url_or_id}" },
     "x_thread": { "description": "追踪并组合完整的推文线程对话", "command": "xreach thread {url_or_id}" },
     "x_tweets": { "description": "获取特定用户的推文时间线", "command": "xreach tweets {handle} --count {limit}" }
-  }
+  },
+  "dependencies": [
+    {
+      "name": "xreach-cli",
+      "type": "npm",
+      "description": "X/Twitter 深度采集工具 CLI"
+    }
+  ]
 }
